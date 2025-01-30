@@ -679,8 +679,12 @@ The htmx [lazy loading](https://htmx.org/examples/lazy-load/) example can be por
 Because fixi is minimalistic the user is responsible for implementing many behaviors they want via events. We have
 already seen how to abort an existing request that is already in flight.  
 
-The convention when you are adding fixi extension attributes is to use the `ext-fx` prefix, and to process the extension
-in the `fx:init` method.  You may find it useful to use the `__fixi` property on the element to store values on 
+A suggested convention when you are adding fixi extension attributes is to use the `ext-fx` prefix, and to process the extension
+in the `fx:init` method.  You may find it useful to use the `__fixi` property on the element to store values necessary
+for the extension to work.
+
+Another suggested convention is keeping your fixi extensions in a single file called `ext-fixi.js` alongside your
+`fixi-<version>.js` file.
 
 Here are some examples of useful fixi extensions implemented using events.
 
@@ -689,6 +693,7 @@ Here are some examples of useful fixi extensions implemented using events.
 Here is an example that will use attributes to disable an element when a request is in flight:
 
 ```js
+// fixi disable elements extension
 document.addEventListener("fx:init", (evt)=>{
   if (evt.target.matches("[ext-fx-disable]")){
     var disableSelector = evt.target.getAttribute('ext-fx-disable')
@@ -715,6 +720,7 @@ document.addEventListener("fx:init", (evt)=>{
 Here is an example that will use attributes a `fixi-request-in-flight` class to show an indicator of some kind:
 
 ```js
+// fixi request indicator extension
 document.addEventListener("fx:init", (evt)=>{
   if (evt.target.matches("[ext-fx-indicator]")){
     var disableSelector = evt.target.getAttribute("ext-fx-indicator")
@@ -754,6 +760,7 @@ to return a promise that resolves to `true` after the number of milliseconds spe
 other triggers have occurred:
 
 ```js
+// fixi event debouncing extension
 document.addEventListener("fx:init", (evt)=>{
   let elt = evt.target
   if (elt.matches("[ext-fx-debounce]")){
@@ -792,6 +799,7 @@ document.addEventListener("fx:init", (evt)=>{
 htmx-style polling can be implemented in the following manner:
 
 ```js
+// fixi polling extension
 document.addEventListener("fx:inited", (evt)=>{ // use fx:inited so the __fixi property is available
   let elt = evt.target
   if (elt.matches("[ext-fx-poll-interval]")){
@@ -815,6 +823,7 @@ This extension implements a simple `confirm()` based confirmation if the `ext-fx
 it does not use a Promise, just the regular old blocking `confirm()` function
 
 ```js
+// fixi confirmation extension
 document.addEventListener('fx:config', (evt)=>{
 	var confirmationMessage = evt.target.getAttribute("ext-fx-confirm")
 	if (confirmationMessage){
@@ -833,6 +842,7 @@ document.addEventListener('fx:config', (evt)=>{
 This extension implements relative selectors for the `fx-target` attribute.
 
 ```js
+// fixi relative selectors extension
 document.addEventListener('fx:config', (evt)=>{
 	console.log("here")
 	var target = evt.target.getAttribute("fx-target") || ""
@@ -864,6 +874,7 @@ for every element with the `intersect` trigger and wires it in to trigger that e
 the viewport.  
 
 ```js
+// fixi intersection events extension
 document.addEventListener("fx:init", (evt) => {
     let trigger = evt.target.getAttribute("fx-trigger")
     if(trigger === "intersect") {
@@ -905,6 +916,7 @@ You can implement a custom swap strategies using the [`fx:config`](#fxconfig) ev
 in `fx-swap`:
 
 ```js
+// fixi morphing extension
 document.addEventListener("fx:config", (evt) => {
   function morph(cfg, style) {
     Idiomorph.morph(cfg.target, cfg.text, { morphStyle: style }).forEach((n) => {
