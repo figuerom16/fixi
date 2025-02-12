@@ -938,6 +938,20 @@ document.addEventListener("fx:config", (evt) => {
 <output id="output"></output>
 ```
 
+### Implementing Attribute Inheritance
+
+fixi does not implement [attribute inheritance]()https://htmx.org/docs/#inheritance like htmx does, but you can modify 
+the fixi source to do so easily.
+
+Simply change this line:
+```js
+	let attr = (elt, name, defaultVal)=>elt.getAttribute(name) || defaultVal
+```
+to this:
+```js
+	let attr = (elt, name, defaultVal)=>elt.closest(`[${name}]`)?.getAttribute(name) || defaultVal
+```
+
 ## LICENCE
 
 ```
