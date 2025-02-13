@@ -12,12 +12,13 @@
 			let body = new FormData(form ?? undefined, evt.submitter)
 			if (!form && elt.name) body.append(elt.name, elt.value)
 			let ac = new AbortController()
+			let target = document.querySelector(attr(elt, "fx-target")) ?? elt
 			let cfg = {
 				trigger:evt,
 				action:attr(elt, "fx-action"),
 				method:attr(elt, "fx-method", "GET").toUpperCase(),
-				target: document.querySelector(attr(elt, "fx-target")) ?? elt,
-				swap:attr(elt, "fx-swap", "outerHTML"),
+				target,
+				swap:attr(elt, "fx-swap", target.matches("html") ? "innerHTML" : "outerHTML"),
 				body,
 				drop:reqs.size,
 				headers:{"FX-Request":"true"},
@@ -66,7 +67,7 @@
 				await cfg.transition(doSwap).finished
 			else
 				await doSwap()
-			send(elt, "swapped", {cfg})
+			send(elt.isConnected ? elt : document.documentElement, "swapped", {cfg})
 		}
 		elt.__fixi.evt = attr(elt, "fx-trigger", elt.matches("form") ? "submit" : elt.matches("input:not([type=button]),select,textarea") ? "change" : "click")
 		elt.addEventListener(elt.__fixi.evt, elt.__fixi, options)
@@ -82,7 +83,7 @@
 	document.addEventListener("fx:process", (evt)=>process(evt.target))
 	document.addEventListener("DOMContentLoaded", ()=>{
 		document.__fixi_mo = new MutationObserver((recs)=>recs.forEach((r)=>r.type === "childList" && r.addedNodes.forEach((n)=>process(n))))
-		document.__fixi_mo.observe(document.body, {childList:true, subtree:true})
+		document.__fixi_mo.observe(document.documentElement, {childList:true, subtree:true})
 		process(document.body)
 	})
 })()

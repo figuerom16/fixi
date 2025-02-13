@@ -890,6 +890,30 @@
             </script>
         </div>
 
+        <div class="test">
+            <h3>Test fx:swapped is triggered on doc even if element replaces itself</h3>
+            <script>
+              test(async ()=>{
+                mock("/demo", "<div>Foo</div>");
+                let swapped = false;
+                let evtListener = (e)=>{
+									console.log('here!', e)
+				  swapped = true;
+                }
+				document.addEventListener("fx:swapped", evtListener)
+                find('button').click();
+                await sleep(10);
+                document.removeEventListener("fx:swapped", evtListener)
+                assertEq(swapped, true);
+              })
+            </script>
+            <div id="parent-div">
+                <button fx-action="/demo" fx-target="#parent-div">
+                    Button 1
+                </button>
+            </div>
+        </div>
+
     </section>
 
 </main>
