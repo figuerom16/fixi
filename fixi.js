@@ -72,11 +72,11 @@
 		send(elt, "inited", {}, false)
 	}
 	let process = (elt)=>{
-		if (elt instanceof Element){
+		if (elt.matches){
 			if (ignore(elt)) return
 			if (elt.matches("[fx-action]")) init(elt)
-			elt.querySelectorAll("[fx-action]").forEach(init)
 		}
+		elt.querySelectorAll("[fx-action]").forEach(init)
 	}
 	document.addEventListener("fx:process", (evt)=>process(evt.target))
 	document.addEventListener("DOMContentLoaded", ()=>{
