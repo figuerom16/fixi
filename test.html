@@ -247,6 +247,25 @@
         </div>
 
         <div class="test">
+            <h3>Test added content with text around it is live</h3>
+            <script>
+              test(async ()=>{
+                mock("/demo", "content <button fx-action='/demo2'>Button 2</button> content");
+                mock("/demo2", "<div>Foo</div>");
+                find('button').click();
+                await sleep(50);
+                assertEq(find('button')?.innerText, "Button 2", true);
+                find('button').click();
+                await sleep(50);
+                assertEq(find('div')?.innerText, "Foo", true);
+              })
+            </script>
+            <button fx-action="/demo">
+                Button 1
+            </button>
+        </div>
+
+        <div class="test">
             <h3>Test nested added content is live</h3>
             <script>
               test(async ()=>{

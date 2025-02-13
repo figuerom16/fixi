@@ -72,12 +72,12 @@
 		elt.addEventListener(elt.__fixi.evt, elt.__fixi, options)
 		send(elt, "inited", {}, false)
 	}
-	let process = (elt)=>{
-		if (elt.matches){
-			if (ignore(elt)) return
-			if (elt.matches("[fx-action]")) init(elt)
+	let process = (n)=>{
+		if (n.matches){
+			if (ignore(n)) return
+			if (n.matches("[fx-action]")) init(n)
 		}
-		elt.querySelectorAll("[fx-action]").forEach(init)
+		if(n.querySelectorAll) n.querySelectorAll("[fx-action]").forEach(init)
 	}
 	document.addEventListener("fx:process", (evt)=>process(evt.target))
 	document.addEventListener("DOMContentLoaded", ()=>{
