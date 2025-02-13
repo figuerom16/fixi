@@ -84,10 +84,10 @@ The fixi project consists of three files:
 fixi is intended to be [vendored](https://htmx.org/essays/vendoring/), that is, copied, into your project:
 
 ```bash
-curl https://raw.githubusercontent.com/bigskysoftware/fixi/refs/tags/0.5.10/fixi.js >> fixi-0.5.10.js
+curl https://raw.githubusercontent.com/bigskysoftware/fixi/refs/tags/0.0.6.0/fixi.js >> fixi-0.0.6.0.js
 ```
 
-The SHA256 of v0.5.10 is 
+The SHA256 of v0.0.6.0 is 
 
 `zsDy/WiiyNqx8pyltQ9ORub8eyk9v2n2kSW1FtyIdIQ=`
 
@@ -98,12 +98,12 @@ cat fixi.js | openssl sha256 -binary | openssl base64
 ```
 Alternatively can download the source from here:
 
-<https://github.com/bigskysoftware/fixi/archive/refs/tags/0.5.10.zip>
+<https://github.com/bigskysoftware/fixi/archive/refs/tags/0.0.6.0.zip>
 
 You can also use the JSDelivr CDN for local development or testing:
 
 ```html
-<script src="https://cdn.jsdelivr.net/gh/bigskysoftware/fixi@0.5.10/fixi.js"
+<script src="https://cdn.jsdelivr.net/gh/bigskysoftware/fixi@0.0.6.0/fixi.js"
         crossorigin="anonymous"
         integrity="sha256-zsDy/WiiyNqx8pyltQ9ORub8eyk9v2n2kSW1FtyIdIQ="></script>
 ```
