@@ -953,6 +953,55 @@ to this:
 	let attr = (elt, name, defaultVal)=>elt.closest(`[${name}]`)?.getAttribute(name) || defaultVal
 ```
 
+### Implementing History Support
+
+fixi does not implement history support, but you can add rudimentary support like so:
+
+```js
+    function initJS() {
+      // initialize javascript things here
+    }
+    document.addEventListener("DOMContentLoaded", (evt)=>{
+        initJS();
+    });
+    document.addEventListener("fx:after", (evt)=>{
+        if (evt.target.getAttribute("ext-fx-push")){
+            history.replaceState({fixi:true, url:location.href}, "", location.href)
+            history.pushState({fixi:true, url:evt.detail.cfg.response.url}, "", evt.detail.cfg.response.url)
+        }
+    })
+    window.addEventListener("popstate", async(evt)=>{
+        if (evt.state.fixi){
+            let historyResp = await fetch(evt.state.url)
+            document.documentElement.innerHTML = await historyResp.text()
+            document.dispatchEvent(new CustomEvent("fx:process"))
+            initJS()
+        }
+    })
+```
+
+This adds an event listener for the `fx:after` event, and if the element has the `ext-fx-push` attribute it uses the
+[JavaScript History API](https://developer.mozilla.org/en-US/docs/Web/API/History_API) to update the URL in the browser.
+
+Note that, like with htmx, this mechanism expects that remote systems will return full pages when the given URL is
+requested, so that things like refresh will work properly.  Note also that scripts in head tags that are swapped in
+by fixi are _not_ executed by default, which is the browser standard for whatever reason.
+
+With this extension, you can write code like this:
+
+```html
+<a href="/example.html"
+   fx-action="/exampe.html"
+   fx-target="html">
+    Example Fixi-Powered Link
+</a>
+```
+
+And fixi will handle the click on this link, and the URL of the site will properly update, assuming JavaScript is 
+enabled.
+
+More sophisticated History handling (in particular, `head` tag handling) is left as an exercise for the reader.
+
 ## LICENCE
 
 ```
