@@ -68,7 +68,7 @@
 			else
 				await doSwap()
 			send(elt, "swapped", {cfg})
-			if (!elt.isConnected) send(document, "swapped", {cfg})
+			if (!document.contains(elt)) send(document, "swapped", {cfg})
 		}
 		elt.__fixi.evt = attr(elt, "fx-trigger", elt.matches("form") ? "submit" : elt.matches("input:not([type=button]),select,textarea") ? "change" : "click")
 		elt.addEventListener(elt.__fixi.evt, elt.__fixi, options)
