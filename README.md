@@ -285,8 +285,8 @@ if they are available.  If you don't want this to occur, you can set the `evt.de
 in one of the request-related events.
 
 Finally, when the swap and any associated View Transitions have completed, the `fx:swapped` event will be triggered on 
-the element _unless_ it has been removed from the DOM, in which case it will be triggered on the `document.documentElement`
-element instead.  (This allows you to listen on the `document` for this event)
+the element.  If the element has been removed from the DOM, the event will also be triggered on `document`, which allows
+you to listen for this event on `document` and receive it after every swap.
 
 #### Complete Example
 
