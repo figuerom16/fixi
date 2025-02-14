@@ -146,7 +146,7 @@ fixi is not distributed via [NPM](https://www.npmjs.com/).
 </tr>
 <tr>
 <td><code>fx-swap</code></td>
-<td>A string specifying how the content should be swapped into the DOM, cane be one of <code>innerHTML</code>, <code>outerHTML</code>, <code>beforestart</code>, <code>afterstart</code>, <code>beforeend</code>, <code>afterend</code>, or any valid property on the element (e.g. `className` or `value`).  <code>outerHTML</code> is the default unless the target is the <code>html</code> element, in which case it is <code>innerHTML</code>.</td>
+<td>A string specifying how the content should be swapped into the DOM, can be one of <code>innerHTML</code>, <code>outerHTML</code>, <code>beforestart</code>, <code>afterstart</code>, <code>beforeend</code>, <code>afterend</code>, or any valid property on the element (e.g. `className` or `value`).  <code>outerHTML</code> is the default unless the target is the <code>html</code> element, in which case it is <code>innerHTML</code>.</td>
 <td><code>fx-swap=&#39;innerHTML&#39;</code></td>
 </tr>
 <tr>
@@ -258,7 +258,7 @@ document.addEventListener("fx:after", (evt)=>{
   // rewire 404s to the body, remove current head so new head can replace it
   if (evt.detail.cfg.response.status == 404){
     document.head.remove()
-    evt.detail.cfg.target = docuement.body
+    evt.detail.cfg.target = document.body
     evt.detail.cfg.swap = 'outerHTML'
   }
 })
@@ -470,7 +470,7 @@ If you call `preventDefault()` on this event, no request will be issued.
 
 ##### `fx:before`
 
-The  `fx:before` event is triggered just before a `fetch()` is issues. The config will again be available in the
+The  `fx:before` event is triggered just before a `fetch()` is issued. The config will again be available in the
 `evt.detail.cfg` property, but after any confirmation is done.  The requests will also be available in 
 `evt.detail.requests` and will include the current request.
 
@@ -491,7 +491,7 @@ Calling `preventDefault()` on this event will prevent swapping from occurring.
 
 ##### `fx:error`
 
-The  `fx:error` event is triggered when a network error occurs. In this case the `cfg.txt` will be set to a blank
+The  `fx:error` event is triggered when a network error occurs. In this case the `cfg.text` will be set to a blank
 string, and the `evt.detail.cfg` object is available for modification.
 
 Calling `preventDefault()` on this event will prevent swapping from occurring. Note that `AbortError`s will also prevent
@@ -941,7 +941,7 @@ document.addEventListener("fx:config", (evt) => {
 
 ### Implementing Attribute Inheritance
 
-fixi does not implement [attribute inheritance]()https://htmx.org/docs/#inheritance like htmx does, but you can modify 
+fixi does not implement [attribute inheritance](https://htmx.org/docs/#inheritance) like htmx does, but you can modify 
 the fixi source to do so easily.
 
 Simply change this line:
@@ -991,7 +991,7 @@ With this extension, you can write code like this:
 
 ```html
 <a href="/example.html"
-   fx-action="/exampe.html"
+   fx-action="/example.html"
    fx-target="html">
     Example Fixi-Powered Link
 </a>
