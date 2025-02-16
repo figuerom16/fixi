@@ -703,7 +703,7 @@ document.addEventListener("fx:init", (evt)=>{
       disableTarget.disabled = true
       evt.target.addEventListener('fx:after', (afterEvt)=>{
         if (afterEvt.target == evt.target){
-          disableTarget.disabled = true
+          disableTarget.disabled = false
         }
       })
     })
@@ -742,7 +742,7 @@ document.addEventListener("fx:init", (evt)=>{
   #indicator {
     display: none;
   }
-  #indicator .fixi-request-in-flight {
+  #indicator.fixi-request-in-flight {
     display: inline-block;
   }
 </style>
