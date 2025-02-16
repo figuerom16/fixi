@@ -43,8 +43,8 @@ As such, it doesn't have many of the features found in htmx, including:
 fixi takes advantage of some modern JavaScript features not used by htmx:
 
 * [`async` functions](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Statements/async_function)
-* the [`fetch()` API](https://developer.mozilla.org/en-US/docs/Web/API/Fetch_API)
-* the use of [`MutationObserver`](https://developer.mozilla.org/en-US/docs/Web/API/MutationObserver) for monitoring when new content is added
+* The [`fetch()` API](https://developer.mozilla.org/en-US/docs/Web/API/Fetch_API)
+* The use of [`MutationObserver`](https://developer.mozilla.org/en-US/docs/Web/API/MutationObserver) for monitoring when new content is added
 * The [View Transition API](https://developer.mozilla.org/en-US/docs/Web/API/View_Transition_API) (used by htmx, but the sole mechanism for transitions in fixi)
 
 A hard constraint on the project is that the _unminified_, _uncompressed_ size must be less than that of
@@ -153,12 +153,12 @@ You can get support for fixi via:
 </tr>
 <tr>
 <td><code>fx-swap</code></td>
-<td>A string specifying how the content should be swapped into the DOM, can be one of <code>innerHTML</code>, <code>outerHTML</code>, <code>beforestart</code>, <code>afterstart</code>, <code>beforeend</code>, <code>afterend</code>, or any valid property on the element (e.g. `className` or `value`).  <code>outerHTML</code> is the default.</td>
+<td>A string specifying how the content should be swapped into the DOM, can be one of <code>innerHTML</code>, <code>outerHTML</code>, <code>beforestart</code>, <code>afterstart</code>, <code>beforeend</code>, <code>afterend</code>, or any valid property on the element (e.g. `className` or `value`), defaults to  <code>outerHTML</code></td>
 <td><code>fx-swap=&#39;innerHTML&#39;</code></td>
 </tr>
 <tr>
 <td><code>fx-trigger</code></td>
-<td>The event that will trigger a request.  Defaults to <code>submit</code> for <code>form</code> elements, <code>change</code> for <code>input</code>-like elements & <code>click</code> for all other elements</td>
+<td>The event that will trigger a request, defaults to <code>submit</code> for <code>form</code> elements, <code>change</code> for <code>input</code>-like elements & <code>click</code> for all other elements</td>
 <td><code>fx-trigger=&#39;click&#39;</code></td>
 </tr>
 <tr>
@@ -182,7 +182,7 @@ three components of fixi are:
 
 The main entry point is found at the bottom of [fixi.js](fixi.js): on the `DOMContentLoaded` event fixi does two things:
 
-* It establishes a MutationObserver to watch for newly added content with fixi-powered elements
+* It has a MutationObserver begin to watch for newly added content with fixi-powered elements
 * It processes any existing fixi-powered elements
 
 fixi-powered elements are elements with the `fx-action` attribute on them.
