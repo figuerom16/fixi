@@ -1,5 +1,6 @@
 (()=>{
 	if(document.__fixi_mo) return;
+	document.__fixi_mo = new MutationObserver((recs)=>recs.forEach((r)=>r.type === "childList" && r.addedNodes.forEach((n)=>process(n))))
 	let send = (elt, type, detail, bub)=>elt.dispatchEvent(new CustomEvent("fx:" + type, {detail, cancelable:true, bubbles:bub !== false, composed:true}))
 	let attr = (elt, name, defaultVal)=>elt.getAttribute(name) || defaultVal
 	let ignore = (elt)=>elt.closest("[fx-ignore]") != null
@@ -12,13 +13,12 @@
 			let body = new FormData(form ?? undefined, evt.submitter)
 			if (!form && elt.name) body.append(elt.name, elt.value)
 			let ac = new AbortController()
-			let target = document.querySelector(attr(elt, "fx-target")) ?? elt
 			let cfg = {
 				trigger:evt,
 				action:attr(elt, "fx-action"),
 				method:attr(elt, "fx-method", "GET").toUpperCase(),
-				target,
-				swap:attr(elt, "fx-swap", target.matches("html") ? "innerHTML" : "outerHTML"),
+				target:document.querySelector(attr(elt, "fx-target")) ?? elt,
+				swap:attr(elt, "fx-swap", "outerHTML"),
 				body,
 				drop:reqs.size,
 				headers:{"FX-Request":"true"},
@@ -83,7 +83,6 @@
 	}
 	document.addEventListener("fx:process", (evt)=>process(evt.target))
 	document.addEventListener("DOMContentLoaded", ()=>{
-		document.__fixi_mo = new MutationObserver((recs)=>recs.forEach((r)=>r.type === "childList" && r.addedNodes.forEach((n)=>process(n))))
 		document.__fixi_mo.observe(document.documentElement, {childList:true, subtree:true})
 		process(document.body)
 	})
