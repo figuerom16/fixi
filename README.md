@@ -873,10 +873,10 @@ it does not use a Promise, just the regular old blocking `confirm()` function
 
 ```js
 // fixi confirmation extension
-document.addEventListener('fx:config', (evt)=>{
+document.addEventListener("fx:config", (evt)=>{
 	var confirmationMessage = evt.target.getAttribute("ext-fx-confirm")
 	if (confirmationMessage){
-      evt.detail.cfg.confirm = ()=> confirm(confirmationMessage)
+		evt.detail.cfg.confirm = ()=>confirm(confirmationMessage)
 	}
 })
 ```
