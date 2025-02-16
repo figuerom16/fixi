@@ -110,6 +110,13 @@ You can also use the JSDelivr CDN for local development or testing:
 
 fixi is not distributed via [NPM](https://www.npmjs.com/).
 
+## Support
+
+You can get support for fixi via:
+
+* [Github Issues](https://github.com/bigskysoftware/fixi/issues)
+* [The htmx Discord `#fixi` channel](https://htmx.org/discord)
+
 ## API
 
 ### Attributes
