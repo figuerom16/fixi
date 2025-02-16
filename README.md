@@ -305,9 +305,9 @@ If you wish to default the swap mechanism to `innerHTML` when targeting the `htm
 
 ```js
 document.addEventListener("fx:config", (evt) => {
-	if (evt.detail.cfg.target === document.documentElement){
-		evt.detail.cfg.swap = "innerHTML"
-	}
+    if (evt.detail.cfg.target === document.documentElement){
+        evt.detail.cfg.swap = "innerHTML"
+    }
 })
 ```
 
@@ -318,14 +318,14 @@ You must therefore manually manage and execute any script tags:
 
 ```js
 document.addEventListener("fx:config", (evt) => {
-	if (evt.detail.cfg.target === document.documentElement){
-		let scripts = document.head.querySelectorAll("script");
-		for(let script of scripts) { 
-			let newScript = document.createRange().createContextualFragment(script.outerHTML)
+    if (evt.detail.cfg.target === document.documentElement){
+        let scripts = document.head.querySelectorAll("script");
+        for(let script of scripts) { 
+            let newScript = document.createRange().createContextualFragment(script.outerHTML)
             document.head.insertBefore(newScript, script)
             script.remove()
         }
-	}
+    }
 })
 ```
 However, this simple approach may fail if you have scripts that, for example, create global variables with `let`, etc.
@@ -874,10 +874,10 @@ it does not use a Promise, just the regular old blocking `confirm()` function
 ```js
 // fixi confirmation extension
 document.addEventListener("fx:config", (evt)=>{
-	var confirmationMessage = evt.target.getAttribute("ext-fx-confirm")
-	if (confirmationMessage){
-		evt.detail.cfg.confirm = ()=>confirm(confirmationMessage)
-	}
+    var confirmationMessage = evt.target.getAttribute("ext-fx-confirm")
+    if (confirmationMessage){
+        evt.detail.cfg.confirm = ()=>confirm(confirmationMessage)
+    }
 })
 ```
 ```html
@@ -893,19 +893,19 @@ This extension implements relative selectors for the `fx-target` attribute.
 ```js
 // fixi relative selectors extension
 document.addEventListener('fx:config', (evt)=>{
-	console.log("here")
-	var target = evt.target.getAttribute("fx-target") || ""
-	if (target.indexOf("closest ") == 0){
-		evt.detail.cfg.target = evt.target.closest(target.substring(8))
-	} else if (target.indexOf("find ") == 0){
-		evt.detail.cfg.target = evt.target.closest(target.substring(5))
-	} else if (target.indexOf("next ") == 0){
-		var matches = Array.from(document.querySelectorAll(target.substring(5)))
-		evt.detail.cfg.target = matches.find((elt) => evt.target.compareDocumentPosition(elt) === Node.DOCUMENT_POSITION_FOLLOWING)
-	} else if (target.indexOf("previous ") == 0){
-		var matches = Array.from(document.querySelectorAll(target.substring(9))).reverse()
-		evt.detail.cfg.target = matches.find((elt) => evt.target.compareDocumentPosition(elt) === Node.DOCUMENT_POSITION_PRECEDING)
-	}
+    console.log("here")
+    var target = evt.target.getAttribute("fx-target") || ""
+    if (target.indexOf("closest ") == 0){
+        evt.detail.cfg.target = evt.target.closest(target.substring(8))
+    } else if (target.indexOf("find ") == 0){
+        evt.detail.cfg.target = evt.target.closest(target.substring(5))
+    } else if (target.indexOf("next ") == 0){
+        var matches = Array.from(document.querySelectorAll(target.substring(5)))
+        evt.detail.cfg.target = matches.find((elt) => evt.target.compareDocumentPosition(elt) === Node.DOCUMENT_POSITION_FOLLOWING)
+    } else if (target.indexOf("previous ") == 0){
+        var matches = Array.from(document.querySelectorAll(target.substring(9))).reverse()
+        evt.detail.cfg.target = matches.find((elt) => evt.target.compareDocumentPosition(elt) === Node.DOCUMENT_POSITION_PRECEDING)
+    }
 })
 ```
 ```html
@@ -994,11 +994,11 @@ the fixi source to do so easily.
 
 Simply change this line:
 ```js
-	let attr = (elt, name, defaultVal)=>elt.getAttribute(name) || defaultVal
+    let attr = (elt, name, defaultVal)=>elt.getAttribute(name) || defaultVal
 ```
 to this:
 ```js
-	let attr = (elt, name, defaultVal)=>elt.closest(`[${name}]`)?.getAttribute(name) || defaultVal
+    let attr = (elt, name, defaultVal)=>elt.closest(`[${name}]`)?.getAttribute(name) || defaultVal
 ```
 
 ### Implementing History Support
