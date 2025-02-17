@@ -71,7 +71,7 @@
 			if (!document.contains(elt)) send(document, "swapped", {cfg})
 		}
 		elt.__fixi.evt = attr(elt, "fx-trigger", elt.matches("form") ? "submit" : elt.matches("input:not([type=button]),select,textarea") ? "change" : "click").split("|")
-		elt.__fixi.evt.forEach(a => { elt.addEventListener(a, elt.__fixi, options) })
+		elt.__fixi.evt.forEach(a=>{elt.addEventListener(a, elt.__fixi, options)})
 		send(elt, "inited", {}, false)
 	}
 	let process = (n)=>{
@@ -95,10 +95,10 @@ document.addEventListener('fx:config',(e)=>{
 	else if(target.indexOf("find ") == 0) e.detail.cfg.target = e.target.closest(target.substring(5))
 	else if(target.indexOf("next ") == 0){
 		const matches = Array.from(document.querySelectorAll(target.substring(5)))
-		e.detail.cfg.target = matches.find((elt) => e.target.compareDocumentPosition(elt) === Node.DOCUMENT_POSITION_FOLLOWING)
+		e.detail.cfg.target = matches.find((elt)=>e.target.compareDocumentPosition(elt) === Node.DOCUMENT_POSITION_FOLLOWING)
 	} else if(target.indexOf("previous ") == 0){
 		const matches = Array.from(document.querySelectorAll(target.substring(9))).reverse()
-		e.detail.cfg.target = matches.find((elt) => e.target.compareDocumentPosition(elt) === Node.DOCUMENT_POSITION_PRECEDING)
+		e.detail.cfg.target = matches.find((elt)=>e.target.compareDocumentPosition(elt) === Node.DOCUMENT_POSITION_PRECEDING)
 	}
 })
 
