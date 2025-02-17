@@ -90,51 +90,65 @@
 
 // Relative Selectors
 document.addEventListener('fx:config', (e)=>{
-	var target = e.target.getAttribute("fx-target") || ""
+	const target = e.target.getAttribute("fx-target") || ""
 	if (target.indexOf("closest ") == 0){
 		e.detail.cfg.target = e.target.closest(target.substring(8))
 	} else if (target.indexOf("find ") == 0){
 		e.detail.cfg.target = e.target.closest(target.substring(5))
 	} else if (target.indexOf("next ") == 0){
-		var matches = Array.from(document.querySelectorAll(target.substring(5)))
+		const matches = Array.from(document.querySelectorAll(target.substring(5)))
 		e.detail.cfg.target = matches.find((elt) => e.target.compareDocumentPosition(elt) === Node.DOCUMENT_POSITION_FOLLOWING)
 	} else if (target.indexOf("previous ") == 0){
-		var matches = Array.from(document.querySelectorAll(target.substring(9))).reverse()
+		const matches = Array.from(document.querySelectorAll(target.substring(9))).reverse()
 		e.detail.cfg.target = matches.find((elt) => e.target.compareDocumentPosition(elt) === Node.DOCUMENT_POSITION_PRECEDING)
 	}
 })
 
-// Delay
+// Debounce/Delay
 document.addEventListener("fx:init", (e)=>{
-	let elt = e.target
+	const elt = e.target
 	if (!elt.matches("[fx-delay]")) return
 	let latestPromise = null
 	elt.addEventListener("fx:config", (e)=>{
-	e.detail.drop = false
-	e.detail.cfg.confirm = ()=>{
-		let currentPromise = latestPromise = new Promise((resolve) => {
-			setTimeout(()=>{resolve(currentPromise === latestPromise)}, parseInt(elt.getAttribute("fx-delay")))
+		e.detail.drop = false
+		e.detail.cfg.confirm =_=>{
+			let currentPromise = latestPromise = new Promise((resolve) => {
+				setTimeout(_=>{resolve(currentPromise === latestPromise)}, parseInt(elt.getAttribute("fx-delay")))
+			})
+			return currentPromise
+		}})
+})
+
+// Disable During Request
+document.addEventListener("fx:init", (e)=>{
+	if (!e.target.matches("[fx-disable]")) return
+	const disableSelector = e.target.getAttribute('fx-disable')
+	e.target.addEventListener('fx:before', _=>{
+		let disableTarget = disableSelector == "" ? e.target : document.querySelector(disableSelector)
+		disableTarget.disabled = true
+		e.target.addEventListener('fx:after', (afterEvt)=>{
+		if (afterEvt.target == e.target){
+			disableTarget.disabled = false
+		  }
 		})
-		return currentPromise
-	}})
+	})
 })
 
 // Confirm Dialog
 document.addEventListener("fx:config", (e)=>{
-	var confirmationMessage = e.target.getAttribute("fx-confirm")
+	const confirmationMessage = e.target.getAttribute("fx-confirm")
 	if (confirmationMessage){
-		e.detail.cfg.confirm = ()=>confirm(confirmationMessage)
+		e.detail.cfg.confirm =_=>confirm(confirmationMessage)
 	}
 })
 
 // Polling
 document.addEventListener("fx:init", (e)=>{
 	let elt = e.target
-	if (elt.matches("[fx-poll]")) {
-		elt.addEventListener("fx:inited", _=>{
-			elt.__fixi.pollInterval = setInterval(()=>{elt.dispatchEvent(new CustomEvent("poll"))}, parseInt(elt.getAttribute("fx-poll")))
-		})
-	}
+	if (!elt.matches("[fx-poll]")) return
+	elt.addEventListener("fx:inited", _=>{
+		elt.__fixi.pollInterval = setInterval(_=>{elt.dispatchEvent(new CustomEvent("poll"))}, parseInt(elt.getAttribute("fx-poll")))
+	})
 })
 
 // Row
@@ -177,7 +191,7 @@ document.addEventListener('fx:before', _ => {
 
 // Set Error & Success
 document.addEventListener('fx:after', (e) => {
-	if (e.detail.cfg.response.status < 400) setTimeout(()=> {me('#success').textContent = ''}, 2000)
+	if (e.detail.cfg.response.status < 400) setTimeout(_=> {me('#success').textContent = ''}, 2000)
 	else e.detail.cfg.target, e.detail.cfg.swap = me('#error'), 'innerHTML'
 })
 
