@@ -150,7 +150,7 @@ document.addEventListener('fx:init', (e)=>{
 	if (!e.target.closest('[fx-row]')) return
 	document.addEventListener('fx:config', (e)=>{
 		const row = e.target.closest('tr')
-		if (!row) { console.error('fx-table no table row found'); return}
+		if (!row) {console.error('fx-table no table row found'); return}
 		for (let cell of row.cells) {
 			const name = cell.getAttribute('name')
 			if (name) e.detail.cfg.body.append(name, cell.innerText.trim())
@@ -181,7 +181,7 @@ document.addEventListener('fx:before', _=>{me('#error').textContent = me('#succe
 
 // Set Error & Success
 document.addEventListener('fx:after', (e)=>{
-	if (e.detail.cfg.response.status < 400) setTimeout(_=> {me('#success').textContent = ''}, 2000)
+	if (e.detail.cfg.response.status < 400) setTimeout(_=>{me('#success').textContent = ''}, 2000)
 	else e.detail.cfg.target, e.detail.cfg.swap = me('#error'), 'innerHTML'
 })
 
