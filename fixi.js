@@ -88,29 +88,42 @@
 	})
 })()
 
-document.addEventListener("fx:init", (e) => {
-	if (!e.target.matches("[fx-vals]")) return
-	document.addEventListener("fx:config", (e) => {
-		const valsAttr = e.target.getAttribute("fx-vals")
+document.addEventListener('fx:init', (e) => {
+	if (!e.target.matches('[fx-vals]')) return
+	document.addEventListener('fx:config', (e) => {
+		const valsAttr = e.target.getAttribute('fx-vals')
 		let vals
-		if (valsAttr.startsWith("js:")) vals = new Function("return " + valsAttr.slice(3))()
-		else vals = new Function("return " + valsAttr)()
-		if (typeof vals !== "object" || vals === null || Array.isArray(vals)) {
-			console.error("fx-vals not a valid object:", vals)
-			return
+		if (valsAttr.startsWith('js:')) vals = new Function('return ' + valsAttr.slice(3))()
+		else vals = new Function('return ' + valsAttr)()
+		if (typeof vals !== 'object' || vals === null || Array.isArray(vals)) {
+			console.error('fx-vals not a valid object:', vals); return
 		}
 		for (let key in vals) {
-			if (typeof key === "string" && key.trim() === "") continue
+			if (typeof key === 'string' && key.trim() === '') continue
 			e.detail.cfg.body.append(key, vals[key])
 		}
 	})
 })
 
-document.addEventListener("fx:before", _ => {
+document.addEventListener('fx:init', (e) => {
+	if (!e.target.matches('[fx-table]')) return
+	document.addEventListener('fx:config', (e) => {
+		const row = e.target.closest('tr')
+		if (!row) {
+			console.error('fx-table no table row found'); return
+		}
+		for (let cell of row.cells) {
+			const name = cell.getAttribute('name')
+			if (name) e.detail.cfg.body.append(name, cell.innerText.trim())
+		}
+	})
+})
+
+document.addEventListener('fx:before', _ => {
 	me('#error').textContent = me('#success').textContent = ''
 })
 
-document.addEventListener("fx:after", (e) => {
+document.addEventListener('fx:after', (e) => {
 	if (e.detail.cfg.response.status < 400) setTimeout(()=> {me('#success').textContent = ''}, 2000)
 	else {
 		e.detail.cfg.target = me('#error')
@@ -118,12 +131,12 @@ document.addEventListener("fx:after", (e) => {
 	}
 })
 
-document.addEventListener("mousedown", (e) => {
-	if (e.button || !e.target.closest("[fclick]")) return
+document.addEventListener('mousedown', (e) => {
+	if (e.button || !e.target.closest('[fclick]')) return
 	e.preventDefault(); e.target.click()
 })
 
-document.addEventListener("touchstart", (e) => {
-	if (!e.target.closest("[fclick]")) return
+document.addEventListener('touchstart', (e) => {
+	if (!e.target.closest('[fclick]')) return
 	e.preventDefault(); e.target.click()
 })
