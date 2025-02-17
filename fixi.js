@@ -95,7 +95,6 @@ document.addEventListener("fx:init", (e) => {
 		let vals
 		if (valsAttr.startsWith("js:")) vals = new Function("return " + valsAttr.slice(3))()
 		else vals = new Function("return " + valsAttr)()
-		console.log(vals)
 		if (typeof vals !== "object" || vals === null || Array.isArray(vals)) {
 			console.error("fx-vals not a valid object:", vals)
 			return
