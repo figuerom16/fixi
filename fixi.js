@@ -88,37 +88,34 @@
 	})
 })()
 
-// Relative Selectors
-document.addEventListener('fx:config',e=>{
+document.addEventListener('fx:config',e=>{//Relative Selectors
 	const target = e.target.getAttribute("fx-target") || ""
 	if(target.indexOf("closest ") == 0) e.detail.cfg.target = e.target.closest(target.substring(8))
 	else if(target.indexOf("find ") == 0) e.detail.cfg.target = e.target.closest(target.substring(5))
 	else if(target.indexOf("next ") == 0){
 		const matches = Array.from(document.querySelectorAll(target.substring(5)))
-		e.detail.cfg.target = matches.find((elt)=>e.target.compareDocumentPosition(elt) === Node.DOCUMENT_POSITION_FOLLOWING)
+		e.detail.cfg.target = matches.find((el)=>e.target.compareDocumentPosition(el) === Node.DOCUMENT_POSITION_FOLLOWING)
 	} else if(target.indexOf("previous ") == 0){
 		const matches = Array.from(document.querySelectorAll(target.substring(9))).reverse()
-		e.detail.cfg.target = matches.find((elt)=>e.target.compareDocumentPosition(elt) === Node.DOCUMENT_POSITION_PRECEDING)
+		e.detail.cfg.target = matches.find((el)=>e.target.compareDocumentPosition(el) === Node.DOCUMENT_POSITION_PRECEDING)
 	}
 })
 
-// Debounce/Delay
-document.addEventListener("fx:init",e=>{
-	const elt = e.target
-	if(!elt.matches("[fx-delay]")) return
+document.addEventListener("fx:init",e=>{//Debounce/Delay
+	const el = e.target
+	if(!el.matches("[fx-delay]")) return
 	let latestPromise = null
-	elt.addEventListener("fx:config",e=>{
+	el.addEventListener("fx:config",e=>{
 		e.detail.drop = false
 		e.detail.cfg.confirm =_=>{
 			let currentPromise = latestPromise = new Promise((resolve)=>{
-				setTimeout(_=>{resolve(currentPromise === latestPromise)}, parseInt(elt.getAttribute("fx-delay")))
+				setTimeout(_=>{resolve(currentPromise === latestPromise)}, parseInt(el.getAttribute("fx-delay")))
 			})
 		return currentPromise
 	}})
 })
 
-// Disable During Request
-document.addEventListener("fx:init",e=>{
+document.addEventListener("fx:init",e=>{//Disable During Request
 	if(!e.target.matches("[fx-disable]")) return
 	const disableSelector = e.target.getAttribute('fx-disable')
 	e.target.addEventListener('fx:before',_=>{
@@ -128,23 +125,20 @@ document.addEventListener("fx:init",e=>{
 	})
 })
 
-// Confirm Dialog
-document.addEventListener("fx:config",e=>{
+document.addEventListener("fx:config",e=>{//Confirm Dialog
 	const confirmationMessage = e.target.getAttribute("fx-confirm")
 	if(confirmationMessage) e.detail.cfg.confirm =_=>confirm(confirmationMessage)
 })
 
-// Polling
-document.addEventListener("fx:init",e=>{
-	let elt = e.target
-	if(!elt.matches("[fx-poll]")) return
-	elt.addEventListener("fx:inited",_=>{
-		elt.__fixi.pollInterval = setInterval(_=>{elt.dispatchEvent(new CustomEvent("poll"))}, parseInt(elt.getAttribute("fx-poll")))
+document.addEventListener("fx:init",e=>{//Polling
+	let el = e.target
+	if(!el.matches("[fx-poll]")) return
+	el.addEventListener("fx:inited",_=>{
+		el.__fixi.pollInterval = setInterval(_=>{el.dispatchEvent(new CustomEvent("poll"))}, parseInt(el.getAttribute("fx-poll")))
 	})
 })
 
-// Row
-document.addEventListener('fx:init',e=>{
+document.addEventListener('fx:init',e=>{//Row
 	if(!e.target.closest('[fx-row]')) return
 	document.addEventListener('fx:config',e=>{
 		const row = e.target.closest('tr')
@@ -156,8 +150,7 @@ document.addEventListener('fx:init',e=>{
 	})
 })
 
-// Vals
-document.addEventListener('fx:init',e=>{
+document.addEventListener('fx:init',e=>{//Vals
 	if(!e.target.matches('[fx-vals]')) return
 	document.addEventListener('fx:config',e=>{
 		const valsAttr = e.target.getAttribute('fx-vals')
@@ -174,16 +167,16 @@ document.addEventListener('fx:init',e=>{
 	})
 })
 
-// Clear Error & Success
-document.addEventListener('fx:before',_=>{me('#error').textContent = me('#success').textContent = ''})
+document.addEventListener('fx:before',_=>{//Clear Error & Success
+	me('#error').textContent = me('#success').textContent = ''
+})
 
-// Set Error & Success
-document.addEventListener('fx:after',e=>{
+document.addEventListener('fx:after',e=>{//Set Error & Success
 	if(e.detail.cfg.response.status < 400) setTimeout(_=>{me('#success').textContent = ''}, 2000)
 	else e.detail.cfg.target, e.detail.cfg.swap = me('#error'), 'innerHTML'
 })
 
-// fclick
+//fclick
 document.addEventListener('mousedown',e=>{
 	if(e.button || !e.target.closest('[fclick]')) return
 	e.preventDefault();e.target.click()
