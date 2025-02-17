@@ -176,8 +176,7 @@ document.addEventListener('fx:after',e=>{//Set Error & Success
 	else e.detail.cfg.target, e.detail.cfg.swap = me('#error'), 'innerHTML'
 })
 
-//fclick
-document.addEventListener('mousedown',e=>{
+document.addEventListener('mousedown',e=>{//fclick
 	if(e.button || !e.target.closest('[fclick]')) return
 	e.preventDefault();e.target.click()
 })
