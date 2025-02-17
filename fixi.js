@@ -89,7 +89,7 @@
 })()
 
 // Relative Selectors
-document.addEventListener('fx:config',(e)=>{
+document.addEventListener('fx:config',e=>{
 	const target = e.target.getAttribute("fx-target") || ""
 	if(target.indexOf("closest ") == 0) e.detail.cfg.target = e.target.closest(target.substring(8))
 	else if(target.indexOf("find ") == 0) e.detail.cfg.target = e.target.closest(target.substring(5))
@@ -103,11 +103,11 @@ document.addEventListener('fx:config',(e)=>{
 })
 
 // Debounce/Delay
-document.addEventListener("fx:init",(e)=>{
+document.addEventListener("fx:init",e=>{
 	const elt = e.target
 	if(!elt.matches("[fx-delay]")) return
 	let latestPromise = null
-	elt.addEventListener("fx:config",(e)=>{
+	elt.addEventListener("fx:config",e=>{
 		e.detail.drop = false
 		e.detail.cfg.confirm =_=>{
 			let currentPromise = latestPromise = new Promise((resolve)=>{
@@ -118,7 +118,7 @@ document.addEventListener("fx:init",(e)=>{
 })
 
 // Disable During Request
-document.addEventListener("fx:init",(e)=>{
+document.addEventListener("fx:init",e=>{
 	if(!e.target.matches("[fx-disable]")) return
 	const disableSelector = e.target.getAttribute('fx-disable')
 	e.target.addEventListener('fx:before',_=>{
@@ -129,13 +129,13 @@ document.addEventListener("fx:init",(e)=>{
 })
 
 // Confirm Dialog
-document.addEventListener("fx:config",(e)=>{
+document.addEventListener("fx:config",e=>{
 	const confirmationMessage = e.target.getAttribute("fx-confirm")
 	if(confirmationMessage) e.detail.cfg.confirm =_=>confirm(confirmationMessage)
 })
 
 // Polling
-document.addEventListener("fx:init",(e)=>{
+document.addEventListener("fx:init",e=>{
 	let elt = e.target
 	if(!elt.matches("[fx-poll]")) return
 	elt.addEventListener("fx:inited",_=>{
@@ -144,9 +144,9 @@ document.addEventListener("fx:init",(e)=>{
 })
 
 // Row
-document.addEventListener('fx:init',(e)=>{
+document.addEventListener('fx:init',e=>{
 	if(!e.target.closest('[fx-row]')) return
-	document.addEventListener('fx:config',(e)=>{
+	document.addEventListener('fx:config',e=>{
 		const row = e.target.closest('tr')
 		if(!row){console.error('fx-table no table row found');return}
 		for (let cell of row.cells){
@@ -157,9 +157,9 @@ document.addEventListener('fx:init',(e)=>{
 })
 
 // Vals
-document.addEventListener('fx:init',(e)=>{
+document.addEventListener('fx:init',e=>{
 	if(!e.target.matches('[fx-vals]')) return
-	document.addEventListener('fx:config',(e)=>{
+	document.addEventListener('fx:config',e=>{
 		const valsAttr = e.target.getAttribute('fx-vals')
 		let vals
 		if(valsAttr.startsWith('js:')) vals = new Function('return ' + valsAttr.slice(3))()
@@ -178,17 +178,17 @@ document.addEventListener('fx:init',(e)=>{
 document.addEventListener('fx:before',_=>{me('#error').textContent = me('#success').textContent = ''})
 
 // Set Error & Success
-document.addEventListener('fx:after',(e)=>{
+document.addEventListener('fx:after',e=>{
 	if(e.detail.cfg.response.status < 400) setTimeout(_=>{me('#success').textContent = ''}, 2000)
 	else e.detail.cfg.target, e.detail.cfg.swap = me('#error'), 'innerHTML'
 })
 
 // fclick
-document.addEventListener('mousedown',(e)=>{
+document.addEventListener('mousedown',e=>{
 	if(e.button || !e.target.closest('[fclick]')) return
 	e.preventDefault();e.target.click()
 })
-document.addEventListener('touchstart',(e)=>{
+document.addEventListener('touchstart',e=>{
 	if(!e.target.closest('[fclick]')) return
 	e.preventDefault();e.target.click()
 })
