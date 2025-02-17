@@ -104,6 +104,21 @@ document.addEventListener('fx:config', (e)=>{
 	}
 })
 
+// Delay
+document.addEventListener("fx:init", (e)=>{
+	let elt = e.target
+	if (!elt.matches("[fx-delay]")) return
+	let latestPromise = null
+	elt.addEventListener("fx:config", (e)=>{
+	e.detail.drop = false
+	e.detail.cfg.confirm = ()=>{
+		let currentPromise = latestPromise = new Promise((resolve) => {
+			setTimeout(()=>{resolve(currentPromise === latestPromise)}, parseInt(elt.getAttribute("fx-delay")))
+		})
+		return currentPromise
+	}})
+})
+
 // Confirm Dialog
 document.addEventListener("fx:config", (e)=>{
 	var confirmationMessage = e.target.getAttribute("fx-confirm")
@@ -122,9 +137,9 @@ document.addEventListener("fx:init", (e)=>{
 	}
 })
 
-// Table
+// Row
 document.addEventListener('fx:init', (e) => {
-	if (!e.target.matches('[fx-table]')) return
+	if (!e.target.closest('[fx-row]')) return
 	document.addEventListener('fx:config', (e) => {
 		const row = e.target.closest('tr')
 		if (!row) {
