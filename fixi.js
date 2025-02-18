@@ -90,31 +90,31 @@
 
 document.addEventListener("fx:init",e=>{
 const handlers = {
-'[fx-delay]': _=>{
-	let latestPromise = null
-	el.addEventListener("fx:config",e=>{
-		e.detail.drop = false
-		e.detail.cfg.confirm =_=>{
-			let currentPromise = latestPromise = new Promise((resolve)=>{
-				setTimeout(_=>{resolve(currentPromise === latestPromise)}, parseInt(el.getAttribute("fx-delay")))
-			})
-		return currentPromise
-	}})
-},
-'[fx-disable]': _=>{
-	const disableSelector = e.target.getAttribute('fx-disable')
-	e.target.addEventListener('fx:before',_=>{
-		let disableTarget = disableSelector == "" ? e.target : document.querySelector(disableSelector)
-		disableTarget.disabled = true
-		e.target.addEventListener('fx:after', (afterEvt)=>{if(afterEvt.target == e.target) disableTarget.disabled = false})
-	})
-},
-'[fx-poll]': _=>{
-	const el = e.target
-	el.addEventListener("fx:inited",_=>{
-		el.__fixi.pollInterval = setInterval(_=>{el.dispatchEvent(new CustomEvent("poll"))}, parseInt(el.getAttribute("fx-poll")))
-	})
-}
+	'[fx-delay]':_=>{
+		let latestPromise = null
+		el.addEventListener("fx:config",e=>{
+			e.detail.drop = false
+			e.detail.cfg.confirm =_=>{
+				let currentPromise = latestPromise = new Promise((resolve)=>{
+					setTimeout(_=>{resolve(currentPromise === latestPromise)}, parseInt(el.getAttribute("fx-delay")))
+				})
+			return currentPromise
+		}})
+	},
+	'[fx-disable]':_=>{
+		const disableSelector = e.target.getAttribute('fx-disable')
+		e.target.addEventListener('fx:before',_=>{
+			let disableTarget = disableSelector == "" ? e.target : document.querySelector(disableSelector)
+			disableTarget.disabled = true
+			e.target.addEventListener('fx:after', (afterEvt)=>{if(afterEvt.target == e.target) disableTarget.disabled = false})
+		})
+	},
+	'[fx-poll]':_=>{
+		const el = e.target
+		el.addEventListener("fx:inited",_=>{
+			el.__fixi.pollInterval = setInterval(_=>{el.dispatchEvent(new CustomEvent("poll"))}, parseInt(el.getAttribute("fx-poll")))
+		})
+	}
 }
 for (const selector in handlers) {
 	if (e.target.matches(selector)) {handlers[selector]();break}
@@ -137,27 +137,27 @@ else if(target.indexOf("next ") == 0){
 	e.detail.cfg.target = matches.find((el)=>e.target.compareDocumentPosition(el) === Node.DOCUMENT_POSITION_PRECEDING)
 }
 const handlers = {
-'[fx-row]': _=>{
-	const row = e.target.closest('tr')
-	if(!row){console.error('fx-table no table row found');return}
-	for (let cell of row.cells){
-		const name = cell.getAttribute('name')
-		if(name) e.detail.cfg.body.append(name, cell.innerText.trim())
+	'[fx-row]':_=>{
+		const row = e.target.closest('tr')
+		if(!row){console.error('fx-table no table row found');return}
+		for (let cell of row.cells){
+			const name = cell.getAttribute('name')
+			if(name) e.detail.cfg.body.append(name, cell.innerText.trim())
+		}
+	},
+	'[fx-vals]':_=>{
+		const valsAttr = e.target.getAttribute('fx-vals')
+		let vals
+		if(valsAttr.startsWith('js:')) vals = new Function('return ' + valsAttr.slice(3))()
+		else vals = new Function('return ' + valsAttr)()
+		if(typeof vals !== 'object' || vals === null || Array.isArray(vals)){
+			console.error('fx-vals not a valid object:', vals);return
+		}
+		for (let key in vals){
+			if(typeof key === 'string' && key.trim() === '') continue
+			e.detail.cfg.body.append(key, vals[key])
+		}
 	}
-},
-'[fx-vals]': _=>{
-	const valsAttr = e.target.getAttribute('fx-vals')
-	let vals
-	if(valsAttr.startsWith('js:')) vals = new Function('return ' + valsAttr.slice(3))()
-	else vals = new Function('return ' + valsAttr)()
-	if(typeof vals !== 'object' || vals === null || Array.isArray(vals)){
-		console.error('fx-vals not a valid object:', vals);return
-	}
-	for (let key in vals){
-		if(typeof key === 'string' && key.trim() === '') continue
-		e.detail.cfg.body.append(key, vals[key])
-	}
-}
 }
 for (const selector in handlers) {
 	if (e.target.matches(selector)) {handlers[selector]();break}
@@ -178,7 +178,7 @@ document.addEventListener('fx:finally',e=>{//Refresh
 	document.location.reload()
 })
 
-document.addEventListener('fx:swapped',e=>{//Lucide Render
+document.addEventListener('fx:swapped',_=>{//Lucide Render
 	if(lucide) lucide.createIcons()
 })
 
