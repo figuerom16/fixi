@@ -89,7 +89,8 @@
 })()
 
 document.addEventListener("fx:init",e=>{
-const handlers = {
+const el = e.target
+const hs = {
 	'[fx-delay]':_=>{
 		let latestPromise = null
 		el.addEventListener("fx:config",e=>{
@@ -110,14 +111,13 @@ const handlers = {
 		})
 	},
 	'[fx-poll]':_=>{
-		const el = e.target
 		el.addEventListener("fx:inited",_=>{
 			el.__fixi.pollInterval = setInterval(_=>{el.dispatchEvent(new CustomEvent("poll"))}, parseInt(el.getAttribute("fx-poll")))
 		})
 	}
 }
-for (const selector in handlers) {
-	if (e.target.matches(selector)) {handlers[selector]();break}
+for (const a in hs) {
+	if (e.target.matches(a)) {hs[a]();break}
 }
 })
 
@@ -136,7 +136,7 @@ else if(target.indexOf("next ") == 0){
 	const matches = Array.from(document.querySelectorAll(target.substring(9))).reverse()
 	e.detail.cfg.target = matches.find((el)=>e.target.compareDocumentPosition(el) === Node.DOCUMENT_POSITION_PRECEDING)
 }
-const handlers = {
+const hs = {
 	'[fx-row]':_=>{
 		const row = e.target.closest('tr')
 		if(!row){console.error('fx-table no table row found');return}
@@ -159,8 +159,8 @@ const handlers = {
 		}
 	}
 }
-for (const selector in handlers) {
-	if (e.target.matches(selector)) {handlers[selector]();break}
+for (const a in hs) {
+	if (e.target.matches(a)) {hs[a]();break}
 }
 })
 
