@@ -103,11 +103,11 @@ const hs = {
 		}})
 	},
 	'[fx-disable]':_=>{
-		const disableSelector = e.target.getAttribute('fx-disable')
-		e.target.addEventListener('fx:before',_=>{
-			let disableTarget = disableSelector == "" ? e.target : document.querySelector(disableSelector)
+		const disableSelector = el.getAttribute('fx-disable')
+		el.addEventListener('fx:before',_=>{
+			let disableTarget = disableSelector == "" ? el : document.querySelector(disableSelector)
 			disableTarget.disabled = true
-			e.target.addEventListener('fx:after', (afterEvt)=>{if(afterEvt.target == e.target) disableTarget.disabled = false})
+			el.addEventListener('fx:after', (afterEvt)=>{if(afterEvt.target == el) disableTarget.disabled = false})
 		})
 	},
 	'[fx-poll]':_=>{
@@ -117,28 +117,29 @@ const hs = {
 	}
 }
 for (const a in hs) {
-	if (e.target.matches(a)) {hs[a]();break}
+	if (el.matches(a)) {hs[a]();break}
 }
 })
 
 document.addEventListener('fx:config',e=>{
+const el = e.target
 //fx-confirm
-const confirmationMessage = e.target.getAttribute("fx-confirm")
+const confirmationMessage = el.getAttribute("fx-confirm")
 if(confirmationMessage) e.detail.cfg.confirm =_=>confirm(confirmationMessage)
 //relative selectors
-const target = e.target.getAttribute("fx-target") || ""
-if(target.indexOf("closest ") == 0) e.detail.cfg.target = e.target.closest(target.substring(8))
-else if(target.indexOf("find ") == 0) e.detail.cfg.target = e.target.closest(target.substring(5))
+const target = el.getAttribute("fx-target") || ""
+if(target.indexOf("closest ") == 0) e.detail.cfg.target = el.closest(target.substring(8))
+else if(target.indexOf("find ") == 0) e.detail.cfg.target = el.closest(target.substring(5))
 else if(target.indexOf("next ") == 0){
 	const matches = Array.from(document.querySelectorAll(target.substring(5)))
-	e.detail.cfg.target = matches.find((el)=>e.target.compareDocumentPosition(el) === Node.DOCUMENT_POSITION_FOLLOWING)
+	e.detail.cfg.target = matches.find(l=>el.compareDocumentPosition(l) === Node.DOCUMENT_POSITION_FOLLOWING)
 } else if(target.indexOf("previous ") == 0){
 	const matches = Array.from(document.querySelectorAll(target.substring(9))).reverse()
-	e.detail.cfg.target = matches.find((el)=>e.target.compareDocumentPosition(el) === Node.DOCUMENT_POSITION_PRECEDING)
+	e.detail.cfg.target = matches.find(l=>el.compareDocumentPosition(l) === Node.DOCUMENT_POSITION_PRECEDING)
 }
 const hs = {
 	'[fx-row]':_=>{
-		const row = e.target.closest('tr')
+		const row = el.closest('tr')
 		if(!row){console.error('fx-table no table row found');return}
 		for (let cell of row.cells){
 			const name = cell.getAttribute('name')
@@ -146,7 +147,7 @@ const hs = {
 		}
 	},
 	'[fx-vals]':_=>{
-		const valsAttr = e.target.getAttribute('fx-vals')
+		const valsAttr = el.getAttribute('fx-vals')
 		let vals
 		if(valsAttr.startsWith('js:')) vals = new Function('return ' + valsAttr.slice(3))()
 		else vals = new Function('return ' + valsAttr)()
@@ -160,7 +161,7 @@ const hs = {
 	}
 }
 for (const a in hs) {
-	if (e.target.matches(a)) {hs[a]();break}
+	if (el.matches(a)) {hs[a]();break}
 }
 })
 
