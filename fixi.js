@@ -21,7 +21,7 @@
 				swap:attr(elt, "fx-swap", "outerHTML"),
 				body,
 				drop:reqs.size,
-				headers:{"FX-Request":"true"},
+				headers:{"FX-Tag":elt.tagName,"FX-Id":elt.id},
 				abort:ac.abort.bind(ac),
 				signal:ac.signal,
 				preventTrigger:true,
@@ -128,6 +128,12 @@ document.addEventListener("fx:init",e=>{//Disable During Request
 document.addEventListener("fx:config",e=>{//Confirm Dialog
 	const confirmationMessage = e.target.getAttribute("fx-confirm")
 	if(confirmationMessage) e.detail.cfg.confirm =_=>confirm(confirmationMessage)
+})
+
+document.addEventListener("fx:config",e=>{//Enctype
+	if(!e.target.matches("[fx-enctype]")) return
+	const enctype = e.target.getAttribute("fx-enctype")
+	if(enctype) e.detail.cfg.headers["Content-Type"] = enctype
 })
 
 document.addEventListener("fx:init",e=>{//Polling
