@@ -179,7 +179,10 @@ document.addEventListener('fx:before',_=>{//Clear Error & Success
 
 document.addEventListener('fx:after',e=>{//Set Error & Success
 	if(e.detail.cfg.response.status < 400) setTimeout(_=>{me('#success').textContent = ''}, 2000)
-	else {e.detail.cfg.target, e.detail.cfg.swap = me('#error'), 'innerHTML'}
+	else {
+		e.detail.cfg.target = me('#error')
+		e.detail.cfg.swap = 'innerHTML'
+	}
 })
 
 document.addEventListener('fx:swapped',e=>{//Lucide Render
