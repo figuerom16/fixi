@@ -88,22 +88,9 @@
 	})
 })()
 
-document.addEventListener('fx:config',e=>{//Relative Selectors
-	const target = e.target.getAttribute("fx-target") || ""
-	if(target.indexOf("closest ") == 0) e.detail.cfg.target = e.target.closest(target.substring(8))
-	else if(target.indexOf("find ") == 0) e.detail.cfg.target = e.target.closest(target.substring(5))
-	else if(target.indexOf("next ") == 0){
-		const matches = Array.from(document.querySelectorAll(target.substring(5)))
-		e.detail.cfg.target = matches.find((el)=>e.target.compareDocumentPosition(el) === Node.DOCUMENT_POSITION_FOLLOWING)
-	} else if(target.indexOf("previous ") == 0){
-		const matches = Array.from(document.querySelectorAll(target.substring(9))).reverse()
-		e.detail.cfg.target = matches.find((el)=>e.target.compareDocumentPosition(el) === Node.DOCUMENT_POSITION_PRECEDING)
-	}
-})
-
-document.addEventListener("fx:init",e=>{//Debounce/Delay
-	const el = e.target
-	if(!el.matches("[fx-delay]")) return
+document.addEventListener("fx:init",e=>{
+const handlers = {
+'[fx-delay]': _=>{
 	let latestPromise = null
 	el.addEventListener("fx:config",e=>{
 		e.detail.drop = false
@@ -113,48 +100,52 @@ document.addEventListener("fx:init",e=>{//Debounce/Delay
 			})
 		return currentPromise
 	}})
-})
-
-document.addEventListener("fx:init",e=>{//Disable During Request
-	if(!e.target.matches("[fx-disable]")) return
+},
+'[fx-disable]': _=>{
 	const disableSelector = e.target.getAttribute('fx-disable')
 	e.target.addEventListener('fx:before',_=>{
 		let disableTarget = disableSelector == "" ? e.target : document.querySelector(disableSelector)
 		disableTarget.disabled = true
 		e.target.addEventListener('fx:after', (afterEvt)=>{if(afterEvt.target == e.target) disableTarget.disabled = false})
 	})
-})
-
-document.addEventListener("fx:config",e=>{//Confirm Dialog
-	const confirmationMessage = e.target.getAttribute("fx-confirm")
-	if(confirmationMessage) e.detail.cfg.confirm =_=>confirm(confirmationMessage)
-})
-
-document.addEventListener("fx:init",e=>{//Polling
-	let el = e.target
-	if(!el.matches("[fx-poll]")) return
+},
+'[fx-poll]': _=>{
+	const el = e.target
 	el.addEventListener("fx:inited",_=>{
 		el.__fixi.pollInterval = setInterval(_=>{el.dispatchEvent(new CustomEvent("poll"))}, parseInt(el.getAttribute("fx-poll")))
 	})
+}
+}
+for (const selector in handlers) {
+	if (e.target.matches(selector)) {handlers[selector]();break}
+}
 })
 
-document.addEventListener('fx:finally',e=>{//Refresh
-	if(!e.target.matches('[fx-refresh]')) return
-	document.location.reload()
-})
-
-document.addEventListener('fx:config',e=>{//Row
-	if(!e.target.closest('[fx-row]')) return
+document.addEventListener('fx:config',e=>{
+//fx-confirm
+const confirmationMessage = e.target.getAttribute("fx-confirm")
+if(confirmationMessage) e.detail.cfg.confirm =_=>confirm(confirmationMessage)
+//relative selectors
+const target = e.target.getAttribute("fx-target") || ""
+if(target.indexOf("closest ") == 0) e.detail.cfg.target = e.target.closest(target.substring(8))
+else if(target.indexOf("find ") == 0) e.detail.cfg.target = e.target.closest(target.substring(5))
+else if(target.indexOf("next ") == 0){
+	const matches = Array.from(document.querySelectorAll(target.substring(5)))
+	e.detail.cfg.target = matches.find((el)=>e.target.compareDocumentPosition(el) === Node.DOCUMENT_POSITION_FOLLOWING)
+} else if(target.indexOf("previous ") == 0){
+	const matches = Array.from(document.querySelectorAll(target.substring(9))).reverse()
+	e.detail.cfg.target = matches.find((el)=>e.target.compareDocumentPosition(el) === Node.DOCUMENT_POSITION_PRECEDING)
+}
+const handlers = {
+'[fx-row]': _=>{
 	const row = e.target.closest('tr')
 	if(!row){console.error('fx-table no table row found');return}
 	for (let cell of row.cells){
 		const name = cell.getAttribute('name')
 		if(name) e.detail.cfg.body.append(name, cell.innerText.trim())
 	}
-})
-
-document.addEventListener('fx:config',e=>{//Vals
-	if(!e.target.matches('[fx-vals]')) return
+},
+'[fx-vals]': _=>{
 	const valsAttr = e.target.getAttribute('fx-vals')
 	let vals
 	if(valsAttr.startsWith('js:')) vals = new Function('return ' + valsAttr.slice(3))()
@@ -166,6 +157,11 @@ document.addEventListener('fx:config',e=>{//Vals
 		if(typeof key === 'string' && key.trim() === '') continue
 		e.detail.cfg.body.append(key, vals[key])
 	}
+}
+}
+for (const selector in handlers) {
+	if (e.target.matches(selector)) {handlers[selector]();break}
+}
 })
 
 document.addEventListener('fx:before',_=>{//Clear Error & Success
@@ -174,10 +170,12 @@ document.addEventListener('fx:before',_=>{//Clear Error & Success
 
 document.addEventListener('fx:after',e=>{//Set Error & Success
 	if(e.detail.cfg.response.status < 400) setTimeout(_=>{me('#success').textContent = ''}, 2000)
-	else {
-		e.detail.cfg.target = me('#error')
-		e.detail.cfg.swap = 'innerHTML'
-	}
+	else {e.detail.cfg.target = me('#error');e.detail.cfg.swap = 'innerHTML'}
+})
+
+document.addEventListener('fx:finally',e=>{//Refresh
+	if(!e.target.matches('[fx-refresh]')) return
+	document.location.reload()
 })
 
 document.addEventListener('fx:swapped',e=>{//Lucide Render
