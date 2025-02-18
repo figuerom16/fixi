@@ -88,83 +88,85 @@
 	})
 })()
 
-document.addEventListener("fx:init",e=>{
-const el = e.target
-const hs = {
-	'[fx-delay]':_=>{
-		let latestPromise = null
-		el.addEventListener("fx:config",e=>{
-			e.detail.drop = false
-			e.detail.cfg.confirm =_=>{
-				let currentPromise = latestPromise = new Promise((resolve)=>{
-					setTimeout(_=>{resolve(currentPromise === latestPromise)}, parseInt(el.getAttribute("fx-delay")))
-				})
-			return currentPromise
-		}})
-	},
-	'[fx-disable]':_=>{
-		const disableSelector = el.getAttribute('fx-disable')
-		el.addEventListener('fx:before',_=>{
-			let disableTarget = disableSelector == "" ? el : document.querySelector(disableSelector)
-			disableTarget.disabled = true
-			el.addEventListener('fx:after', (afterEvt)=>{if(afterEvt.target == el) disableTarget.disabled = false})
-		})
-	},
-	'[fx-poll]':_=>{
-		el.addEventListener("fx:inited",_=>{
-			el.__fixi.pollInterval = setInterval(_=>{el.dispatchEvent(new CustomEvent("poll"))}, parseInt(el.getAttribute("fx-poll")))
-		})
+document.addEventListener('fx:config',e=>{//Relative Selectors
+	const target = e.target.getAttribute("fx-target") || ""
+	if(target.indexOf("closest ") == 0) e.detail.cfg.target = e.target.closest(target.substring(8))
+	else if(target.indexOf("find ") == 0) e.detail.cfg.target = e.target.closest(target.substring(5))
+	else if(target.indexOf("next ") == 0){
+		const matches = Array.from(document.querySelectorAll(target.substring(5)))
+		e.detail.cfg.target = matches.find((el)=>e.target.compareDocumentPosition(el) === Node.DOCUMENT_POSITION_FOLLOWING)
+	} else if(target.indexOf("previous ") == 0){
+		const matches = Array.from(document.querySelectorAll(target.substring(9))).reverse()
+		e.detail.cfg.target = matches.find((el)=>e.target.compareDocumentPosition(el) === Node.DOCUMENT_POSITION_PRECEDING)
 	}
-}
-for (const a in hs) {
-	if (el.matches(a)) {hs[a]();break}
-}
 })
 
-document.addEventListener('fx:config',e=>{
-const el = e.target
-//fx-confirm
-const confirmationMessage = el.getAttribute("fx-confirm")
-if(confirmationMessage) e.detail.cfg.confirm =_=>confirm(confirmationMessage)
-//relative selectors
-const target = el.getAttribute("fx-target") || ""
-if(target.indexOf("closest ") == 0) e.detail.cfg.target = el.closest(target.substring(8))
-else if(target.indexOf("find ") == 0) e.detail.cfg.target = el.closest(target.substring(5))
-else if(target.indexOf("next ") == 0){
-	const matches = Array.from(document.querySelectorAll(target.substring(5)))
-	e.detail.cfg.target = matches.find(l=>el.compareDocumentPosition(l) === Node.DOCUMENT_POSITION_FOLLOWING)
-} else if(target.indexOf("previous ") == 0){
-	const matches = Array.from(document.querySelectorAll(target.substring(9))).reverse()
-	e.detail.cfg.target = matches.find(l=>el.compareDocumentPosition(l) === Node.DOCUMENT_POSITION_PRECEDING)
-}
-//fx-row
-if(e.target.closest('[fx-row]')){
+document.addEventListener("fx:init",e=>{//Debounce/Delay
+	const el = e.target
+	if(!el.matches("[fx-delay]")) return
+	let latestPromise = null
+	el.addEventListener("fx:config",e=>{
+		e.detail.drop = false
+		e.detail.cfg.confirm =_=>{
+			let currentPromise = latestPromise = new Promise((resolve)=>{
+				setTimeout(_=>{resolve(currentPromise === latestPromise)}, parseInt(el.getAttribute("fx-delay")))
+			})
+		return currentPromise
+	}})
+})
+
+document.addEventListener("fx:init",e=>{//Disable During Request
+	const el = e.target
+	if(!el.matches("[fx-disable]")) return
+	const disableSelector = el.getAttribute('fx-disable')
+	el.addEventListener('fx:before',_=>{
+		let disableTarget = disableSelector == "" ? el : document.querySelector(disableSelector)
+		disableTarget.disabled = true
+		el.addEventListener('fx:after', (afterEvt)=>{if(afterEvt.target == el) disableTarget.disabled = false})
+	})
+})
+
+document.addEventListener("fx:config",e=>{//Confirm Dialog
+	const confirmationMessage = e.target.getAttribute("fx-confirm")
+	if(confirmationMessage) e.detail.cfg.confirm =_=>confirm(confirmationMessage)
+})
+
+document.addEventListener("fx:init",e=>{//Polling
+	let el = e.target
+	if(!el.matches("[fx-poll]")) return
+	el.addEventListener("fx:inited",_=>{
+		el.__fixi.pollInterval = setInterval(_=>{el.dispatchEvent(new CustomEvent("poll"))}, parseInt(el.getAttribute("fx-poll")))
+	})
+})
+
+document.addEventListener('fx:finally',e=>{//Refresh
+	if(!e.target.matches('[fx-refresh]')) return
+	document.location.reload()
+})
+
+document.addEventListener('fx:config',e=>{//Row
+	if(!e.target.closest('[fx-row]')) return
 	const row = e.target.closest('tr')
 	if(!row){console.error('fx-table no table row found');return}
 	for (let cell of row.cells){
 		const name = cell.getAttribute('name')
 		if(name) e.detail.cfg.body.append(name, cell.innerText.trim())
 	}
-	return
-}
-const hs = {
-	'[fx-vals]':_=>{
-		const valsAttr = el.getAttribute('fx-vals')
-		let vals
-		if(valsAttr.startsWith('js:')) vals = new Function('return ' + valsAttr.slice(3))()
-		else vals = new Function('return ' + valsAttr)()
-		if(typeof vals !== 'object' || vals === null || Array.isArray(vals)){
-			console.error('fx-vals not a valid object:', vals);return
-		}
-		for (let key in vals){
-			if(typeof key === 'string' && key.trim() === '') continue
-			e.detail.cfg.body.append(key, vals[key])
-		}
+})
+
+document.addEventListener('fx:config',e=>{//Vals
+	if(!e.target.matches('[fx-vals]')) return
+	const valsAttr = e.target.getAttribute('fx-vals')
+	let vals
+	if(valsAttr.startsWith('js:')) vals = new Function('return ' + valsAttr.slice(3))()
+	else vals = new Function('return ' + valsAttr)()
+	if(typeof vals !== 'object' || vals === null || Array.isArray(vals)){
+		console.error('fx-vals not a valid object:', vals);return
 	}
-}
-for (const a in hs) {
-	if (el.matches(a)) {hs[a]();break}
-}
+	for (let key in vals){
+		if(typeof key === 'string' && key.trim() === '') continue
+		e.detail.cfg.body.append(key, vals[key])
+	}
 })
 
 document.addEventListener('fx:before',_=>{//Clear Error & Success
@@ -173,15 +175,13 @@ document.addEventListener('fx:before',_=>{//Clear Error & Success
 
 document.addEventListener('fx:after',e=>{//Set Error & Success
 	if(e.detail.cfg.response.status < 400) setTimeout(_=>{me('#success').textContent = ''}, 2000)
-	else {e.detail.cfg.target = me('#error');e.detail.cfg.swap = 'innerHTML'}
+	else {
+		e.detail.cfg.target = me('#error')
+		e.detail.cfg.swap = 'innerHTML'
+	}
 })
 
-document.addEventListener('fx:finally',e=>{//Refresh
-	if(!e.target.matches('[fx-refresh]')) return
-	document.location.reload()
-})
-
-document.addEventListener('fx:swapped',_=>{//Lucide Render
+document.addEventListener('fx:swapped',e=>{//Lucide Render
 	if(lucide) lucide.createIcons()
 })
 
