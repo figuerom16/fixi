@@ -130,12 +130,6 @@ document.addEventListener("fx:config",e=>{//Confirm Dialog
 	if(confirmationMessage) e.detail.cfg.confirm =_=>confirm(confirmationMessage)
 })
 
-document.addEventListener("fx:config",e=>{//Enctype
-	if(!e.target.matches("[fx-enctype]")) return
-	const enctype = e.target.getAttribute("fx-enctype")
-	if(enctype) e.detail.cfg.headers["Content-Type"] = enctype
-})
-
 document.addEventListener("fx:init",e=>{//Polling
 	let el = e.target
 	if(!el.matches("[fx-poll]")) return
@@ -144,33 +138,34 @@ document.addEventListener("fx:init",e=>{//Polling
 	})
 })
 
-document.addEventListener('fx:init',e=>{//Row
-	if(!e.target.closest('[fx-row]')) return
-	document.addEventListener('fx:config',e=>{
-		const row = e.target.closest('tr')
-		if(!row){console.error('fx-table no table row found');return}
-		for (let cell of row.cells){
-			const name = cell.getAttribute('name')
-			if(name) e.detail.cfg.body.append(name, cell.innerText.trim())
-		}
-	})
+document.addEventListener('fx:finally',e=>{//Refresh
+	if(!e.target.matches('[fx-refresh]')) return
+	document.location.reload()
 })
 
-document.addEventListener('fx:init',e=>{//Vals
+document.addEventListener('fx:config',e=>{//Row
+	if(!e.target.closest('[fx-row]')) return
+	const row = e.target.closest('tr')
+	if(!row){console.error('fx-table no table row found');return}
+	for (let cell of row.cells){
+		const name = cell.getAttribute('name')
+		if(name) e.detail.cfg.body.append(name, cell.innerText.trim())
+	}
+})
+
+document.addEventListener('fx:config',e=>{//Vals
 	if(!e.target.matches('[fx-vals]')) return
-	document.addEventListener('fx:config',e=>{
-		const valsAttr = e.target.getAttribute('fx-vals')
-		let vals
-		if(valsAttr.startsWith('js:')) vals = new Function('return ' + valsAttr.slice(3))()
-		else vals = new Function('return ' + valsAttr)()
-		if(typeof vals !== 'object' || vals === null || Array.isArray(vals)){
-			console.error('fx-vals not a valid object:', vals);return
-		}
-		for (let key in vals){
-			if(typeof key === 'string' && key.trim() === '') continue
-			e.detail.cfg.body.append(key, vals[key])
-		}
-	})
+	const valsAttr = e.target.getAttribute('fx-vals')
+	let vals
+	if(valsAttr.startsWith('js:')) vals = new Function('return ' + valsAttr.slice(3))()
+	else vals = new Function('return ' + valsAttr)()
+	if(typeof vals !== 'object' || vals === null || Array.isArray(vals)){
+		console.error('fx-vals not a valid object:', vals);return
+	}
+	for (let key in vals){
+		if(typeof key === 'string' && key.trim() === '') continue
+		e.detail.cfg.body.append(key, vals[key])
+	}
 })
 
 document.addEventListener('fx:before',_=>{//Clear Error & Success
