@@ -137,15 +137,17 @@ else if(target.indexOf("next ") == 0){
 	const matches = Array.from(document.querySelectorAll(target.substring(9))).reverse()
 	e.detail.cfg.target = matches.find(l=>el.compareDocumentPosition(l) === Node.DOCUMENT_POSITION_PRECEDING)
 }
+//fx-row
+if(e.target.closest('[fx-row]')){
+	const row = e.target.closest('tr')
+	if(!row){console.error('fx-table no table row found');return}
+	for (let cell of row.cells){
+		const name = cell.getAttribute('name')
+		if(name) e.detail.cfg.body.append(name, cell.innerText.trim())
+	}
+	return
+}
 const hs = {
-	'[fx-row]':_=>{
-		const row = el.closest('tr')
-		if(!row){console.error('fx-table no table row found');return}
-		for (let cell of row.cells){
-			const name = cell.getAttribute('name')
-			if(name) e.detail.cfg.body.append(name, cell.innerText.trim())
-		}
-	},
 	'[fx-vals]':_=>{
 		const valsAttr = el.getAttribute('fx-vals')
 		let vals
