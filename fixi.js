@@ -88,33 +88,6 @@
 	})
 })()
 
-document.addEventListener('fx:config',e=>{//Relative Selectors
-	const target = e.target.getAttribute("fx-target") || ""
-	if(target.indexOf("closest ") == 0) e.detail.cfg.target = e.target.closest(target.substring(8))
-	else if(target.indexOf("find ") == 0) e.detail.cfg.target = e.target.closest(target.substring(5))
-	else if(target.indexOf("next ") == 0){
-		const matches = Array.from(document.querySelectorAll(target.substring(5)))
-		e.detail.cfg.target = matches.find((el)=>e.target.compareDocumentPosition(el) === Node.DOCUMENT_POSITION_FOLLOWING)
-	} else if(target.indexOf("previous ") == 0){
-		const matches = Array.from(document.querySelectorAll(target.substring(9))).reverse()
-		e.detail.cfg.target = matches.find((el)=>e.target.compareDocumentPosition(el) === Node.DOCUMENT_POSITION_PRECEDING)
-	}
-})
-
-document.addEventListener("fx:init",e=>{//Debounce/Delay
-	const el = e.target
-	if(!el.matches("[fx-delay]")) return
-	let latestPromise = null
-	el.addEventListener("fx:config",e=>{
-		e.detail.drop = false
-		e.detail.cfg.confirm =_=>{
-			let currentPromise = latestPromise = new Promise((resolve)=>{
-				setTimeout(_=>{resolve(currentPromise === latestPromise)}, parseInt(el.getAttribute("fx-delay")))
-			})
-		return currentPromise
-	}})
-})
-
 document.addEventListener("fx:init",e=>{//Disable During Request
 	const el = e.target
 	if(!el.matches("[fx-disable]")) return
@@ -131,17 +104,17 @@ document.addEventListener("fx:config",e=>{//Confirm Dialog
 	if(confirmationMessage) e.detail.cfg.confirm =_=>confirm(confirmationMessage)
 })
 
-document.addEventListener("fx:init",e=>{//Polling
-	let el = e.target
-	if(!el.matches("[fx-poll]")) return
-	el.addEventListener("fx:inited",_=>{
-		el.__fixi.pollInterval = setInterval(_=>{el.dispatchEvent(new CustomEvent("poll"))}, parseInt(el.getAttribute("fx-poll")))
-	})
-})
-
-document.addEventListener('fx:finally',e=>{//Refresh
-	if(!e.target.matches('[fx-refresh]')) return
-	document.location.reload()
+document.addEventListener('fx:config',e=>{//Relative Selectors
+	const target = e.target.getAttribute("fx-target") || ""
+	if(target.indexOf("closest ") == 0) e.detail.cfg.target = e.target.closest(target.substring(8))
+	else if(target.indexOf("find ") == 0) e.detail.cfg.target = e.target.closest(target.substring(5))
+	else if(target.indexOf("next ") == 0){
+		const matches = Array.from(document.querySelectorAll(target.substring(5)))
+		e.detail.cfg.target = matches.find((el)=>e.target.compareDocumentPosition(el) === Node.DOCUMENT_POSITION_FOLLOWING)
+	} else if(target.indexOf("previous ") == 0){
+		const matches = Array.from(document.querySelectorAll(target.substring(9))).reverse()
+		e.detail.cfg.target = matches.find((el)=>e.target.compareDocumentPosition(el) === Node.DOCUMENT_POSITION_PRECEDING)
+	}
 })
 
 document.addEventListener('fx:config',e=>{//Row
@@ -175,10 +148,12 @@ document.addEventListener('fx:before',_=>{//Clear Error & Success
 
 document.addEventListener('fx:after',e=>{//Set Error & Success
 	if(e.detail.cfg.response.status < 400) setTimeout(_=>{me('#success').textContent = ''}, 2000)
-	else {
-		e.detail.cfg.target = me('#error')
-		e.detail.cfg.swap = 'innerHTML'
-	}
+	else {e.detail.cfg.target = me('#error');e.detail.cfg.swap = 'innerHTML'}
+})
+
+document.addEventListener('fx:finally',e=>{//Refresh
+	if(!e.target.matches('[fx-refresh]')) return
+	document.location.reload()
 })
 
 document.addEventListener('fx:swapped',e=>{//Lucide Render
