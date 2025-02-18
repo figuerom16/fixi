@@ -156,7 +156,7 @@ document.addEventListener('fx:finally',e=>{//Refresh
 	document.location.reload()
 })
 
-document.addEventListener('fx:swapped',e=>{//Lucide Render
+document.addEventListener('fx:swapped',_=>{//Lucide Render
 	if(lucide) lucide.createIcons()
 })
 
