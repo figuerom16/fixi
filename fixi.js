@@ -180,6 +180,7 @@ document.addEventListener('fx:before',_=>{//Clear Error & Success
 document.addEventListener('fx:after',e=>{//Set Error & Success
 	if(e.detail.cfg.response.status < 400) setTimeout(_=>{me('#success').textContent = ''}, 2000)
 	else e.detail.cfg.target, e.detail.cfg.swap = me('#error'), 'innerHTML'
+	if (lucide) lucide.createIcons()
 })
 
 document.addEventListener('mousedown',e=>{//fclick
