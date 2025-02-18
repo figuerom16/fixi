@@ -130,12 +130,6 @@ document.addEventListener("fx:config",e=>{//Confirm Dialog
 	if(confirmationMessage) e.detail.cfg.confirm =_=>confirm(confirmationMessage)
 })
 
-document.addEventListener("fx:config",e=>{//Enctype
-	if(!e.target.matches("[fx-enctype]")) return
-	const enctype = e.target.getAttribute("fx-enctype")
-	if(enctype) e.detail.cfg.headers["Content-Type"] = enctype
-})
-
 document.addEventListener("fx:init",e=>{//Polling
 	let el = e.target
 	if(!el.matches("[fx-poll]")) return
