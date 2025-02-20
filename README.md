@@ -801,30 +801,37 @@ This example can be modified to use classes or other mechanisms for showing indi
 
 ### Debouncing A Request
 
-Here is an implementation of the Active Search example from htmx done in fixi, utilizing the config `confirm` feature
-to return a promise that resolves to `true` after the number of milliseconds specified by `fx-ext-debounce` if no
-other triggers have occurred:
+The following extension allows you to [debounce](https://www.geeksforgeeks.org/debouncing-in-javascript/) the
+triggering event for a fixi-powered element.  It does this by removing the initial listener installed by fixi and
+wiring in a new listener for the same event that delegates to the fixi handler if no other events occur in the
+given time period.  The debouncing time is specified via the `ext-fx-debounce` attribute, which specified the number of
+milliseconds to wait before triggering the request.
 
 ```js
 // fixi event debouncing extension
 document.addEventListener("fx:init", (evt)=>{
-  let elt = evt.target
-  if (elt.matches("[ext-fx-debounce]")){
-    let latestPromise = null;
-    elt.addEventListener("fx:config", (evt)=>{
-      evt.detail.drop = false
-      evt.detail.cfg.confirm = ()=>{
-        let currentPromise = latestPromise = new Promise((resolve) => { 
-          setTimeout(()=>{
-            resolve(currentPromise === latestPromise)
-          }, parseInt(elt.getAttribute("ext-fx-debounce")))
+    let target = evt.target
+    // if this element has the debounce extention
+    if (target.hasAttribute("ext-fx-debounce")){
+        // add a listener for the fx:inited event, when the __fixi property is available
+        target.addEventListener("fx:inited", ()=>{
+            // remove the default listener 
+            target.removeEventListener(target.__fixi.evt, target.__fixi)
+            let debounceTime = parseInt(target.getAttribute("ext-fx-debounce"))
+            let timeout = null
+            // install a debounced version that delegates to the default listener 
+            target.addEventListener(target.__fixi.evt, (evt)=>{
+                clearTimeout(timeout)
+                timeout = setTimeout(()=>target.__fixi(evt), debounceTime)
+            })
         })
-        return currentPromise
-      }
-    })
-  }
+    }
 })
 ```
+
+Here is an implementation of the [active search](https://htmx.org/examples/active-search/) example from the htmx website
+using this extension:
+
 ```html
 <form action="/search" fx-action="/search" fx-target="#results" fx-swap="innerHTML">
   <input id="search" type="search" fx-action="/search" fx-trigger="input" ext-fx-debounce="200" fx-target="#results" fx-swap="innerHTML"/>
