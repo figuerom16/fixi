@@ -808,22 +808,25 @@ other triggers have occurred:
 ```js
 // fixi event debouncing extension
 document.addEventListener("fx:init", (evt)=>{
-  let elt = evt.target
-  if (elt.matches("[ext-fx-debounce]")){
-    let latestPromise = null;
-    elt.addEventListener("fx:config", (evt)=>{
-      evt.detail.drop = false
-      evt.detail.cfg.confirm = ()=>{
-        let currentPromise = latestPromise = new Promise((resolve) => { 
-          setTimeout(()=>{
-            resolve(currentPromise === latestPromise)
-          }, parseInt(elt.getAttribute("ext-fx-debounce")))
-        })
-        return currentPromise
-      }
-    })
-  }
-})
+		let target = evt.target
+		// if this element has the debounce extention
+		if (target.getAttribute("ext-fx-debounce")){
+			// add a listener for the fx:inited event, so the __fixi property is available
+			target.addEventListener("fx:inited", ()=>{
+				// remove the default listener 
+				target.removeEventListener(target.__fixi.evt, target.__fixi)
+				let debounceTime = parseInt(target.getAttribute("ext-fx-debounce"))
+				var timeout = null
+				// install a debounced version that delegates to the default listener 
+				target.addEventListener(target.__fixi.evt, (evt)=>{
+						if (timeout) clearTimeout(timeout)
+						timeout = setTimeout(()=>target.__fixi(evt), debounceTime)
+					}
+				)
+			})
+		}
+	}
+)
 ```
 ```html
 <form action="/search" fx-action="/search" fx-target="#results" fx-swap="innerHTML">
