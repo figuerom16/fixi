@@ -801,9 +801,11 @@ This example can be modified to use classes or other mechanisms for showing indi
 
 ### Debouncing A Request
 
-Here is an implementation of the Active Search example from htmx done in fixi, utilizing the config `confirm` feature
-to return a promise that resolves to `true` after the number of milliseconds specified by `fx-ext-debounce` if no
-other triggers have occurred:
+The following extension allows you to [debounce](https://www.geeksforgeeks.org/debouncing-in-javascript/) the
+triggering event for a fixi-powered element.  It does this by removing the initial listener installed by fixi and
+wiring in a new listener for the same event that delegates to the fixi handler if no other events occur in the
+given time period.  The debouncing time is specified via the `ext-fx-debounce` attribute, which specified the number of
+milliseconds to wait before triggering the request.
 
 ```js
 // fixi event debouncing extension
@@ -828,6 +830,10 @@ document.addEventListener("fx:init", (evt)=>{
 	}
 )
 ```
+
+Here is an implementation of the [active search](https://htmx.org/examples/active-search/) example from the htmx website
+using this extension:
+
 ```html
 <form action="/search" fx-action="/search" fx-target="#results" fx-swap="innerHTML">
   <input id="search" type="search" fx-action="/search" fx-trigger="input" ext-fx-debounce="200" fx-target="#results" fx-swap="innerHTML"/>
