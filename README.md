@@ -810,25 +810,23 @@ milliseconds to wait before triggering the request.
 ```js
 // fixi event debouncing extension
 document.addEventListener("fx:init", (evt)=>{
-		let target = evt.target
-		// if this element has the debounce extention
-		if (target.getAttribute("ext-fx-debounce")){
-			// add a listener for the fx:inited event, so the __fixi property is available
-			target.addEventListener("fx:inited", ()=>{
-				// remove the default listener 
-				target.removeEventListener(target.__fixi.evt, target.__fixi)
-				let debounceTime = parseInt(target.getAttribute("ext-fx-debounce"))
-				var timeout = null
-				// install a debounced version that delegates to the default listener 
-				target.addEventListener(target.__fixi.evt, (evt)=>{
-						if (timeout) clearTimeout(timeout)
-						timeout = setTimeout(()=>target.__fixi(evt), debounceTime)
-					}
-				)
-			})
-		}
-	}
-)
+    let target = evt.target
+    // if this element has the debounce extention
+    if (target.hasAttribute("ext-fx-debounce")){
+        // add a listener for the fx:inited event, when the __fixi property is available
+        target.addEventListener("fx:inited", ()=>{
+            // remove the default listener 
+            target.removeEventListener(target.__fixi.evt, target.__fixi)
+            let debounceTime = parseInt(target.getAttribute("ext-fx-debounce"))
+            let timeout = null
+            // install a debounced version that delegates to the default listener 
+            target.addEventListener(target.__fixi.evt, (evt)=>{
+                clearTimeout(timeout)
+                timeout = setTimeout(()=>target.__fixi(evt), debounceTime)
+            })
+        })
+    }
+})
 ```
 
 Here is an implementation of the [active search](https://htmx.org/examples/active-search/) example from the htmx website
