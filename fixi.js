@@ -15,8 +15,8 @@
 			let ac = new AbortController()
 			let cfg = {
 				trigger:evt,
-				action:attr(elt, "fx-action"),
-				method:attr(elt, "fx-method", "GET").toUpperCase(),
+				action:attr(elt, "fx-action", window.location.pathname),
+				method:attr(elt, "fx-method")?.toUpperCase(),
 				target:document.querySelector(attr(elt, "fx-target")) ?? elt,
 				swap:attr(elt, "fx-swap", "outerHTML"),
 				body,
@@ -77,9 +77,9 @@
 	let process = (n)=>{
 		if (n.matches){
 			if (ignore(n)) return
-			if (n.matches("[fx-action]")) init(n)
+			if (n.matches("[fx-method]")) init(n)
 		}
-		if(n.querySelectorAll) n.querySelectorAll("[fx-action]").forEach(init)
+		if(n.querySelectorAll) n.querySelectorAll("[fx-method]").forEach(init)
 	}
 	document.addEventListener("fx:process", (evt)=>process(evt.target))
 	document.addEventListener("DOMContentLoaded", ()=>{
