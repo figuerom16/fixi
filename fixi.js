@@ -104,15 +104,18 @@ document.addEventListener("fx:config",e=>{//Confirm Dialog
 	if(confirmationMessage) e.detail.cfg.confirm =_=>confirm(confirmationMessage)
 })
 
-document.addEventListener("fx:config",e=>{//Execute Script
-	if (e.detail.cfg.target === document.documentElement){
-		let scripts = document.head.querySelectorAll("script");
-		for(let script of scripts) {
-			let newScript = document.createRange().createContextualFragment(script.outerHTML)
-			document.head.insertBefore(newScript, script)
-			script.remove()
-		}
-	}
+document.addEventListener("fx:init",e=>{//Debounce
+	let target = evt.target
+	if (!target.hasAttribute("fx-debounce")) return
+	target.addEventListener("fx:inited", _=>{
+		target.removeEventListener(target.__fixi.evt, target.__fixi)
+		let debounceTime = parseInt(target.getAttribute("fx-debounce"))
+		let timeout = null
+		target.addEventListener(target.__fixi.evt,e=>{
+			clearTimeout(timeout)
+			timeout = setTimeout(_=>target.__fixi(e), debounceTime)
+		})
+	})
 })
 
 document.addEventListener('fx:config',e=>{//Relative Selectors
@@ -167,7 +170,7 @@ document.addEventListener('fx:finally',e=>{//Refresh
 	document.location.reload()
 })
 
-document.addEventListener('fx:swapped',_=>{//Lucide Render
+document.addEventListener('fx:swapped',e=>{//Lucide Render
 	if(lucide) lucide.createIcons()
 })
 
