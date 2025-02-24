@@ -105,7 +105,7 @@ document.addEventListener("fx:config",e=>{//Confirm Dialog
 })
 
 document.addEventListener("fx:init",e=>{//Debounce
-	let target = evt.target
+	let target = e.target
 	if (!target.hasAttribute("fx-debounce")) return
 	target.addEventListener("fx:inited", _=>{
 		target.removeEventListener(target.__fixi.evt, target.__fixi)
