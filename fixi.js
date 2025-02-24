@@ -104,6 +104,17 @@ document.addEventListener("fx:config",e=>{//Confirm Dialog
 	if(confirmationMessage) e.detail.cfg.confirm =_=>confirm(confirmationMessage)
 })
 
+document.addEventListener("fx:config",e=>{//Execute Script
+	if (e.detail.cfg.target === document.documentElement){
+		let scripts = document.head.querySelectorAll("script");
+		for(let script of scripts) {
+			let newScript = document.createRange().createContextualFragment(script.outerHTML)
+			document.head.insertBefore(newScript, script)
+			script.remove()
+		}
+	}
+})
+
 document.addEventListener('fx:config',e=>{//Relative Selectors
 	const target = e.target.getAttribute("fx-target") || ""
 	if(target.indexOf("closest ") == 0) e.detail.cfg.target = e.target.closest(target.substring(8))
