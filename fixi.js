@@ -15,7 +15,7 @@
 			let ac = new AbortController()
 			let cfg = {
 				trigger:evt,
-				action:attr(elt, "fx-action", window.location.pathname),
+				action:attr(elt, "fx-action", ""),
 				method:attr(elt, "fx-method")?.toUpperCase(),
 				target:document.querySelector(attr(elt, "fx-target")) ?? elt,
 				swap:attr(elt, "fx-swap", "outerHTML"),
