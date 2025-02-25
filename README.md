@@ -153,7 +153,7 @@ You can get support for fixi via:
 </tr>
 <tr>
 <td><code>fx-swap</code></td>
-<td>A string specifying how the content should be swapped into the DOM, can be one of <code>innerHTML</code>, <code>outerHTML</code>, <code>beforestart</code>, <code>afterstart</code>, <code>beforeend</code>, <code>afterend</code>, or any valid property on the element (e.g. `className` or `value`), defaults to  <code>outerHTML</code></td>
+<td>A string specifying how the content should be swapped into the DOM, can be one of <code>innerHTML</code>, <code>outerHTML</code>, <code>beforebegin</code>, <code>afterbegin</code>, <code>beforeend</code>, <code>afterend</code>, or any valid property on the element (e.g. `className` or `value`), defaults to  <code>outerHTML</code></td>
 <td><code>fx-swap=&#39;innerHTML&#39;</code></td>
 </tr>
 <tr>
