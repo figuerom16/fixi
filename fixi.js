@@ -57,7 +57,7 @@
 			let doSwap = ()=>{
 				if (cfg.swap instanceof Function)
 					return cfg.swap(cfg)
-				else if (/(before|after)(start|end)/.test(cfg.swap))
+				else if (/(before|after)(begin|end)/.test(cfg.swap))
 					cfg.target.insertAdjacentHTML(cfg.swap, cfg.text)
 				else if(cfg.swap in cfg.target)
 					cfg.target[cfg.swap] = cfg.text
