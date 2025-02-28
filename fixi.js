@@ -88,9 +88,9 @@
 	})
 })()
 
-document.addEventListener("fx:init",e=>{//Disable During Request
+document.addEventListener('fx:init',e=>{//Disable During Request
 	const el = e.target
-	if(!el.matches("[fx-disable]")) return
+	if(!el.matches('[fx-disable]')) return
 	const disableSelector = el.getAttribute('fx-disable')
 	el.addEventListener('fx:before',_=>{
 		let disableTarget = disableSelector == "" ? el : document.querySelector(disableSelector)
@@ -99,17 +99,17 @@ document.addEventListener("fx:init",e=>{//Disable During Request
 	})
 })
 
-document.addEventListener("fx:config",e=>{//Confirm Dialog
-	const confirmationMessage = e.target.getAttribute("fx-confirm")
+document.addEventListener('fx:config',e=>{//Confirm Dialog
+	const confirmationMessage = e.target.getAttribute('fx-confirm')
 	if(confirmationMessage) e.detail.cfg.confirm =_=>confirm(confirmationMessage)
 })
 
-document.addEventListener("fx:init",e=>{//Debounce
+document.addEventListener('fx:init',e=>{//Debounce
 	let target = e.target
-	if (!target.hasAttribute("fx-debounce")) return
-	target.addEventListener("fx:inited", _=>{
+	if (!target.hasAttribute('fx-debounce')) return
+	target.addEventListener('fx:inited', _=>{
 		target.removeEventListener(target.__fixi.evt, target.__fixi)
-		let debounceTime = parseInt(target.getAttribute("fx-debounce"))
+		let debounceTime = parseInt(target.getAttribute('fx-debounce'))
 		let timeout = null
 		target.addEventListener(target.__fixi.evt,e=>{
 			clearTimeout(timeout)
@@ -119,13 +119,13 @@ document.addEventListener("fx:init",e=>{//Debounce
 })
 
 document.addEventListener('fx:config',e=>{//Relative Selectors
-	const target = e.target.getAttribute("fx-target") || ""
-	if(target.indexOf("closest ") == 0) e.detail.cfg.target = e.target.closest(target.substring(8))
-	else if(target.indexOf("find ") == 0) e.detail.cfg.target = e.target.closest(target.substring(5))
-	else if(target.indexOf("next ") == 0){
+	const target = e.target.getAttribute('fx-target') || ""
+	if(target.indexOf('closest ') == 0) e.detail.cfg.target = e.target.closest(target.substring(8))
+	else if(target.indexOf('find ') == 0) e.detail.cfg.target = e.target.closest(target.substring(5))
+	else if(target.indexOf('next ') == 0){
 		const matches = Array.from(document.querySelectorAll(target.substring(5)))
 		e.detail.cfg.target = matches.find((el)=>e.target.compareDocumentPosition(el) === Node.DOCUMENT_POSITION_FOLLOWING)
-	} else if(target.indexOf("previous ") == 0){
+	} else if(target.indexOf('previous ') == 0){
 		const matches = Array.from(document.querySelectorAll(target.substring(9))).reverse()
 		e.detail.cfg.target = matches.find((el)=>e.target.compareDocumentPosition(el) === Node.DOCUMENT_POSITION_PRECEDING)
 	}
