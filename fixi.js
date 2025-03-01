@@ -18,7 +18,7 @@
 				action:attr(elt, "fx-action", ""),
 				method:attr(elt, "fx-method")?.toUpperCase(),
 				target:document.querySelector(attr(elt, "fx-target")) ?? elt,
-				swap:attr(elt, "fx-swap", "outerHTML"),
+				swap:attr(elt, "fx-swap", "innerHTML"),
 				body,
 				drop:reqs.size,
 				headers:{"FX-Tag":elt.tagName,"FX-Id":elt.id},
