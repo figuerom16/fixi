@@ -1020,7 +1020,7 @@ fixi does not implement history support, but you can add rudimentary support lik
         initJS();
     });
     document.addEventListener("fx:after", (evt)=>{
-        if (evt.target.getAttribute("ext-fx-push")){
+        if (evt.target.hasAttribute("ext-fx-push")){
             history.replaceState({fixi:true, url:location.href}, "", location.href)
             history.pushState({fixi:true, url:evt.detail.cfg.response.url}, "", evt.detail.cfg.response.url)
         }
