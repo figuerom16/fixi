@@ -15,7 +15,7 @@
 			if (!form && elt.name) body.append(elt.name, elt.value)
 			else {
 				headers["Content-Type"] = attr(form, "enctype", "application/x-www-form-urlencoded")
-				if (headers["Content-Type"] === "application/x-www-form-urlencoded") body = new URLSearchParams(body)
+				if (headers["Content-Type"] == "application/x-www-form-urlencoded") body = new URLSearchParams(body)
 			}
 			let ac = new AbortController()
 			let cfg = {
