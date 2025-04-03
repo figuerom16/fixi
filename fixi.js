@@ -13,9 +13,9 @@
 			let body = new FormData(form ?? undefined, evt.submitter)
 			let headers = {"FX-Tag":elt.tagName,"FX-Id":elt.id}
 			if (!form && elt.name) body.append(elt.name, elt.value)
-			else {
-				headers["Content-Type"] = attr(form, "enctype", "application/x-www-form-urlencoded")
-				if (headers["Content-Type"] == "application/x-www-form-urlencoded") body = new URLSearchParams(body)
+			else if (!form.getAttribute("enctype")) {
+				headers["Content-Type"] = "application/x-www-form-urlencoded"
+				body = new URLSearchParams(body)
 			}
 			let ac = new AbortController()
 			let cfg = {
