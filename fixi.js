@@ -13,7 +13,7 @@
 			let body = new FormData(form ?? undefined, evt.submitter)
 			let headers = {"FX-Tag":elt.tagName,"FX-Id":elt.id}
 			if (form) {
-				if (!form.getAttribute("enctype")) {
+				if (!form.querySelector('input[type="file"], input[type="image"]')) {
 					headers["Content-Type"] = "application/x-www-form-urlencoded"
 					body = new URLSearchParams(body)
 				}
