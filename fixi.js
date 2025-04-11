@@ -11,13 +11,8 @@
 			let reqs = elt.__fixi.requests ||= new Set()
 			let form = elt.form || elt.closest("form")
 			let body = new FormData(form ?? undefined, evt.submitter)
-			let headers = {"FX-Tag":elt.tagName,"FX-Id":elt.id}
-			if (form) {
-				if (!form.querySelector('input[type="file"], input[type="image"]')) {
-					headers["Content-Type"] = "application/x-www-form-urlencoded"
-					body = new URLSearchParams(body)
-				}
-			} else if (elt.name) body.append(elt.name, elt.value)
+			if (form && !form.querySelector('input[type="file"], input[type="image"]')) body = new URLSearchParams(body)
+			else if (elt.name) body.append(elt.name, elt.value)
 			let ac = new AbortController()
 			let cfg = {
 				trigger:evt,
@@ -27,7 +22,7 @@
 				swap:attr(elt, "fx-swap", "innerHTML"),
 				body,
 				drop:reqs.size,
-				headers,
+				headers:{"FX-Tag":elt.tagName,"FX-Id":elt.id},
 				abort:ac.abort.bind(ac),
 				signal:ac.signal,
 				preventTrigger:true,
