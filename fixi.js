@@ -35,7 +35,7 @@
 			if (/GET|DELETE/.test(cfg.method)){
 				if (cfg.body.size) cfg.action += (/\?/.test(cfg.action) ? "&" : "?") + cfg.body
 				cfg.body = null
-			} else if (form && !form.querySelector('input[type="file"], input[type="image"]')) body = new URLSearchParams(body)
+			}
 			reqs.add(cfg)
 			try {
 				if (cfg.confirm){
