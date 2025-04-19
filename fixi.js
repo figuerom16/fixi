@@ -11,8 +11,8 @@
 			let reqs = elt.__fixi.requests ||= new Set()
 			let form = elt.form || elt.closest("form")
 			let body = new FormData(form ?? undefined, evt.submitter)
-			if (form && !form.querySelector('input[type="file"], input[type="image"]')) body = new URLSearchParams(body)
-			else if (elt.name) body.append(elt.name, elt.value)
+			if (!form && elt.name) body.append(elt.name, elt.value)
+			if (!['file','image'].includes(elt.type) && !form?.querySelector('input[type="file"], input[type="image"]')) body = new URLSearchParams(body)
 			let ac = new AbortController()
 			let cfg = {
 				trigger:evt,
@@ -33,11 +33,9 @@
 			if (cfg.preventTrigger) evt.preventDefault()
 			if (!go || cfg.drop) return
 			if (/GET|DELETE/.test(cfg.method)){
-				let params = new URLSearchParams(cfg.body)
-				if (params.size)
-					cfg.action += (/\?/.test(cfg.action) ? "&" : "?") + params
+				if (cfg.body.size) cfg.action += (/\?/.test(cfg.action) ? "&" : "?") + cfg.body
 				cfg.body = null
-			}
+			} else if (form && !form.querySelector('input[type="file"], input[type="image"]')) body = new URLSearchParams(body)
 			reqs.add(cfg)
 			try {
 				if (cfg.confirm){
@@ -140,7 +138,6 @@ document.addEventListener('fx:config',e=>{//Row
 		const name = cell.getAttribute('name')
 		if(name) e.detail.cfg.body.append(name, cell.innerText.trim())
 	}
-	e.detail.cfg.body = new URLSearchParams(e.detail.cfg.body)
 })
 
 document.addEventListener('fx:config',e=>{//Vals
