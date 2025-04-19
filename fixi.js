@@ -140,6 +140,7 @@ document.addEventListener('fx:config',e=>{//Row
 		const name = cell.getAttribute('name')
 		if(name) e.detail.cfg.body.append(name, cell.innerText.trim())
 	}
+	e.detail.cfg.body = new URLSearchParams(e.detail.cfg.body)
 })
 
 document.addEventListener('fx:config',e=>{//Vals
