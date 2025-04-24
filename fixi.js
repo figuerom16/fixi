@@ -1,5 +1,5 @@
-(()=>{
-	if(document.__fixi_mo) return;
+(_=>{
+	if(document.__fixi_mo) return
 	document.__fixi_mo = new MutationObserver((recs)=>recs.forEach((r)=>r.type === "childList" && r.addedNodes.forEach((n)=>process(n))))
 	let send = (elt, type, detail, bub)=>elt.dispatchEvent(new CustomEvent("fx:" + type, {detail, cancelable:true, bubbles:bub !== false, composed:true}))
 	let attr = (elt, name, defaultVal)=>elt.getAttribute(name) || defaultVal
@@ -9,9 +9,15 @@
 		if (elt.__fixi || ignore(elt) || !send(elt, "init", {options})) return
 		elt.__fixi = async(evt)=>{
 			let reqs = elt.__fixi.requests ||= new Set()
-			let form = elt.form || elt.closest("form")
+			let form = elt.form || elt.closest("form") || elt.closest("tr")
 			let body = new FormData(form ?? undefined, evt.submitter)
 			if (!form && elt.name) body.append(elt.name, elt.value)
+			if (form.tagName == 'TR') {
+				for (const cell of row.cells){
+					const name = cell.getAttribute('name')
+					if(name) e.detail.cfg.body.append(name, cell.innerText.trim())
+				}
+			}
 			if (!['file','image'].includes(elt.type) && !form?.querySelector('input[type="file"], input[type="image"]')) body = new URLSearchParams(body)
 			let ac = new AbortController()
 			let cfg = {
@@ -53,19 +59,14 @@
 				reqs.delete(cfg)
 				send(elt, "finally", {cfg})
 			}
-			let doSwap = ()=>{
-				if (cfg.swap instanceof Function)
-					return cfg.swap(cfg)
-				else if (/(before|after)(begin|end)/.test(cfg.swap))
-					cfg.target.insertAdjacentHTML(cfg.swap, cfg.text)
-				else if(cfg.swap in cfg.target)
-					cfg.target[cfg.swap] = cfg.text
+			let doSwap = _=>{
+				if (cfg.swap instanceof Function) return cfg.swap(cfg)
+				else if (/(before|after)(begin|end)/.test(cfg.swap)) cfg.target.insertAdjacentHTML(cfg.swap, cfg.text)
+				else if(cfg.swap in cfg.target) cfg.target[cfg.swap] = cfg.text
 				else throw cfg.swap
 			}
-			if (cfg.transition)
-				await cfg.transition(doSwap).finished
-			else
-				await doSwap()
+			if (cfg.transition) await cfg.transition(doSwap).finished
+			else await doSwap()
 			send(elt, "swapped", {cfg})
 			if (!document.contains(elt)) send(document, "swapped", {cfg})
 		}
@@ -127,16 +128,6 @@ document.addEventListener('fx:config',e=>{//Relative Selectors
 	} else if(target.indexOf('previous ') == 0){
 		const matches = Array.from(document.querySelectorAll(target.substring(9))).reverse()
 		e.detail.cfg.target = matches.find((el)=>e.target.compareDocumentPosition(el) === Node.DOCUMENT_POSITION_PRECEDING)
-	}
-})
-
-document.addEventListener('fx:config',e=>{//Row
-	if(!e.target.closest('[fx-row]')) return
-	const row = e.target.closest('tr')
-	if(!row){console.error('fx-table no table row found');return}
-	for (let cell of row.cells){
-		const name = cell.getAttribute('name')
-		if(name) e.detail.cfg.body.append(name, cell.innerText.trim())
 	}
 })
 
