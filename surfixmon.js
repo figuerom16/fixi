@@ -13,7 +13,7 @@
 			let form = elt.form || elt.closest("form") || elt.closest("tr")
 			let body = new FormData(form ?? undefined, evt.submitter)
 			if (!form && elt.name) body.append(elt.name, elt.value)
-			if (form.tagName == 'TR') {
+			if (form?.tagName === 'TR') {
 				for (const cell of row.cells){
 					const name = cell.getAttribute('name')
 					if(name) e.detail.cfg.body.append(name, cell.innerText.trim())
