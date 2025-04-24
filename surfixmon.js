@@ -316,7 +316,7 @@ const onloadAdd = addOnload = onload_add = add_onload = (f) => {
 console.log("Surreal: Added shortcuts.")
 
 // Fixi
-(_=>{
+(()=>{
 	if(document.__fixi_mo) return
 	document.__fixi_mo = new MutationObserver((recs)=>recs.forEach((r)=>r.type === "childList" && r.addedNodes.forEach((n)=>process(n))))
 	let send = (elt, type, detail, bub)=>elt.dispatchEvent(new CustomEvent("fx:" + type, {detail, cancelable:true, bubbles:bub !== false, composed:true}))
