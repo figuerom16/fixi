@@ -293,7 +293,7 @@ function watch(input, handler) {
 
 // SETUP
 let theme = localStorage.getItem('theme') || 'dark'
-find('html').setAttribute('data-theme', theme)
+$('html').one.setAttribute('data-theme', theme)
 
 window.onload=_=>{lucide.createIcons()}
 
