@@ -14,7 +14,7 @@
 			let body = new FormData(form ?? undefined, evt.submitter)
 			let tr = elt.closest("tr")
 			if (tr?.tagName === 'TR') {
-				for (const cell of row.cells){
+				for (const cell of tr.cells){
 					const name = cell.getAttribute('name')
 					if(name) e.detail.cfg.body.append(name, cell.innerText.trim())
 				}
