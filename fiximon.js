@@ -181,14 +181,14 @@ function $(s) {
 	const script = document.currentScript
 	let el, els
 	if (!s) el = script.parentElement
-	if (s === '-') el = script.previousElementSibling
-	if (s instanceof Event) el = s.currentTarget ?? console.warn("$: Event is Null")
-	if (s.indexOf('closest ') == 0) el = script.closest(s.substring(8))
-	if (s.indexOf('next ') == 0){
+	else if (s === '-') el = script.previousElementSibling
+	else if (s instanceof Event) el = s.currentTarget ?? console.warn("$: Event is Null")
+	else if (s.indexOf('closest ') == 0) el = script.closest(s.substring(8))
+	else if (s.indexOf('next ') == 0){
 		const matches = Array.from(document.querySelectorAll(s.substring(5)))
 		el = matches.find((el)=>script.compareDocumentPosition(el) === Node.DOCUMENT_POSITION_FOLLOWING)
 	}
-	if (s.indexOf('previous ') == 0){
+	else if (s.indexOf('previous ') == 0){
 		const matches = Array.from(document.querySelectorAll(s.substring(9))).reverse()
 		el = matches.find((el)=>script.compareDocumentPosition(el) === Node.DOCUMENT_POSITION_PRECEDING)
 	}
