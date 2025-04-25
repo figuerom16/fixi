@@ -122,7 +122,6 @@ document.addEventListener('fx:init',e=>{//Debounce
 document.addEventListener('fx:config',e=>{//Relative Selectors
 	const target = e.target.getAttribute('fx-target') || ""
 	if(target.indexOf('closest ') == 0) e.detail.cfg.target = e.target.closest(target.substring(8))
-	else if(target.indexOf('find ') == 0) e.detail.cfg.target = e.target.closest(target.substring(5))
 	else if(target.indexOf('next ') == 0){
 		const matches = Array.from(document.querySelectorAll(target.substring(5)))
 		e.detail.cfg.target = matches.find((el)=>e.target.compareDocumentPosition(el) === Node.DOCUMENT_POSITION_FOLLOWING)
