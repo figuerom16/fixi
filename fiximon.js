@@ -10,15 +10,16 @@
 		if (elt.__fixi || ignore(elt) || !send(elt, "init", {options})) return
 		elt.__fixi = async(evt)=>{
 			let reqs = elt.__fixi.requests ||= new Set()
-			let form = elt.form || elt.closest("form") || elt.closest("tr")
+			let form = elt.form || elt.closest("form")
 			let body = new FormData(form ?? undefined, evt.submitter)
-			if (!form && elt.name) body.append(elt.name, elt.value)
-			if (form?.tagName === 'TR') {
+			let tr = elt.closest("tr")
+			if (tr?.tagName === 'TR') {
 				for (const cell of row.cells){
 					const name = cell.getAttribute('name')
 					if(name) e.detail.cfg.body.append(name, cell.innerText.trim())
 				}
 			}
+			else if (!form && elt.name) body.append(elt.name, elt.value)
 			if (!['file','image'].includes(elt.type) && !form?.querySelector('input[type="file"], input[type="image"]')) body = new URLSearchParams(body)
 			let ac = new AbortController()
 			let cfg = {
