@@ -1,4 +1,4 @@
-//OUR FIXI
+// FIXI
 (_=>{
 	if(document.__fixi_mo) return
 	document.__fixi_mo = new MutationObserver((recs)=>recs.forEach((r)=>r.type === "childList" && r.addedNodes.forEach((n)=>process(n))))
@@ -176,10 +176,10 @@ document.addEventListener('touchstart',e=>{
 	e.preventDefault();e.target.click()
 })
 
-//MY COMMON
-function $(s) {
-	const script = document.currentScript
+// COMMON
+function $(s) { // s=selector, el=element, els=elements
 	let el, els
+	const script = document.currentScript
 	if (!s) el = script.parentElement
 	else if (s instanceof Event) el = s.currentTarget ?? console.warn("$: Event is Null")
 	else if (typeof s !== 'string') {console.warn("$: Not a String"); return null}
@@ -198,8 +198,7 @@ function $(s) {
 		els = Array.from(document.querySelectorAll(s))
 		if (els.length === 0) {console.warn("$: QuerySelector is Null"); return null}
 	}
-	// e = Event, c = callback
-	return {
+	return { // e=event, c=callback
 		one: els[0],
 		all: els,
 		on: (e, c)=>(els.forEach(el => el.addEventListener(e, c)), this),
@@ -291,7 +290,7 @@ function watch(input, handler) {
 }
 
 
-// MY SETUP
+// SETUP
 let theme = localStorage.getItem('theme') || 'dark'
 find('html').setAttribute('data-theme', theme)
 
