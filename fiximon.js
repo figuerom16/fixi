@@ -152,8 +152,9 @@ document.addEventListener('fx:before',_=>{//Clear Error & Success
 })
 
 document.addEventListener('fx:after',e=>{//Set Error & Success
-	if(e.detail.cfg.response.status < 400) setTimeout(_=>{find('#success').textContent = ''}, 2000)
-	else {e.detail.cfg.target = find('#error');e.detail.cfg.swap = 'innerHTML'}
+	if(e.detail.cfg.response.status < 300) setTimeout(_=>{find('#success').textContent = ''}, 2000)
+	else if (d.detail.cfg.respons.status < 400) window.location.href = response.headers.get('Location')
+	else {e.detail.cfg.target = find('#error'); e.detail.cfg.swap = 'innerHTML'}
 })
 
 document.addEventListener('fx:finally',e=>{//Refresh
@@ -204,8 +205,6 @@ function $(s) { // s=selector, el=element, els=elements
 		all: els,
 		on: (e, c)=>(els.forEach(el => el.addEventListener(e, c)), this),
 		off: (e, c)=>(els.forEach(el => el.removeEventListener(e, c)), this),
-		disable: _=>(els.forEach(el => el.disabled = true), this),
-		enable: _=>(els.forEach(el => el.disabled = false), this),
 		send: (name, detail, bubbles = true)=>(els.forEach(el => el.dispatchEvent(new CustomEvent(name, { detail, bubbles }))), this),
 		// Add more chainables here
 	}
