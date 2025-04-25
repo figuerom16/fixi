@@ -208,8 +208,7 @@ function $(s) {
 		els = Array.from(document.querySelectorAll(s))
 		if (els.length === 0) {console.warn("$: QuerySelector is Null"); return null}
 	}
-	// e = Event
-	// c = callback
+	// e = Event, c = callback
 	const chain = {
 		one: els[0],
 		all: els,
