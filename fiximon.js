@@ -181,8 +181,9 @@ function $(s) {
 	const script = document.currentScript
 	let el, els
 	if (!s) el = script.parentElement
-	else if (s === '-') el = script.previousElementSibling
 	else if (s instanceof Event) el = s.currentTarget ?? console.warn("$: Event is Null")
+	else if (typeof s !== 'string') {console.warn("$: Not a String"); return null}
+	else if (s === '-') el = script.previousElementSibling
 	else if (s.indexOf('closest ') == 0) el = script.closest(s.substring(8))
 	else if (s.indexOf('next ') == 0){
 		const matches = Array.from(document.querySelectorAll(s.substring(5)))
