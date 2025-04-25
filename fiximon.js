@@ -1,0 +1,318 @@
+//OUR FIXI
+(_=>{
+	if(document.__fixi_mo) return
+	document.__fixi_mo = new MutationObserver((recs)=>recs.forEach((r)=>r.type === "childList" && r.addedNodes.forEach((n)=>process(n))))
+	let send = (elt, type, detail, bub)=>elt.dispatchEvent(new CustomEvent("fx:" + type, {detail, cancelable:true, bubbles:bub !== false, composed:true}))
+	let attr = (elt, name, defaultVal)=>elt.getAttribute(name) || defaultVal
+	let ignore = (elt)=>elt.closest("[fx-ignore]") != null
+	let init = (elt)=>{
+		let options = {}
+		if (elt.__fixi || ignore(elt) || !send(elt, "init", {options})) return
+		elt.__fixi = async(evt)=>{
+			let reqs = elt.__fixi.requests ||= new Set()
+			let form = elt.form || elt.closest("form") || elt.closest("tr")
+			let body = new FormData(form ?? undefined, evt.submitter)
+			if (!form && elt.name) body.append(elt.name, elt.value)
+			if (form?.tagName === 'TR') {
+				for (const cell of row.cells){
+					const name = cell.getAttribute('name')
+					if(name) e.detail.cfg.body.append(name, cell.innerText.trim())
+				}
+			}
+			if (!['file','image'].includes(elt.type) && !form?.querySelector('input[type="file"], input[type="image"]')) body = new URLSearchParams(body)
+			let ac = new AbortController()
+			let cfg = {
+				trigger:evt,
+				action:attr(elt, "fx-action", ""),
+				method:attr(elt, "fx-method")?.toUpperCase(),
+				target:document.querySelector(attr(elt, "fx-target")) ?? elt,
+				swap:attr(elt, "fx-swap", "innerHTML"),
+				body,
+				drop:reqs.size,
+				headers:{"FX-Tag":elt.tagName,"FX-Id":elt.id},
+				abort:ac.abort.bind(ac),
+				signal:ac.signal,
+				preventTrigger:true,
+				transition:document.startViewTransition?.bind(document),
+				fetch:fetch.bind(window)
+			}
+			let go = send(elt, "config", {cfg, requests:reqs})
+			if (cfg.preventTrigger) evt.preventDefault()
+			if (!go || cfg.drop) return
+			if (/GET|DELETE/.test(cfg.method)){
+				if (cfg.body.size) cfg.action += (/\?/.test(cfg.action) ? "&" : "?") + cfg.body
+				cfg.body = null
+			}
+			reqs.add(cfg)
+			try {
+				if (cfg.confirm){
+					let result = await cfg.confirm()
+					if (!result) return
+				}
+				if (!send(elt, "before", {cfg, requests:reqs})) return
+				cfg.response = await cfg.fetch(cfg.action, cfg)
+				cfg.text = await cfg.response.text()
+				if (!send(elt, "after", {cfg})) return
+			} catch(error) {
+				send(elt, "error", {cfg, error})
+				return
+			} finally {
+				reqs.delete(cfg)
+				send(elt, "finally", {cfg})
+			}
+			let doSwap = _=>{
+				if (cfg.swap instanceof Function) return cfg.swap(cfg)
+				else if (/(before|after)(begin|end)/.test(cfg.swap)) cfg.target.insertAdjacentHTML(cfg.swap, cfg.text)
+				else if(cfg.swap in cfg.target) cfg.target[cfg.swap] = cfg.text
+				else throw cfg.swap
+			}
+			if (cfg.transition) await cfg.transition(doSwap).finished
+			else await doSwap()
+			send(elt, "swapped", {cfg})
+			if (!document.contains(elt)) send(document, "swapped", {cfg})
+		}
+		elt.__fixi.evt = attr(elt, "fx-trigger", elt.matches("form") ? "submit" : elt.matches("input:not([type=button]),select,textarea") ? "change" : "click").split("|")
+		elt.__fixi.evt.forEach(a=>{elt.addEventListener(a, elt.__fixi, options)})
+		send(elt, "inited", {}, false)
+	}
+	let process = (n)=>{
+		if (n.matches){
+			if (ignore(n)) return
+			if (n.matches("[fx-method]")) init(n)
+		}
+		if(n.querySelectorAll) n.querySelectorAll("[fx-method]").forEach(init)
+	}
+	document.addEventListener("fx:process", (evt)=>process(evt.target))
+	document.addEventListener("DOMContentLoaded", ()=>{
+		document.__fixi_mo.observe(document.documentElement, {childList:true, subtree:true})
+		process(document.body)
+	})
+})()
+
+document.addEventListener('fx:init',e=>{//Disable During Request
+	const el = e.target
+	if(!el.matches('[fx-disable]')) return
+	const disableSelector = el.getAttribute('fx-disable')
+	el.addEventListener('fx:before',_=>{
+		let disableTarget = disableSelector == "" ? el : document.querySelector(disableSelector)
+		disableTarget.disabled = true
+		el.addEventListener('fx:after', (afterEvt)=>{if(afterEvt.target == el) disableTarget.disabled = false})
+	})
+})
+
+document.addEventListener('fx:config',e=>{//Confirm Dialog
+	const confirmationMessage = e.target.getAttribute('fx-confirm')
+	if(confirmationMessage) e.detail.cfg.confirm =_=>confirm(confirmationMessage)
+})
+
+document.addEventListener('fx:init',e=>{//Debounce
+	let target = e.target
+	if (!target.hasAttribute('fx-debounce')) return
+	target.addEventListener('fx:inited', _=>{
+		target.removeEventListener(target.__fixi.evt, target.__fixi)
+		let debounceTime = parseInt(target.getAttribute('fx-debounce'))
+		let timeout = null
+		target.addEventListener(target.__fixi.evt,e=>{
+			clearTimeout(timeout)
+			timeout = setTimeout(_=>target.__fixi(e), debounceTime)
+		})
+	})
+})
+
+document.addEventListener('fx:config',e=>{//Relative Selectors
+	const target = e.target.getAttribute('fx-target') || ""
+	if(target.indexOf('closest ') == 0) e.detail.cfg.target = e.target.closest(target.substring(8))
+	else if(target.indexOf('find ') == 0) e.detail.cfg.target = e.target.closest(target.substring(5))
+	else if(target.indexOf('next ') == 0){
+		const matches = Array.from(document.querySelectorAll(target.substring(5)))
+		e.detail.cfg.target = matches.find((el)=>e.target.compareDocumentPosition(el) === Node.DOCUMENT_POSITION_FOLLOWING)
+	} else if(target.indexOf('previous ') == 0){
+		const matches = Array.from(document.querySelectorAll(target.substring(9))).reverse()
+		e.detail.cfg.target = matches.find((el)=>e.target.compareDocumentPosition(el) === Node.DOCUMENT_POSITION_PRECEDING)
+	}
+})
+
+document.addEventListener('fx:config',e=>{//Vals
+	if(!e.target.matches('[fx-vals]')) return
+	const valsAttr = e.target.getAttribute('fx-vals')
+	let vals
+	if(valsAttr.startsWith('js:')) vals = new Function('return ' + valsAttr.slice(3))()
+	else vals = new Function('return ' + valsAttr)()
+	if(typeof vals !== 'object' || vals === null || Array.isArray(vals)){
+		console.error('fx-vals not a valid object:', vals);return
+	}
+	for (let key in vals){
+		if(typeof key === 'string' && key.trim() === '') continue
+		e.detail.cfg.body.append(key, vals[key])
+	}
+})
+
+document.addEventListener('fx:before',_=>{//Clear Error & Success
+	find('#error').textContent = find('#success').textContent = ''
+})
+
+document.addEventListener('fx:after',e=>{//Set Error & Success
+	if(e.detail.cfg.response.status < 400) setTimeout(_=>{find('#success').textContent = ''}, 2000)
+	else {e.detail.cfg.target = find('#error');e.detail.cfg.swap = 'innerHTML'}
+})
+
+document.addEventListener('fx:finally',e=>{//Refresh
+	if(!e.target.matches('[fx-refresh]')) return
+	document.location.reload()
+})
+
+document.addEventListener('fx:swapped',e=>{//Run Scripts then Create Icons
+	e.detail.cfg.target.querySelectorAll('script').forEach(s=>
+		s.replaceWith(Object.assign(document.createElement('script'),{textContent:s.textContent}))
+	)
+	if(lucide) lucide.createIcons()
+})
+
+document.addEventListener('mousedown',e=>{//fclick
+	if(e.button || !e.target.closest('[fclick]')) return
+	e.preventDefault();e.target.click()
+})
+document.addEventListener('touchstart',e=>{
+	if(!e.target.closest('[fclick]')) return
+	e.preventDefault();e.target.click()
+})
+
+
+// MY COMMON
+function _search(s){
+	const script = document.currentScript
+	if (!s) return script.parentElement
+	if (s === '-') return script.previousElementSibling
+	if (s instanceof Event) return s.currentTarget ?? console.warn("$: Event is Null")
+	if (s.indexOf('closest ') == 0) return script.closest(s.substring(8))
+	if (s.indexOf('find ') == 0) return script.closest(s.substring(5))
+	if (s.indexOf('next ') == 0){
+		const matches = Array.from(document.querySelectorAll(s.substring(5)))
+		return matches.find((el)=>script.compareDocumentPosition(el) === Node.DOCUMENT_POSITION_FOLLOWING)
+	}
+	if (s.indexOf('previous ') == 0){
+		const matches = Array.from(document.querySelectorAll(s.substring(9))).reverse()
+		return matches.find((el)=>script.compareDocumentPosition(el) === Node.DOCUMENT_POSITION_PRECEDING)
+	}
+}
+
+function find(s) {
+	const el = _search(s)
+	if (el) return el
+	return document.querySelector(s)
+}
+
+function $(s) {
+	const el = _search(s)
+	let els
+	if (el) els = [el]
+	else {
+		els = Array.from(document.querySelectorAll(s))
+		if (els.length === 0) {console.warn("$: QuerySelector is Null"); return null}
+	}
+	// e = Event
+	// c = callback
+	const chain = {
+		one: els[0],
+		all: els,
+		on: (e, c)=>(els.forEach(el => el.addEventListener(e, c)), this),
+		off: (e, c)=>(els.forEach(el => el.removeEventListener(e, c)), this),
+		disable: _=>(els.forEach(el => el.disabled = true), this),
+		enable: _=>(els.forEach(el => el.disabled = false), this),
+		send: (name, detail, bubbles = true)=>(els.forEach(el => el.dispatchEvent(new CustomEvent(name, { detail, bubbles }))), this),
+		// Add more chainables here
+	}
+	return chain
+}
+
+function oassign(tag, obj) {return Object.assign(document.createElement(tag), obj)}
+
+function copyToClipboard(text) {
+	if (navigator.clipboard && navigator.clipboard.writeText) {navigator.clipboard.writeText(text);return}
+	const textarea = oassign('textarea')
+	textarea.value = text
+	document.body.appendChild(textarea)
+	textarea.select()
+	document.execCommand('copy')
+	document.body.removeChild(textarea)
+}
+
+function exportTable(table, sep) {
+	const rows = [...table.rows]
+	const data = rows.filter(row => row.style.display !== 'none').map((row, index)=>[...row.cells].map(cell=>index=== 0?cell.innerText.slice(0, -2):cell.textContent))
+	const blob = new Blob([data.map(row => row.join(sep)).join('\n')], {type: 'text/csv'})
+	const a = oassign('a')
+	a.href = URL.createObjectURL(blob)
+	a.download = 'export.csv'
+	a.click()
+	URL.revokeObjectURL(a.href)
+}
+
+function searchTable(table, term) {
+	const rows = [...table.rows].slice(1)
+	rows.forEach((row)=>{
+		const found = [...row.cells].some(cell=>{
+			if (cell.getElementsByTagName('script').length > 0) return false
+			return cell.textContent.includes(term)
+		})
+		row.style.display = found ? '' : 'none'
+	})
+}
+
+function sortTable(head) {
+	const arrow = head.textContent.substr(-1)
+	const heads = head.parentElement
+	const column = [...heads.cells].indexOf(head)
+	const body = head.parentElement.parentElement
+	const rowsArray = [...body.rows].slice(1)
+	for (let e of heads.cells) {if (['►','▲','▼'].includes(e.textContent.substr(-1))) e.textContent=e.textContent.slice(0, -1) + '►'}
+	if (arrow === '▼') {
+		head.textContent = head.textContent.slice(0, -1) + '▲'
+		rowsArray.sort((a, b)=>b.cells[column].textContent.localeCompare(a.cells[column].textContent, undefined, { numeric: true }))
+	}
+	else {
+		head.textContent = head.textContent.slice(0, -1) + '▼'
+		rowsArray.sort((a, b)=>a.cells[column].textContent.localeCompare(b.cells[column].textContent, undefined, { numeric: true }))
+	}
+	body.replaceChildren(heads, ...rowsArray)
+}
+
+function showType(show, head) {
+	if (show) for (let i = 0; i < head.cells.length; i++) head.cells[i].innerHTML = head.cells[i].innerHTML.replace(/<span style="display: none;">\[(.*?)\]<\/span>/g, '[$1]')
+	else for (let i = 0; i < head.cells.length; i++) head.cells[i].innerHTML = head.cells[i].innerHTML.replace(/\[(.*?)\]/g, '<span style="display: none;">[$1]</span>')
+}
+
+function generateKey() {
+	const length = 32
+	const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789-_'
+	let key = ''
+	for (let i = 0; i < length; i++) key += chars[Math.floor(Math.random() * chars.length)]
+	return key
+}
+
+function watch(input, handler) {
+	let timeout
+	if (input !== Object(input)) input = {watch: input}
+	return new Proxy(input, {
+		set(target, property, value, receiver) {
+			if (target[property] === value) return true
+			const result = Reflect.set(target, property, value, receiver)
+			clearTimeout(timeout)
+			timeout = setTimeout(handler, 0, target)
+			return result
+		}
+	})
+}
+
+
+// MY SETUP
+let theme = localStorage.getItem('theme') || 'dark'
+find('html').setAttribute('data-theme', theme)
+
+window.onload=_=>{lucide.createIcons()}
+
+window.addEventListener('scroll', _=>{
+		if (document.documentElement.scrollTop > 100) scroller.style.display = "block"
+		else scroller.style.display = "none"
+	}, {passive: true}
+)
