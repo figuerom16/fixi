@@ -152,8 +152,7 @@ document.addEventListener('fx:before',_=>{//Clear Error & Success
 })
 
 document.addEventListener('fx:after',e=>{//Set Error & Success
-	if(e.detail.cfg.response.status < 300) setTimeout(_=>{$('#success').one.textContent = ''}, 2000)
-	else if (d.detail.cfg.respons.status < 400) window.location.href = response.headers.get('Location')
+	if(e.detail.cfg.response.status < 400) setTimeout(_=>{$('#success').one.textContent = ''}, 2000)
 	else {e.detail.cfg.target = $('#error').one; e.detail.cfg.swap = 'innerHTML'}
 })
 
