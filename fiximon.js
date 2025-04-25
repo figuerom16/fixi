@@ -16,7 +16,7 @@
 			if (tr?.tagName === 'TR') {
 				for (const cell of tr.cells){
 					const name = cell.getAttribute('name')
-					if(name) e.detail.cfg.body.append(name, cell.innerText.trim())
+					if(name) body.append(name, cell.innerText.trim())
 				}
 			}
 			else if (!form && elt.name) body.append(elt.name, elt.value)
