@@ -176,40 +176,29 @@ document.addEventListener('touchstart',e=>{
 	e.preventDefault();e.target.click()
 })
 
-
-// MY COMMON
-function _search(s){
+//MY COMMON
+function $(s) {
 	const script = document.currentScript
-	if (!s) return script.parentElement
-	if (s === '-') return script.previousElementSibling
-	if (s instanceof Event) return s.currentTarget ?? console.warn("$: Event is Null")
-	if (s.indexOf('closest ') == 0) return script.closest(s.substring(8))
+	let el, els
+	if (!s) el = script.parentElement
+	if (s === '-') el = script.previousElementSibling
+	if (s instanceof Event) el = s.currentTarget ?? console.warn("$: Event is Null")
+	if (s.indexOf('closest ') == 0) el = script.closest(s.substring(8))
 	if (s.indexOf('next ') == 0){
 		const matches = Array.from(document.querySelectorAll(s.substring(5)))
-		return matches.find((el)=>script.compareDocumentPosition(el) === Node.DOCUMENT_POSITION_FOLLOWING)
+		el = matches.find((el)=>script.compareDocumentPosition(el) === Node.DOCUMENT_POSITION_FOLLOWING)
 	}
 	if (s.indexOf('previous ') == 0){
 		const matches = Array.from(document.querySelectorAll(s.substring(9))).reverse()
-		return matches.find((el)=>script.compareDocumentPosition(el) === Node.DOCUMENT_POSITION_PRECEDING)
+		el = matches.find((el)=>script.compareDocumentPosition(el) === Node.DOCUMENT_POSITION_PRECEDING)
 	}
-}
-
-function find(s) {
-	const el = _search(s)
-	if (el) return el
-	return document.querySelector(s)
-}
-
-function $(s) {
-	const el = _search(s)
-	let els
 	if (el) els = [el]
 	else {
 		els = Array.from(document.querySelectorAll(s))
 		if (els.length === 0) {console.warn("$: QuerySelector is Null"); return null}
 	}
 	// e = Event, c = callback
-	const chain = {
+	return {
 		one: els[0],
 		all: els,
 		on: (e, c)=>(els.forEach(el => el.addEventListener(e, c)), this),
@@ -219,7 +208,6 @@ function $(s) {
 		send: (name, detail, bubbles = true)=>(els.forEach(el => el.dispatchEvent(new CustomEvent(name, { detail, bubbles }))), this),
 		// Add more chainables here
 	}
-	return chain
 }
 
 function oassign(tag, obj) {return Object.assign(document.createElement(tag), obj)}
