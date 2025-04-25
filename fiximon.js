@@ -148,11 +148,11 @@ document.addEventListener('fx:config',e=>{//Vals
 })
 
 document.addEventListener('fx:before',_=>{//Clear Error & Success
-	$('#error').one.textContent = $('#success').one.textContent = ''
+	$('#error').$.textContent = $('#success').$.textContent = ''
 })
 
 document.addEventListener('fx:after',e=>{//Set Error & Success
-	if(e.detail.cfg.response.status < 400) setTimeout(_=>{$('#success').one.textContent = ''}, 2000)
+	if(e.detail.cfg.response.status < 400) setTimeout(_=>{$('#success').$.textContent = ''}, 2000)
 	else {e.detail.cfg.target = $('#error').one; e.detail.cfg.swap = 'innerHTML'}
 })
 
@@ -200,7 +200,7 @@ function $(s) { // s=selector, el=element, els=elements
 		if (els.length === 0) {console.warn("$: QuerySelector is Null"); return null}
 	}
 	return { // e=event, c=callback
-		one: els[0],
+		$: els[0],
 		all: els,
 		on: (e, c)=>(els.forEach(el => el.addEventListener(e, c)), this),
 		off: (e, c)=>(els.forEach(el => el.removeEventListener(e, c)), this),
@@ -292,7 +292,7 @@ function watch(input, handler) {
 
 // SETUP
 let theme = localStorage.getItem('theme') || 'dark'
-$('html').one.setAttribute('data-theme', theme)
+$('html').$.setAttribute('data-theme', theme)
 
 window.onload=_=>{lucide.createIcons()}
 
