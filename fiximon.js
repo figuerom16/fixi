@@ -177,6 +177,7 @@ document.addEventListener('touchstart',e=>{
 	e.preventDefault();e.target.click()
 })
 
+
 // COMMON
 function $(s) { // s=selector, el=element, els=elements
 	let el, els
