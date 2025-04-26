@@ -4,7 +4,7 @@ function $(s) { // s=selector, el=element, els=elements
 	if (!s) el = start.parentElement
 	else if (s instanceof Event) el = s.currentTarget ?? console.warn('$: Event is Null')
 	else if (typeof s !== 'string') {console.warn('$: Not a String'); return null}
-	else if (s === '-') el = start.previousElementSibling
+	else if (s == '-') el = start.previousElementSibling
 	else if (s.indexOf('closest ') == 0) el = start.closest(s.substring(8))
 	else if (s.indexOf('next ') == 0){
 		const matches = Array.from(document.querySelectorAll(s.substring(5)))
