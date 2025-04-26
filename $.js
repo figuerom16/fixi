@@ -6,15 +6,13 @@ function $(s) { // s=selector, el=element, els=elements
 	else if (typeof s !== 'string') {console.warn('$: Not a String'); return null}
 	else if (s == '-') el = start.previousElementSibling
 	else if (s.indexOf('closest ') == 0) el = start.closest(s.substring(8))
-	else if (s.indexOf('next ') == 0){
+	else if (s.indexOf('next ') == 0) {
 		const matches = Array.from(document.querySelectorAll(s.substring(5)))
 		el = matches.find((el)=>start.compareDocumentPosition(el) === Node.DOCUMENT_POSITION_FOLLOWING)
-	}
-	else if (s.indexOf('previous ') == 0){
+	} else if (s.indexOf('previous ') == 0) {
 		const matches = Array.from(document.querySelectorAll(s.substring(9))).reverse()
 		el = matches.find((el)=>start.compareDocumentPosition(el) === Node.DOCUMENT_POSITION_PRECEDING)
-	}
-	else if (s.indexOf('nav ') == 0){
+	} else if (s.indexOf('nav ') == 0) {
 		el = start
 		for (const n of s.substring(4).split(' ')) {
 			switch (n) {

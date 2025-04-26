@@ -123,13 +123,24 @@ document.addEventListener('fx:init',e=>{//Debounce
 document.addEventListener('fx:config',e=>{//Relative Selectors
 	const target = e.target.getAttribute('fx-target') || ""
 	if(target.indexOf('closest ') == 0) e.detail.cfg.target = e.target.closest(target.substring(8))
-	else if(target.indexOf('next ') == 0){
+	else if(target.indexOf('next ') == 0) {
 		const matches = Array.from(document.querySelectorAll(target.substring(5)))
 		e.detail.cfg.target = matches.find((el)=>e.target.compareDocumentPosition(el) === Node.DOCUMENT_POSITION_FOLLOWING)
-	} else if(target.indexOf('previous ') == 0){
+	} else if(target.indexOf('previous ') == 0) {
 		const matches = Array.from(document.querySelectorAll(target.substring(9))).reverse()
 		e.detail.cfg.target = matches.find((el)=>e.target.compareDocumentPosition(el) === Node.DOCUMENT_POSITION_PRECEDING)
-	}
+	} else if (target.indexOf('nav ') == 0) {
+		for (const n of target.substring(4).split(' ')) {
+			switch (n) {
+				case 'parent': e.detail.cfg.target = e.detail.cfg.target.parentElement; break
+				case 'next': e.detail.cfg.target = e.detail.cfg.target.nextElementSibling; break
+				case 'prev': e.detail.cfg.target = e.detail.cfg.target.previousElementSibling; break
+				case 'first': e.detail.cfg.target = e.detail.cfg.target.firstElementChild; break
+				case 'last': e.detail.cfg.target = e.detail.cfg.target.lastElementChild; break
+				default: console.warn(`$: Nav ${n} is not Valid`)
+			}
+		}
+	} else console.warn("fx bad relative selector")
 })
 
 document.addEventListener('fx:config',e=>{//Vals
@@ -187,15 +198,13 @@ function $(s) { // s=selector, el=element, els=elements
 	else if (typeof s !== 'string') {console.warn('$: Not a String'); return null}
 	else if (s == '-') el = start.previousElementSibling
 	else if (s.indexOf('closest ') == 0) el = start.closest(s.substring(8))
-	else if (s.indexOf('next ') == 0){
+	else if (s.indexOf('next ') == 0) {
 		const matches = Array.from(document.querySelectorAll(s.substring(5)))
 		el = matches.find((el)=>start.compareDocumentPosition(el) === Node.DOCUMENT_POSITION_FOLLOWING)
-	}
-	else if (s.indexOf('previous ') == 0){
+	} else if (s.indexOf('previous ') == 0) {
 		const matches = Array.from(document.querySelectorAll(s.substring(9))).reverse()
 		el = matches.find((el)=>start.compareDocumentPosition(el) === Node.DOCUMENT_POSITION_PRECEDING)
-	}
-	else if (s.indexOf('nav ') == 0){
+	} else if (s.indexOf('nav ') == 0) {
 		el = start
 		for (const n of s.substring(4).split(' ')) {
 			switch (n) {
