@@ -140,7 +140,7 @@ document.addEventListener('fx:config',e=>{//Relative Selectors
 				default: console.warn(`$: Nav ${n} is not Valid`)
 			}
 		}
-	} else console.warn("fx bad relative selector")
+	}
 })
 
 document.addEventListener('fx:config',e=>{//Vals
