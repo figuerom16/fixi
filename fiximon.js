@@ -134,7 +134,7 @@ document.addEventListener('fx:config',e=>{//Relative Selectors
 			switch (n) {
 				case 'parent': e.detail.cfg.target = e.detail.cfg.target.parentElement; break
 				case 'next': e.detail.cfg.target = e.detail.cfg.target.nextElementSibling; break
-				case 'prev': e.detail.cfg.target = e.detail.cfg.target.previousElementSibling; break
+				case 'previous': e.detail.cfg.target = e.detail.cfg.target.previousElementSibling; break
 				case 'first': e.detail.cfg.target = e.detail.cfg.target.firstElementChild; break
 				case 'last': e.detail.cfg.target = e.detail.cfg.target.lastElementChild; break
 				default: console.warn(`$: Nav ${n} is not Valid`)
