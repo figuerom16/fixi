@@ -164,13 +164,11 @@ document.addEventListener('fx:before',_=>{//Clear Error & Success
 
 document.addEventListener('fx:after',e=>{//Set Error & Success
 	if(e.detail.cfg.response.status < 300) setTimeout(_=>{$('#success').$.textContent = ''}, 2000)
-	else if(e.detail.cfg.response.status < 400) window.location.href = e.detail.cfg.text
+	else if(e.detail.cfg.response.status < 400) {
+		if (e.detail.cfg.text == 'refresh'){document.location.reload(); return}
+		window.location.href = e.detail.cfg.text
+	}
 	else {e.detail.cfg.target = $('#error').$; e.detail.cfg.swap = 'innerHTML'}
-})
-
-document.addEventListener('fx:finally',e=>{//Refresh
-	if(!e.target.matches('[fx-refresh]')) return
-	document.location.reload()
 })
 
 document.addEventListener('fx:swapped',e=>{//Run Scripts then Create Icons
