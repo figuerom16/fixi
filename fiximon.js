@@ -238,6 +238,29 @@ function $(s) { // s=selector, el=element, els=elements
 	}
 }
 
+function signal(init) {
+	let value = init
+	const subs = new Set()
+	const sig = _=>{ return value }
+	sig.set = newValue=>{
+		if (newValue !== value) {
+			value = newValue
+			subs.forEach(sub => sub(value))
+		}
+	}
+	sig.sub = cb=>{
+		subs.add(cb)
+		return _=>subs.delete(cb)
+	}
+	sig.pop = _=>{
+		if (subs.size == 0) return
+		let last
+		for (const sub of subs) last = sub
+		subs.delete(last)
+	}
+	return sig
+}
+
 function oassign(tag, obj) {return Object.assign(document.createElement(tag), obj)}
 
 function copyToClipboard(text) {
@@ -301,20 +324,6 @@ function generateKey() {
 	let key = ''
 	for (let i = 0; i < length; i++) key += chars[Math.floor(Math.random() * chars.length)]
 	return key
-}
-
-function watch(input, handler) {
-	let timeout
-	if (input !== Object(input)) input = {watch: input}
-	return new Proxy(input, {
-		set(target, property, value, receiver) {
-			if (target[property] === value) return true
-			const result = Reflect.set(target, property, value, receiver)
-			clearTimeout(timeout)
-			timeout = setTimeout(handler, 0, target)
-			return result
-		}
-	})
 }
 
 

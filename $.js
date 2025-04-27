@@ -44,3 +44,26 @@ function $(s) { // s=selector, el=element, els=elements
 		// Add more chainables here
 	}
 }
+
+function signal(init) {
+	let value = init
+	const subs = new Set()
+	const sig = _=>{ return value }
+	sig.set = newValue=>{
+		if (newValue !== value) {
+			value = newValue
+			subs.forEach(sub => sub(value))
+		}
+	}
+	sig.sub = cb=>{
+		subs.add(cb)
+		return _=>subs.delete(cb)
+	}
+	sig.pop = _=>{
+		if (subs.size == 0) return
+		let last
+		for (const sub of subs) last = sub
+		subs.delete(last)
+	}
+	return sig
+}
