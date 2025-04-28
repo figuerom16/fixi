@@ -250,12 +250,7 @@ function signal(init) {
 		subs.add(cb)
 		return _=>subs.delete(cb)
 	}
-	sig.pop = _=>{
-		if (subs.size == 0) return
-		let last
-		for (const sub of subs) last = sub
-		subs.delete(last)
-	}
+	sig.clear = _=>{ subs.clear() }
 	return sig
 }
 
