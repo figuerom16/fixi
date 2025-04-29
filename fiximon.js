@@ -51,10 +51,9 @@ function signal(init) {
 	const subs = new Set()
 	const sig = _=>{return value}
 	sig.set = newValue=>{
-		if (newValue !== value) {
-			value = newValue
-			subs.forEach(sub => sub(value))
-		}
+		if (newValue === value) return
+		value = newValue
+		subs.forEach(sub=>sub(value))
 	}
 	sig.sub = cb=>{
 		subs.add(cb)
