@@ -314,12 +314,15 @@ function generateKey(length=32) {
 // SETUP
 let theme = localStorage.getItem('theme') || 'dark'
 $('html').$.setAttribute('data-theme', theme)
+let top, bot
 
-window.onload=_=>{lucide.createIcons()}
+window.onload=_=>{
+	top = $('#scrollerTop').$
+	bot = $('#scrollerBot').$
+	lucide.createIcons()
+}
 
 window.addEventListener('scroll', _=>{
-	const top = $('#scrollerTop').$
-	const bot = $('#scrollerBot').$
 	if (top) {
 		if (document.documentElement.scrollTop > 100) top.style.display = "block"
 		else top.style.display = "none"
@@ -332,9 +335,9 @@ window.addEventListener('scroll', _=>{
 
 document.addEventListener('mousedown',e=>{//fclick
 	if(e.button || !e.target.closest('[fclick]')) return
-	e.preventDefault();e.target.click()
+	e.preventDefault(); e.target.click()
 })
 document.addEventListener('touchstart',e=>{
 	if(!e.target.closest('[fclick]')) return
-	e.preventDefault();e.target.click()
+	e.preventDefault(); e.target.click()
 })
