@@ -328,7 +328,7 @@ window.addEventListener('scroll', _=>{
 		else topButton.style.display = "none"
 	}
 	if (botButton) {
-		if (document.documentElement.scrollHeight - window.innerHeight - document.documentElement.scrollTop > 100) bot.style.display = "block"
+		if (document.documentElement.scrollHeight - window.innerHeight - document.documentElement.scrollTop > 100) botButton.style.display = "block"
 		else botButton.style.display = "none"
 	}
 }, {passive: true})
