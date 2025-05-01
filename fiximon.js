@@ -303,8 +303,7 @@ function showType(show, head) {
 	else for (let i = 0; i < head.cells.length; i++) head.cells[i].innerHTML = head.cells[i].innerHTML.replace(/\[(.*?)\]/g, '<span style="display: none;">[$1]</span>')
 }
 
-function generateKey() {
-	const length = 32
+function generateKey(length=32) {
 	const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789-_'
 	let key = ''
 	for (let i = 0; i < length; i++) key += chars[Math.floor(Math.random() * chars.length)]
