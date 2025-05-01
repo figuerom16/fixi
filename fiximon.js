@@ -314,22 +314,22 @@ function generateKey(length=32) {
 // SETUP
 let theme = localStorage.getItem('theme') || 'dark'
 $('html').$.setAttribute('data-theme', theme)
-let top, bot
+let topButton, botButton
 
 window.onload=_=>{
-	top = $('#scrollerTop').$
-	bot = $('#scrollerBot').$
+	topButton = $('#scrollerTop').$
+	botButton = $('#scrollerBot').$
 	lucide.createIcons()
 }
 
 window.addEventListener('scroll', _=>{
-	if (top) {
-		if (document.documentElement.scrollTop > 100) top.style.display = "block"
-		else top.style.display = "none"
+	if (topButton) {
+		if (document.documentElement.scrollTop > 100) topButton.style.display = "block"
+		else topButton.style.display = "none"
 	}
-	if (bot) {
+	if (botButton) {
 		if (document.documentElement.scrollHeight - window.innerHeight - document.documentElement.scrollTop > 100) bot.style.display = "block"
-		else bot.style.display = "none"
+		else botButton.style.display = "none"
 	}
 }, {passive: true})
 
