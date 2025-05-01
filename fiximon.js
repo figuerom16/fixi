@@ -319,10 +319,17 @@ $('html').$.setAttribute('data-theme', theme)
 window.onload=_=>{lucide.createIcons()}
 
 window.addEventListener('scroll', _=>{
-		if (document.documentElement.scrollTop > 100) scroller.style.display = "block"
-		else scroller.style.display = "none"
-	}, {passive: true}
-)
+	const top = $('#scrollerTop').$
+	const bot = $('#scrollerBot').$
+	if (top) {
+		if (document.documentElement.scrollTop > 100) top.style.display = "block"
+		else top.style.display = "none"
+	}
+	if (bot) {
+		if (document.documentElement.scrollHeight - window.innerHeight - document.documentElement.scrollTop > 100) bot.style.display = "block"
+		else bot.style.display = "none"
+	}
+}, {passive: true})
 
 document.addEventListener('mousedown',e=>{//fclick
 	if(e.button || !e.target.closest('[fclick]')) return
