@@ -248,6 +248,8 @@ document.addEventListener('fx:swapped',e=>{//Run Scripts then Create Icons
 // COMMON
 function oassign(tag, obj) {return Object.assign(document.createElement(tag), obj)}
 
+async function sleep(ms, e) {return await new Promise(resolve =>setTimeout(_=>{resolve(e)}, ms))}
+
 function copyToClipboard(text) {
 	if (navigator.clipboard && navigator.clipboard.writeText) {navigator.clipboard.writeText(text);return}
 	const textarea = oassign('textarea')
