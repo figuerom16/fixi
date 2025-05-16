@@ -300,37 +300,19 @@ function searchTable(table, term, show=1000) {
 }
 
 function sortTable(head) {
+	const arrow = head.textContent.substr(-1)
 	const heads = head.parentElement
-	const body = heads.parentElement
 	const column = [...heads.cells].indexOf(head)
-	const rows = [...body.rows]
-	const arrow = head.textContent.slice(-1)
+	const body = head.parentElement.parentElement
+	const rows = [...body.rows].slice(1)
+	for (let e of heads.cells) {if (['►','▲','▼'].includes(e.textContent.substr(-1))) e.textContent=e.textContent.slice(0, -1) + '►'}
 	const isDescending = arrow === '▼'
-	for (let i = 0; i < heads.cells.length; i++) {
-		const cell = heads.cells[i]
-		const currentText = cell.textContent
-		const currentArrow = currentText.slice(-1)
-		if (['►', '▲', '▼'].includes(currentArrow)) cell.textContent = currentText.slice(0, -1) + '►'
-	}
 	head.textContent = head.textContent.slice(0, -1) + (isDescending ? '▲' : '▼')
-	const dataRows = rows.slice(1)
-	const sortableRows = dataRows.map(row => ({
-		row: row,
-		value: row.cells[column].textContent
-	}))
-	sortableRows.sort((a, b) => {
-		if (a.row.style.display === 'none' && b.row.style.display !== 'none') return 1
-		if (a.row.style.display !== 'none' && b.row.style.display === 'none') return -1
-		const comparison = a.value.localeCompare(b.value, undefined, { numeric: true })
-		return isDescending ? -comparison : comparison
+	rows.sort((a, b) => {
+		const comp = a.cells[column].textContent.localeCompare(b.cells[column].textContent, undefined, { numeric: true })
+		return isDescending ? -comp : comp
 	})
-	const sortedRows = sortableRows.map(item => item.row)
-	const newChildren = [heads, ...sortedRows]
-	const fragment = document.createDocumentFragment()
-	for (const child of newChildren) {
-		fragment.appendChild(child)
-	}
-	body.replaceChildren(fragment)
+	body.replaceChildren(heads, ...rows)
 }
 
 function showType(show, head) {
