@@ -279,7 +279,7 @@ function exportTable(table, sep) {
 	URL.revokeObjectURL(a.href)
 }
 
-function searchTable(table, term, show=1000) {
+function searchTable(table, term) {
 	let count = 0
 	let rows = Array.from(table.rows)
 	const heads = rows.shift()
@@ -291,7 +291,7 @@ function searchTable(table, term, show=1000) {
 		}
 		if (!found) row.style.display = 'none'
 		else {
-			if (count < show) row.style.display = ''
+			if (count < 10000) row.style.display = ''
 			else row.style.display = 'none'
 			count++
 		}
@@ -300,11 +300,13 @@ function searchTable(table, term, show=1000) {
 }
 
 function sortTable(head) {
+	const body = head.parentElement.parentElement
+	const rows = [...body.rows].slice(1)
+	const len = rows.length
+	if (len > 10000 && !confirm(`WARNING! TABLE OVER 10K ROWS: ${len}\nJS SORTING NOT RECOMMENDED. PROCEED?`)) return
 	const arrow = head.textContent.substr(-1)
 	const heads = head.parentElement
 	const column = [...heads.cells].indexOf(head)
-	const body = head.parentElement.parentElement
-	const rows = [...body.rows].slice(1)
 	for (let e of heads.cells) {if (['►','▲','▼'].includes(e.textContent.substr(-1))) e.textContent=e.textContent.slice(0, -1) + '►'}
 	const isDescending = arrow === '▼'
 	head.textContent = head.textContent.slice(0, -1) + (isDescending ? '▲' : '▼')
