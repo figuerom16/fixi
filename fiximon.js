@@ -38,18 +38,7 @@ function $(s) { // s=selector, el=element, els=elements
 			return el
 		},
 		// Add more returns here
-		on: (e, c, d = 0)=>{
-			if (d > 0) {
-				els.forEach(el=>{
-					let timeout
-					el.addEventListener(e, function(...args) {
-						clearTimeout(timeout)
-						timeout = setTimeout(_=>{c.apply(el, args)}, d);
-					})
-				})
-			} else els.forEach(el => el.addEventListener(e, c))
-			return this
-		},
+		on: (e, c)=>(els.forEach(el => el.addEventListener(e, c)),this),
 		off: (e, c)=>(els.forEach(el => el.removeEventListener(e, c)), this),
 		run: (c)=>(els.forEach(_=>f(c)), this),
 		send: (name, detail, bubbles = true)=>(els.forEach(el => el.dispatchEvent(new CustomEvent(name, { detail, bubbles }))), this),
@@ -260,6 +249,15 @@ document.addEventListener('fx:swapped',e=>{//Run Scripts then Create Icons
 function oassign(tag, obj) {return Object.assign(document.createElement(tag), obj)}
 
 async function sleep(ms, e) {return await new Promise(resolve =>setTimeout(_=>{resolve(e)}, ms))}
+
+function debounce(f, d) {
+	let timeout
+	return function(...args) {
+		const context = this
+		clearTimeout(timeout)
+		timeout = setTimeout(_=>{f.apply(context, args)}, d);
+	}
+}
 
 function copyToClipboard(text) {
 	if (navigator.clipboard && navigator.clipboard.writeText) {navigator.clipboard.writeText(text);return}
