@@ -290,6 +290,7 @@ function searchTable(table, term) {
 		if (!found) row.style.display = 'none'
 		else {
 			if (count < 10000) row.style.display = ''
+			else row.style.display = 'none'
 			count++
 		}
 	})
