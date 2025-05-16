@@ -42,6 +42,16 @@ function $(s) { // s=selector, el=element, els=elements
 		off: (e, c)=>(els.forEach(el => el.removeEventListener(e, c)), this),
 		run: (c)=>(els.forEach(_=>f(c)), this),
 		send: (name, detail, bubbles = true)=>(els.forEach(el => el.dispatchEvent(new CustomEvent(name, { detail, bubbles }))), this),
+		debounce: (e, d, c)=>{
+			els.forEach(el => {
+				let timeout
+				el.addEventListener(e, (...args) => {
+					clearTimeout(timeout)
+					timeout = setTimeout(_=>{c.apply(this, args)}, d);
+				})
+			})
+			return this;
+		},
 		// Add more chainables here
 	}
 }
@@ -250,14 +260,8 @@ function oassign(tag, obj) {return Object.assign(document.createElement(tag), ob
 
 async function sleep(ms, e) {return await new Promise(resolve =>setTimeout(_=>{resolve(e)}, ms))}
 
-function debounce(f, d) {
-	let timeout
-	return function(...args) {
-		const context = this
-		clearTimeout(timeout)
-		timeout = setTimeout(_=>{f.apply(context, args)}, d);
-	}
-}
+async function debounce (task, ms) { let t = { promise: null, cancel: _ => void 0 }; return async (...args) => { try { t.cancel(); t = deferred(ms); await t.promise; await task(...args); } catch (_) { console.log("cleaning up cancelled promise") } } }
+function deferred (ms) { let cancel, promise = new Promise((resolve, reject) => { cancel = reject; setTimeout(resolve, ms) }); return { promise, cancel } }
 
 function copyToClipboard(text) {
 	if (navigator.clipboard && navigator.clipboard.writeText) {navigator.clipboard.writeText(text);return}
