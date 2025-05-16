@@ -38,14 +38,17 @@ function $(s) { // s=selector, el=element, els=elements
 			}
 			return el
 		},
-		debounce: (e, d, c)=>{
-			el = els[0]
-			el.addEventListener(e, ev=>{
-				clearTimeout(timeout)
-				timeout = setTimeout(_=>{c.call(el, ev)}, d)
-			})
-			return this
-		},
+		debounce: function(event, delay, callback) {
+            const el = els[0]; // Use only the first element
+
+            el.addEventListener(event, (e) => {
+                clearTimeout(timeoutId);
+                timeoutId = setTimeout(() => {
+                    callback(e); // Call the callback with the event object
+                }, delay);
+            });
+            return this;
+        },
 		// Add more returns here
 		on: (e, c)=>(els.forEach(el => el.addEventListener(e, c)),this),
 		off: (e, c)=>(els.forEach(el => el.removeEventListener(e, c)), this),
