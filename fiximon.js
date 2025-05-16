@@ -279,9 +279,11 @@ function exportTable(table, sep) {
 	URL.revokeObjectURL(a.href)
 }
 
-function searchTable(table, term) {
+function searchTable(table, term, show=1000) {
 	let count = 0
-	const rows = Array.from(table.rows).slice(1)
+	let rows = Array.from(table.rows)
+	const heads = rows.shift()
+	for (let e of heads.cells) {if (['►','▲','▼'].includes(e.textContent.substr(-1))) e.textContent=e.textContent.slice(0, -1) + '►'}
 	rows.forEach(row =>{
 		let found = false;
 		for (const cell of row.cells) {
@@ -289,7 +291,7 @@ function searchTable(table, term) {
 		}
 		if (!found) row.style.display = 'none'
 		else {
-			if (count < 10000) row.style.display = ''
+			if (count < show) row.style.display = ''
 			else row.style.display = 'none'
 			count++
 		}
@@ -302,17 +304,19 @@ function sortTable(head) {
 	const heads = head.parentElement
 	const column = [...heads.cells].indexOf(head)
 	const body = head.parentElement.parentElement
-	const rowsArray = [...body.rows].slice(1)
+	const rowsArray = [...body.rows].slice(1); // Get all rows
+	const hiddenRows = rowsArray.filter(row => row.style.display === 'none'); // Separate hidden rows
+	const visibleRows = rowsArray.filter(row => row.style.display !== 'none'); // Separate visible rows
 	for (let e of heads.cells) {if (['►','▲','▼'].includes(e.textContent.substr(-1))) e.textContent=e.textContent.slice(0, -1) + '►'}
 	if (arrow === '▼') {
 		head.textContent = head.textContent.slice(0, -1) + '▲'
-		rowsArray.sort((a, b)=>b.cells[column].textContent.localeCompare(a.cells[column].textContent, undefined, { numeric: true }))
+		visibleRows.sort((a, b)=>b.cells[column].textContent.localeCompare(a.cells[column].textContent, undefined, { numeric: true }))
 	}
 	else {
 		head.textContent = head.textContent.slice(0, -1) + '▼'
-		rowsArray.sort((a, b)=>a.cells[column].textContent.localeCompare(b.cells[column].textContent, undefined, { numeric: true }))
+		visibleRows.sort((a, b)=>a.cells[column].textContent.localeCompare(b.cells[column].textContent, undefined, { numeric: true }))
 	}
-	body.replaceChildren(heads, ...rowsArray)
+	body.replaceChildren(heads, ...visibleRows, ...hiddenRows); // Add visible rows first, then hidden rows
 }
 
 function showType(show, head) {
