@@ -330,8 +330,8 @@ $('html').$.setAttribute('data-theme', theme)
 let topButton, botButton
 
 window.onload=_=>{
-	topButton = $('#scrollerTop').$
-	botButton = $('#scrollerBot').$
+	topButton = $('#scrollerTop')?.$
+	botButton = $('#scrollerBot')?.$
 	lucide.createIcons()
 }
 
