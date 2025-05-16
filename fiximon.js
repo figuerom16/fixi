@@ -20,7 +20,6 @@ function $(s) { // s=selector, el=element, els=elements
 		els = Array.from(document.querySelectorAll(s))
 		if (els.length === 0) {console.warn(`$(${s}): QuerySelector is Null`); return null}
 	}
-	let timeout
 	return { // e=event, c=callback, d=delay
 		$: els[0],
 		all: els,
@@ -38,17 +37,6 @@ function $(s) { // s=selector, el=element, els=elements
 			}
 			return el
 		},
-		debounce: function(event, delay, callback) {
-            const el = els[0]; // Use only the first element
-
-            el.addEventListener(event, (e) => {
-                clearTimeout(timeoutId);
-                timeoutId = setTimeout(() => {
-                    callback(e); // Call the callback with the event object
-                }, delay);
-            });
-            return this;
-        },
 		// Add more returns here
 		on: (e, c)=>(els.forEach(el => el.addEventListener(e, c)),this),
 		off: (e, c)=>(els.forEach(el => el.removeEventListener(e, c)), this),
