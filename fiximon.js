@@ -20,7 +20,7 @@ function $(s) { // s=selector, el=element, els=elements
 		els = Array.from(document.querySelectorAll(s))
 		if (els.length === 0) {console.warn("$: QuerySelector is Null"); return null}
 	}
-	return { // e=event, c=callback
+	return { // e=event, c=callback, d=delay
 		$: els[0],
 		all: els,
 		nav: (nav)=>{
@@ -38,7 +38,18 @@ function $(s) { // s=selector, el=element, els=elements
 			return el
 		},
 		// Add more returns here
-		on: (e, c)=>(els.forEach(el => el.addEventListener(e, c)), this),
+		on: (e, c, d = 0)=>{
+			if (d > 0) {
+				let timeout
+				els.forEach(el=>{
+					el.addEventListener(e, function(...args) {
+						clearTimeout(timeout)
+						timeout = setTimeout(_=>{c.apply(el, args)}, d);
+					})
+				})
+			} else els.forEach(el => el.addEventListener(e, c))
+			return this
+		},
 		off: (e, c)=>(els.forEach(el => el.removeEventListener(e, c)), this),
 		run: (c)=>(els.forEach(_=>f(c)), this),
 		send: (name, detail, bubbles = true)=>(els.forEach(el => el.dispatchEvent(new CustomEvent(name, { detail, bubbles }))), this),
@@ -272,12 +283,12 @@ function exportTable(table, sep) {
 }
 
 function searchTable(table, term) {
-	const rows = [...table.rows].slice(1)
-	rows.forEach((row)=>{
-		const found = [...row.cells].some(cell=>{
-			if (cell.getElementsByTagName('script').length > 0) return false
-			return cell.textContent.includes(term)
-		})
+	const rows = Array.from(table.rows).slice(1)
+	rows.forEach(row =>{
+		let found = false;
+		for (const cell of row.cells) {
+			if (cell.textContent.includes(term)) {found = true;break}
+		}
 		row.style.display = found ? '' : 'none'
 	})
 }
