@@ -280,14 +280,20 @@ function exportTable(table, sep) {
 }
 
 function searchTable(table, term) {
+	let count = 0
 	const rows = Array.from(table.rows).slice(1)
 	rows.forEach(row =>{
 		let found = false;
 		for (const cell of row.cells) {
 			if (cell.textContent.includes(term)) {found = true;break}
 		}
-		row.style.display = found ? '' : 'none'
+		if (!found) row.style.display = 'none'
+		else {
+			if (count < 10000) row.style.display = ''
+			count++
+		}
 	})
+	return count
 }
 
 function sortTable(head) {
