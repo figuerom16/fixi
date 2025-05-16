@@ -303,23 +303,34 @@ function sortTable(head) {
 	const heads = head.parentElement
 	const body = heads.parentElement
 	const column = [...heads.cells].indexOf(head)
-	const rows = [...body.rows].slice(1)
+	const rows = [...body.rows]
 	const arrow = head.textContent.slice(-1)
 	const isDescending = arrow === '▼'
-	for (const cell of heads.cells) {
-		const currentArrow = cell.textContent.slice(-1)
-		if (['►', '▲', '▼'].includes(currentArrow)) cell.textContent = cell.textContent.slice(0, -1) + '►'
+	for (let i = 0; i < heads.cells.length; i++) {
+		const cell = heads.cells[i]
+		const currentText = cell.textContent
+		const currentArrow = currentText.slice(-1)
+		if (['►', '▲', '▼'].includes(currentArrow)) cell.textContent = currentText.slice(0, -1) + '►'
 	}
 	head.textContent = head.textContent.slice(0, -1) + (isDescending ? '▲' : '▼')
-	rows.sort((a, b) => {
-		if (a.style.display === 'none' && b.style.display !== 'none') return 1 // Hidden rows to the end
-		if (a.style.display !== 'none' && b.style.display === 'none') return -1 //Visible rows to the beginning
-		const aValue = a.cells[column].textContent
-		const bValue = b.cells[column].textContent
-		const comparison = aValue.localeCompare(bValue, undefined, { numeric: true })
+	const dataRows = rows.slice(1)
+	const sortableRows = dataRows.map(row => ({
+		row: row,
+		value: row.cells[column].textContent
+	}))
+	sortableRows.sort((a, b) => {
+		if (a.row.style.display === 'none' && b.row.style.display !== 'none') return 1
+		if (a.row.style.display !== 'none' && b.row.style.display === 'none') return -1
+		const comparison = a.value.localeCompare(b.value, undefined, { numeric: true })
 		return isDescending ? -comparison : comparison
 	})
-	body.replaceChildren(heads, ...rows)
+	const sortedRows = sortableRows.map(item => item.row)
+	const newChildren = [heads, ...sortedRows]
+	const fragment = document.createDocumentFragment()
+	for (const child of newChildren) {
+		fragment.appendChild(child)
+	}
+	body.replaceChildren(fragment)
 }
 
 function showType(show, head) {
