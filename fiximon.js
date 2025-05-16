@@ -300,23 +300,26 @@ function searchTable(table, term, show=1000) {
 }
 
 function sortTable(head) {
-	const arrow = head.textContent.substr(-1)
 	const heads = head.parentElement
+	const body = heads.parentElement
 	const column = [...heads.cells].indexOf(head)
-	const body = head.parentElement.parentElement
-	const rowsArray = [...body.rows].slice(1); // Get all rows
-	const hiddenRows = rowsArray.filter(row => row.style.display === 'none'); // Separate hidden rows
-	const visibleRows = rowsArray.filter(row => row.style.display !== 'none'); // Separate visible rows
-	for (let e of heads.cells) {if (['►','▲','▼'].includes(e.textContent.substr(-1))) e.textContent=e.textContent.slice(0, -1) + '►'}
-	if (arrow === '▼') {
-		head.textContent = head.textContent.slice(0, -1) + '▲'
-		visibleRows.sort((a, b)=>b.cells[column].textContent.localeCompare(a.cells[column].textContent, undefined, { numeric: true }))
+	const rows = [...body.rows].slice(1)
+	const arrow = head.textContent.slice(-1)
+	const isDescending = arrow === '▼'
+	for (const cell of heads.cells) {
+		const currentArrow = cell.textContent.slice(-1)
+		if (['►', '▲', '▼'].includes(currentArrow)) cell.textContent = cell.textContent.slice(0, -1) + '►'
 	}
-	else {
-		head.textContent = head.textContent.slice(0, -1) + '▼'
-		visibleRows.sort((a, b)=>a.cells[column].textContent.localeCompare(b.cells[column].textContent, undefined, { numeric: true }))
-	}
-	body.replaceChildren(heads, ...visibleRows, ...hiddenRows); // Add visible rows first, then hidden rows
+	head.textContent = head.textContent.slice(0, -1) + (isDescending ? '▲' : '▼')
+	rows.sort((a, b) => {
+		if (a.style.display === 'none' && b.style.display !== 'none') return 1 // Hidden rows to the end
+		if (a.style.display !== 'none' && b.style.display === 'none') return -1 //Visible rows to the beginning
+		const aValue = a.cells[column].textContent
+		const bValue = b.cells[column].textContent
+		const comparison = aValue.localeCompare(bValue, undefined, { numeric: true })
+		return isDescending ? -comparison : comparison
+	})
+	body.replaceChildren(heads, ...rows)
 }
 
 function showType(show, head) {
