@@ -250,8 +250,12 @@ function oassign(tag, obj) {return Object.assign(document.createElement(tag), ob
 
 async function sleep(ms, e) {return await new Promise(resolve =>setTimeout(_=>{resolve(e)}, ms))}
 
-async function debounce (task, ms) { let t = { promise: null, cancel: _ => void 0 }; return async (...args) => { try { t.cancel(); t = deferred(ms); await t.promise; await task(...args); } catch (_) { console.log("cleaning up cancelled promise") } } }
-function deferred (ms) { let cancel, promise = new Promise((resolve, reject) => { cancel = reject; setTimeout(resolve, ms) }); return { promise, cancel } }
+function debounce (c, d) {
+	let t = null
+	return (...a) => {
+		clearTimeout(t)
+		t = setTimeout(_=>{c(...a)}, d)};
+}
 
 function copyToClipboard(text) {
 	if (navigator.clipboard && navigator.clipboard.writeText) {navigator.clipboard.writeText(text);return}
