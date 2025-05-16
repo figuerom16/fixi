@@ -23,6 +23,7 @@ function $(s) { // s=selector, el=element, els=elements
 	return { // e=event, c=callback, d=delay
 		$: els[0],
 		all: els,
+		children: els[0].children,
 		nav: (nav)=>{
 			el = els[0]
 			for (const n of nav.split(' ')) {
