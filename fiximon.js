@@ -44,13 +44,13 @@ function $(s) { // s=selector, el=element, els=elements
 		send: (name, detail, bubbles = true)=>(els.forEach(el => el.dispatchEvent(new CustomEvent(name, { detail, bubbles }))), this),
 		debounce: (e, d, c)=>{
 			els.forEach(el => {
-				let timeout
+				let t
 				el.addEventListener(e, (...args) => {
-					clearTimeout(timeout)
-					timeout = setTimeout(_=>{c.apply(this, args)}, d);
+					clearTimeout(t)
+					t = setTimeout(_=>{c.apply(this, args)}, d)
 				})
 			})
-			return this;
+			return this
 		},
 		// Add more chainables here
 	}
