@@ -3,8 +3,8 @@ function $(s) { // s=selector, el=element, els=elements
 	let el, els
 	const start = document.currentScript // Doesn't work in callback use Event or QuerySelector
 	if (!s) el = start.parentElement ?? console.warn('$(): Fails inside callback.')
-	else if (s instanceof Event) el = s.currentTarget ?? console.warn('$: Event is Null')
-	else if (typeof s !== 'string') {console.warn('$: Not a String'); return null}
+	else if (s instanceof Event) el = s.currentTarget ?? console.warn(`$(${s}): Event is Null`)
+	else if (typeof s !== 'string') {console.warn(`$(${s}): Not a String`); return null}
 	else if (s == '-') el = start.previousElementSibling ?? console.warn('$(\'-\'): Fails inside callback.')
 	else if (s.indexOf('closest ') == 0) el = start.closest(s.substring(8))
 	else if (s.indexOf('next ') == 0){
@@ -18,7 +18,7 @@ function $(s) { // s=selector, el=element, els=elements
 	if (el) els = [el]
 	else {
 		els = Array.from(document.querySelectorAll(s))
-		if (els.length === 0) {console.warn("$: QuerySelector is Null"); return null}
+		if (els.length === 0) {console.warn(`$(${s}): QuerySelector is Null`); return null}
 	}
 	return { // e=event, c=callback, d=delay
 		$: els[0],
@@ -40,8 +40,8 @@ function $(s) { // s=selector, el=element, els=elements
 		// Add more returns here
 		on: (e, c, d = 0)=>{
 			if (d > 0) {
-				let timeout
 				els.forEach(el=>{
+					let timeout
 					el.addEventListener(e, function(...args) {
 						clearTimeout(timeout)
 						timeout = setTimeout(_=>{c.apply(el, args)}, d);
