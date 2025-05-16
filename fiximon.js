@@ -251,10 +251,11 @@ function oassign(tag, obj) {return Object.assign(document.createElement(tag), ob
 async function sleep(ms, e) {return await new Promise(resolve =>setTimeout(_=>{resolve(e)}, ms))}
 
 function debounce (c, d) {
-	let t = null
-	return (...a) => {
+	let t
+	return _=>{
 		clearTimeout(t)
-		t = setTimeout(_=>{c(...a)}, d)};
+		t = setTimeout(c, d)
+	}
 }
 
 function copyToClipboard(text) {
