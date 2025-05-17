@@ -292,7 +292,7 @@ function searchTable(table, term) {
 		for (const cell of row.cells) {
 			if (cell.textContent.includes(term)) {found = true;break}
 		}
-		if (found) {row.style.display = 'none'; count++}
+		if (found) {row.style.display = ''; count++}
 		else row.style.display = 'none'
 	})
 	return count
