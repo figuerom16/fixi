@@ -283,9 +283,9 @@ function exportTable(table, sep) {
 function searchTable(table, term) {
 	let count = 0
 	let rows = Array.from(table.rows)
+	const heads = rows.shift()
 	const len = rows.length
 	if (len > 20480 && !confirm(`WARNING! TABLE OVER 20K ROWS: ${len}\nJS FILTERING NOT RECOMMENDED. PROCEED?`)) return
-	const heads = rows.shift()
 	for (let e of heads.cells) {if (['►','▲','▼'].includes(e.textContent.substr(-1))) e.textContent=e.textContent.slice(0, -1) + '►'}
 	rows.forEach(row =>{
 		let found = false;
