@@ -42,7 +42,7 @@ function $(s) { // s=selector, el=element, els=elements
 		off: (e, c)=>(els.forEach(el => el.removeEventListener(e, c)), this),
 		run: (c)=>(els.forEach(_=>f(c)), this),
 		send: (name, detail, bubbles = true)=>(els.forEach(el => el.dispatchEvent(new CustomEvent(name, { detail, bubbles }))), this),
-		onchil: (e, c)=>(els[0].children.forEach(el => el.addEventListener(e, c)),this),
+		onchil: (e, c)=>(Array.from(els[0].children).forEach(el => el.addEventListener(e, c)),this),
 		// Add more chainables here
 	}
 }
