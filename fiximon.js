@@ -283,6 +283,8 @@ function exportTable(table, sep) {
 function searchTable(table, term) {
 	let count = 0
 	let rows = Array.from(table.rows)
+	const len = rows.length
+	if (len > 20480 && !confirm(`WARNING! TABLE OVER 20K ROWS: ${len}\nJS FILTERING NOT RECOMMENDED. PROCEED?`)) return
 	const heads = rows.shift()
 	for (let e of heads.cells) {if (['►','▲','▼'].includes(e.textContent.substr(-1))) e.textContent=e.textContent.slice(0, -1) + '►'}
 	rows.forEach(row =>{
@@ -290,12 +292,8 @@ function searchTable(table, term) {
 		for (const cell of row.cells) {
 			if (cell.textContent.includes(term)) {found = true;break}
 		}
-		if (!found) row.style.display = 'none'
-		else {
-			if (count < 10000) row.style.display = ''
-			else row.style.display = 'none'
-			count++
-		}
+		if (found) {row.style.display = 'none'; count++}
+		else row.style.display = 'none'
 	})
 	return count
 }
@@ -304,7 +302,7 @@ function sortTable(head) {
 	const body = head.parentElement.parentElement
 	const rows = [...body.rows].slice(1)
 	const len = rows.length
-	if (len > 10000 && !confirm(`WARNING! TABLE OVER 10K ROWS: ${len}\nJS SORTING NOT RECOMMENDED. PROCEED?`)) return
+	if (len > 20480 && !confirm(`WARNING! TABLE OVER 20K ROWS: ${len}\nJS SORTING NOT RECOMMENDED. PROCEED?`)) return
 	const arrow = head.textContent.substr(-1)
 	const heads = head.parentElement
 	const column = [...heads.cells].indexOf(head)
