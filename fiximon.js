@@ -26,11 +26,11 @@ function $(s) { // s=selector, el=element, els=elements
 		closest: (n)=>{return els[0].closest(n)},
 		next: (n)=>{
 			const matches = Array.from(document.querySelectorAll(n))
-			return matches.find((e)=>els[0].compareDocumentPosition(e) === Node.DOCUMENT_POSITION_FOLLOWING)
+			return matches.find((el)=>els[0].compareDocumentPosition(el) === Node.DOCUMENT_POSITION_FOLLOWING)
 		},
 		previous: (n)=>{
 			const matches = Array.from(document.querySelectorAll(n)).reverse()
-			return matches.find((e)=>els[0].compareDocumentPosition(e) === Node.DOCUMENT_POSITION_PRECEDING)
+			return matches.find((el)=>els[0].compareDocumentPosition(el) === Node.DOCUMENT_POSITION_PRECEDING)
 		},
 		nav: (nav)=>{
 			el = els[0]
