@@ -23,6 +23,15 @@ function $(s) { // s=selector, el=element, els=elements
 	return { // e=event, c=callback, d=delay
 		$: els[0],
 		all: els,
+		closest: (n)=>{return els[0].closest(n)},
+		next: (n)=>{
+			const matches = Array.from(document.querySelectorAll(n))
+			return matches.find((e)=>els[0].compareDocumentPosition(e) === Node.DOCUMENT_POSITION_FOLLOWING)
+		},
+		previous: (n)=>{
+			const matches = Array.from(document.querySelectorAll(n)).reverse()
+			return matches.find((e)=>els[0].compareDocumentPosition(e) === Node.DOCUMENT_POSITION_PRECEDING)
+		},
 		nav: (nav)=>{
 			el = els[0]
 			for (const n of nav.split(' ')) {
