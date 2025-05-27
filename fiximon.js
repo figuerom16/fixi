@@ -278,13 +278,16 @@ function copyToClipboard(text) {
 	document.body.removeChild(textarea)
 }
 
-function exportTable(table, sep) {
+function exportTable(table, sep='|', filename) {
 	const rows = [...table.rows]
 	const data = rows.filter(row => row.style.display !== 'none').map((row, index)=>[...row.cells].map(cell=>index=== 0?cell.innerText.slice(0, -2):cell.textContent))
-	const blob = new Blob([data.map(row => row.join(sep)).join('\n')], {type: 'text/csv'})
+	saveCSV(data.map(row => row.join(sep)).join('\n'), filename)
+}
+
+function saveCSV(text, filename='export.csv') {
 	const a = oassign('a')
-	a.href = URL.createObjectURL(blob)
-	a.download = 'export.csv'
+	a.href = URL.createObjectURL(new Blob([text], {type: 'text/csv'}))
+	a.download = filename
 	a.click()
 	URL.revokeObjectURL(a.href)
 }
