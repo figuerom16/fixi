@@ -294,11 +294,9 @@ function saveCSV(text, filename='export.csv') {
 
 function searchTable(table, term) {
 	let count = 0
-	let rows = Array.from(table.rows)
-	const heads = rows.shift()
+	let rows = [...table.rows].slice(1)
 	const len = rows.length
 	if (len > 10240 && !confirm(`WARNING! TABLE OVER 20K ROWS: ${len}\nJS FILTERING NOT RECOMMENDED. PROCEED?`)) return
-	for (let e of heads.cells) {if (['►','▲','▼'].includes(e.textContent.substr(-1))) e.textContent=e.textContent.slice(0, -1) + '►'}
 	rows.forEach(row =>{
 		let found = false;
 		for (const cell of row.cells) {
