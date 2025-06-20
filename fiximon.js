@@ -238,6 +238,12 @@ document.addEventListener('fx:before',_=>{//Clear Error & Success
 	$('#error').$.textContent = $('#success').$.textContent = ''
 })
 
+document.addEventListener('fx:after',e=>{//Select
+	if (!e.target.matches('[fx-select]')) return
+	const t = Object.assign(document.createElement('template'),{innerHTML:e.detail.cfg.text})
+	e.detail.cfg.text = t.content.querySelector(e.target.getAttribute('fx-select')).outerHTML
+})
+
 document.addEventListener('fx:after',e=>{//Set Error & Success
 	if(e.detail.cfg.response.status < 300) setTimeout(_=>{$('#success').$.textContent = ''}, 2000)
 	else if(e.detail.cfg.response.status < 400) {
