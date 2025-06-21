@@ -322,7 +322,10 @@ function sortTable(head) {
 	const arrow = head.textContent.substr(-1)
 	const heads = head.parentElement
 	const column = [...heads.cells].indexOf(head)
-	for (let e of heads.cells) {if (['►','▲','▼'].includes(e.textContent.substr(-1))) e.textContent=e.textContent.slice(0, -1) + '►'}
+	for (let e of heads.cells) {
+		if (!['►','▲','▼'].includes(e.textContent.substr(-1))) return
+		e.textContent=e.textContent.slice(0, -1) + '►'
+	}
 	const isDescending = arrow === '▼'
 	head.textContent = head.textContent.slice(0, -1) + (isDescending ? '▲' : '▼')
 	rows.sort((a, b) => {
