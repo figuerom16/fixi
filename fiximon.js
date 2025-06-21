@@ -197,7 +197,8 @@ document.addEventListener('fx:init',e=>{//Debounce
 })
 
 document.addEventListener('fx:config',e=>{//Relative Selectors
-	const target = e.target.getAttribute('fx-target') || ""
+	const target = e.target.getAttribute('fx-target')
+	if (!target) return
 	if(target.indexOf('closest ') == 0) e.detail.cfg.target = e.target.closest(target.substring(8))
 	else if(target.indexOf('next ') == 0) {
 		const matches = Array.from(document.querySelectorAll(target.substring(5)))
@@ -220,8 +221,8 @@ document.addEventListener('fx:config',e=>{//Relative Selectors
 })
 
 document.addEventListener('fx:config',e=>{//Vals
-	if(!e.target.matches('[fx-vals]')) return
 	const valsAttr = e.target.getAttribute('fx-vals')
+	if (!valsAttr) return
 	let vals
 	if(valsAttr.startsWith('js:')) vals = new Function('return ' + valsAttr.slice(3))()
 	else vals = new Function('return ' + valsAttr)()
@@ -239,9 +240,10 @@ document.addEventListener('fx:before',_=>{//Clear Error & Success
 })
 
 document.addEventListener('fx:after',e=>{//Select
-	if (!e.target.matches('[fx-select]')) return
+	const select = e.target.getAttribute('fx-select')
+	if (!select) return
 	const t = Object.assign(document.createElement('template'),{innerHTML:e.detail.cfg.text})
-	e.detail.cfg.text = t.content.querySelector(e.target.getAttribute('fx-select')).outerHTML
+	e.detail.cfg.text = t.content.querySelector(select).outerHTML
 })
 
 document.addEventListener('fx:after',e=>{//Set Error & Success
