@@ -322,12 +322,10 @@ function sortTable(head) {
 	const len = rows.length
 	if (len > 10240 && !confirm(`WARNING! TABLE OVER 20K ROWS: ${len}\nJS SORTING NOT RECOMMENDED. PROCEED?`)) return
 	const arrow = head.textContent.substr(-1)
+	if (!['►','▲','▼'].includes(arrow)) return
 	const heads = head.parentElement
 	const column = [...heads.cells].indexOf(head)
-	for (let e of heads.cells) {
-		if (!['►','▲','▼'].includes(e.textContent.substr(-1))) return
-		e.textContent=e.textContent.slice(0, -1) + '►'
-	}
+	for (let e of heads.cells) {if (['►','▲','▼'].includes(e.textContent.substr(-1))) e.textContent=e.textContent.slice(0, -1) + '►'}
 	const isDescending = arrow === '▼'
 	head.textContent = head.textContent.slice(0, -1) + (isDescending ? '▲' : '▼')
 	rows.sort((a, b) => {
