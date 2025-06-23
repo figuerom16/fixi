@@ -317,12 +317,12 @@ function searchTable(table, term) {
 }
 
 function sortTable(head) {
+	const arrow = head.textContent.substr(-1)
+	if (!['►','▲','▼'].includes(arrow)) return
 	const body = head.parentElement.parentElement
 	const rows = [...body.rows].slice(1)
 	const len = rows.length
 	if (len > 10240 && !confirm(`WARNING! TABLE OVER 20K ROWS: ${len}\nJS SORTING NOT RECOMMENDED. PROCEED?`)) return
-	const arrow = head.textContent.substr(-1)
-	if (!['►','▲','▼'].includes(arrow)) return
 	const heads = head.parentElement
 	const column = [...heads.cells].indexOf(head)
 	for (let e of heads.cells) {if (['►','▲','▼'].includes(e.textContent.substr(-1))) e.textContent=e.textContent.slice(0, -1) + '►'}
