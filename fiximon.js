@@ -363,9 +363,7 @@ function durationToNanos(durationString) {// This is golang specific. eg. 72h30m
 	let totalNanoseconds = 0
 	let lastIndex = 0
 	const matches = [...durationString.matchAll(regex)]
-	if (matches.length === 0 && durationString.length > 0) {
-		throw new Error(`Invalid duration string format: "${durationString}"`)
-	}
+	if (matches.length === 0 && durationString.length > 0) throw new Error(`Invalid duration string format: "${durationString}"`)
 	for (const match of matches) {
 		const value = parseInt(match[1], 10)
 		const unit = match[2]
