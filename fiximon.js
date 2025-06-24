@@ -350,9 +350,9 @@ function generateKey(length=32) {
 
 function durationToSeconds(durationString) {
 	if (typeof durationString !== 'string' || durationString.length === 0) return null
-	const durationRegex = /(\d+h)?(\d+m)?(\d+s)?/i;
-	const match = durationString.match(durationRegex)
+	const match = durationString.match(/(\d+h)?(\d+m)?(\d+s)?(\d+ms)?/i)
 	if (!match) return null
+	if (!match[1] && !match[2] && !match[3] && !match[4]) return null
 	let totalSeconds = 0
 	if (match[1]) {
 		const hours = parseInt(match[1].slice(0, -1), 10)
@@ -365,6 +365,10 @@ function durationToSeconds(durationString) {
 	if (match[3]) {
 		const seconds = parseInt(match[3].slice(0, -1), 10)
 		if (!isNaN(seconds)) totalSeconds += seconds
+	}
+	if (match[4]) {
+		const milliseconds = parseInt(match[4].slice(0, -3), 10)
+		if (!isNaN(milliseconds)) totalSeconds += milliseconds / 1000
 	}
 	return totalSeconds
 }
