@@ -348,33 +348,6 @@ function generateKey(length=32) {
 	return key
 }
 
-function durationToNanoseconds(durationString) {
-	if (typeof durationString !== 'string' || durationString.length === 0) return null
-	const durationRegex = /(\d+h)?(\d+m)?(\d+s)?(\d+ms)?(\d+us)?(\d+ns)?/i
-	const match = durationString.match(durationRegex)
-	if (!match) return null
-	if (!match[1] && !match[2] && !match[3] && !match[4] && !match[5] && !match[6]) return null
-	let totalNanoseconds = 0
-	const parseAndAddToTotal = (componentMatch, unitString, nsMultiplier) => {
-		if (componentMatch) {
-			const numberPart = componentMatch.slice(0, -unitString.length)
-			const value = parseInt(numberPart, 10)
-			if (!isNaN(value)) totalNanoseconds += value * nsMultiplier
-			else return false
-		}
-		return true
-	}
-	if (!parseAndAddToTotal(match[1], 'h', 3600 * 1e9)) return null
-	if (!parseAndAddToTotal(match[2], 'm', 60 * 1e9)) return null
-	if (!parseAndAddToTotal(match[3], 's', 1e9)) return null
-	if (!parseAndAddToTotal(match[4], 'ms', 1e6)) return null
-	if (!parseAndAddToTotal(match[5], 'us', 1e3)) return null
-	if (!parseAndAddToTotal(match[6], 'ns', 1)) return null
-	if (isNaN(totalNanoseconds)) return null
-	return totalNanoseconds
-}
-
-
 // SETUP
 let theme = localStorage.getItem('theme') || 'dark'
 $('html').$.setAttribute('data-theme', theme)
