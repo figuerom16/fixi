@@ -355,19 +355,19 @@ function durationToNanoseconds(durationString) {
 	if (!match[1] && !match[2] && !match[3] && !match[4] && !match[5] && !match[6]) return null
 	let totalNanoseconds = 0
 	if (match[1]) {
-		const hours = parseInt(match[1].slice(0, -1), 10);
+		const hours = parseInt(match[1].slice(0, -1), 10)
 		if (!isNaN(hours)) totalNanoseconds += hours * 3600 * 1_000_000_000
 		else return null
 	}
 	if (match[2]) {
-		const minutes = parseInt(match[2].slice(0, -1), 10);
+		const minutes = parseInt(match[2].slice(0, -1), 10)
 		if (!isNaN(minutes)) totalNanoseconds += minutes * 60 * 1_000_000_000
 		else return null
 	}
 	if (match[3]) {
-		const seconds = parseInt(match[3].slice(0, -1), 10);
+		const seconds = parseInt(match[3].slice(0, -1), 10)
 		if (!isNaN(seconds)) totalNanoseconds += seconds * 1_000_000_000
-		else return null;
+		else return null
 	}
 	if (match[4]) {
 		const milliseconds = parseInt(match[4].slice(0, -3), 10)
@@ -375,12 +375,12 @@ function durationToNanoseconds(durationString) {
 		else return null
 	}
 	if (match[5]) {
-		const microseconds = parseInt(match[5].slice(0, -2), 10);
+		const microseconds = parseInt(match[5].slice(0, -2), 10)
 		if (!isNaN(microseconds)) totalNanoseconds += microseconds * 1_000
-			else return null;
+			else return null
 	}
 	if (match[6]) {
-		const nanoseconds = parseInt(match[6].slice(0, -2), 10);
+		const nanoseconds = parseInt(match[6].slice(0, -2), 10)
 		if (!isNaN(nanoseconds)) totalNanoseconds += nanoseconds
 		else return null
 	}
