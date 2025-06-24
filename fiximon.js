@@ -357,7 +357,7 @@ const NANO_MULTIPLIERS = {
 	h: 60 * 60 * 1000 * 1000 * 1000,
 }
 
-function durationToNanos(durationString) {
+function durationToNanos(durationString) {// This is golang specific. eg. 72h30m1s100ms10us5ns
 	if (!durationString) return 0
 	const regex = /(\d+)(ns|us|ms|s|m|h)/g
 	let totalNanoseconds = 0
