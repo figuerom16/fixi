@@ -348,6 +348,27 @@ function generateKey(length=32) {
 	return key
 }
 
+function durationToSeconds(durationString) {
+	if (typeof durationString !== 'string' || durationString.length === 0) return null
+	const durationRegex = /(\d+h)?(\d+m)?(\d+s)?/i;
+	const match = durationString.match(durationRegex)
+	if (!match) return null
+	let totalSeconds = 0
+	if (match[1]) {
+		const hours = parseInt(match[1].slice(0, -1), 10)
+		if (!isNaN(hours)) totalSeconds += hours * 3600
+	}
+	if (match[2]) {
+		const minutes = parseInt(match[2].slice(0, -1), 10)
+		if (!isNaN(minutes)) totalSeconds += minutes * 60
+	}
+	if (match[3]) {
+		const seconds = parseInt(match[3].slice(0, -1), 10)
+		if (!isNaN(seconds)) totalSeconds += seconds
+	}
+	return totalSeconds
+}
+
 
 // SETUP
 let theme = localStorage.getItem('theme') || 'dark'
