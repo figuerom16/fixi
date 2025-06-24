@@ -348,6 +348,34 @@ function generateKey(length=32) {
 	return key
 }
 
+const NANO_MULTIPLIERS = {
+	ns: 1,
+	us: 1000,
+	ms: 1000 * 1000,
+	s: 1000 * 1000 * 1000,
+	m: 60 * 1000 * 1000 * 1000,
+	h: 60 * 60 * 1000 * 1000 * 1000,
+}
+
+function durationToNanos(durationString) {
+	if (!durationString) return 0
+	const regex = /(\d+)(ns|us|ms|s|m|h)/g
+	let totalNanoseconds = 0
+	let lastIndex = 0
+	const matches = [...durationString.matchAll(regex)]
+	if (matches.length === 0 && durationString.length > 0) {
+		throw new Error(`Invalid duration string format: "${durationString}"`)
+	}
+	for (const match of matches) {
+		const value = parseInt(match[1], 10)
+		const unit = match[2]
+		totalNanoseconds += value * NANO_MULTIPLIERS[unit]
+		lastIndex = match.index + match[0].length
+	}
+	if (lastIndex !== durationString.length) throw new Error(`Invalid characters found in duration string: "${durationString}"`)
+	return totalNanoseconds
+}
+
 // SETUP
 let theme = localStorage.getItem('theme') || 'dark'
 $('html').$.setAttribute('data-theme', theme)
