@@ -887,7 +887,7 @@ evtSource.addEventListener("fixi", (event) => {
       const cfg = {
         target: ele,
 	swap: swap,
-	text,
+	text: text,
 	transition: document.startViewTransition?.bind(document),
       };
       let doSwap = () => {
