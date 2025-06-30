@@ -873,6 +873,50 @@ document.addEventListener("fx:init", (evt)=>{
 </div>
 ```
 
+
+### Server Sent Events
+
+datastar-style SSE can be implmented in the following manner:
+
+```js
+const evtSource = new EventSource("/sse");
+evtSource.addEventListener("fixi", (event) => {
+	const { target, swap, text } = JSON.parse(event.data);
+	document.querySelectorAll(target).forEach(async (ele) => {
+		if (ele) {
+			const cfg = {
+				target: ele,
+				swap: swap,
+				text,
+				transition: document.startViewTransition?.bind(document),
+			};
+			let doSwap = () => {
+				if (cfg.swap instanceof Function) return cfg.swap(cfg);
+				else if (/(before|after)(begin|end)/.test(cfg.swap))
+					cfg.target.insertAdjacentHTML(cfg.swap, cfg.text);
+				else if (cfg.swap in cfg.target)
+					cfg.target[cfg.swap] = cfg.text;
+				else throw cfg.swap;
+			};
+			if (cfg.transition) await cfg.transition(doSwap).finished;
+			else await doSwap();
+		}
+	});
+});
+```
+
+#### Example Event
+
+On the server side, a fixi event type can be send with a stringified object containing target, swap, and text.
+
+```js
+event: fixi\ndata: ${JSON.stringify({
+target: "#clock",
+swap: "innerHTML",
+text: `<div>${new Date()}<div>`
+})}\n\n`
+```
+
 ### Confirmation
 
 This extension implements a simple `confirm()` based confirmation if the `ext-fx-confirm` attribute is found.  Note that
