@@ -910,7 +910,7 @@ evtSource.addEventListener("fixi", (event) => {
 On the server side, a fixi event type can be send with a stringified object containing target, swap, and text.
 
 ```js
-event: fixi\ndata: ${JSON.stringify({
+const message = `event: fixi\ndata: ${JSON.stringify({
 target: "#clock",
 swap: "innerHTML",
 text: `<div>${new Date()}<div>`
