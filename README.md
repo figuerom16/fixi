@@ -329,7 +329,7 @@ document.addEventListener("fx:config", (evt) => {
 })
 ```
 
-For inline scripts where Locality of Behavior is desired. 
+For inline scripts where [Locality of Behavior](https://htmx.org/essays/locality-of-behaviour) is desired. 
 The target scripts need to be replaced in order to execute.  
 
 This will automatically execute all script tags that are swapped in:
