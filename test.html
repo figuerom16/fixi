@@ -228,6 +228,21 @@
         </div>
 
         <div class="test">
+            <h3>Test basic button with none swap works</h3>
+            <script>
+              test(async ()=>{
+                mock("/demo", "<div>Foo</div>");
+                find('button').click();
+                await sleep(50);
+                assertEq(find('button')?.innerText, "Button 1", true);
+              })
+            </script>
+            <button fx-action="/demo" fx-method="get" fx-swap="none">
+                Button 1
+            </button>
+        </div>
+
+        <div class="test">
             <h3>Test basic button with beforebegin swap works</h3>
             <script>
                 test(async ()=>{
