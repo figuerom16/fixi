@@ -259,7 +259,7 @@ document.addEventListener('fx:swapped',e=>{//Run Scripts then Create Icons
 	e.detail.cfg.target.querySelectorAll('script').forEach(s=>
 		s.replaceWith(Object.assign(document.createElement('script'),{textContent:s.textContent}))
 	)
-	if(lucide) lucide.createIcons()
+	lucide?.createIcons()
 })
 
 
