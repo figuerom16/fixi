@@ -887,10 +887,9 @@ document.addEventListener("fx:init", (evt)=>{
 </div>
 ```
 
-
 ### Server Sent Events
 
-datastar-style SSE can be implemented in the following manner:
+[SSE](https://developer.mozilla.org/en-US/docs/Web/API/Server-sent_events)-based swaps can be implemented in the following manner:
 
 ```js
 const evtSource = new EventSource("/sse");
