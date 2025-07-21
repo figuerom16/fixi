@@ -219,8 +219,13 @@ encoded body.
 
 Before a request is sent, the aforementioned [`fx:config`](#fxconfig) event is triggered, which can be used to configure
 aspects of the request. If `preventDefault()` is invoked in this event, the request will not be sent.
-The `evt.detail.cfg.drop` property will be set to `true` if there is an existing outstanding request associated with 
-the element and, if it is not set to `false` in an event handler, the request will be dropped (i.e. not issued).
+The `evt.detail.cfg.drop` property will be [truthy](https://developer.mozilla.org/en-US/docs/Glossary/Truthy)
+if there is an existing outstanding request associated with the element, otherwise the value will be
+[falsy](https://developer.mozilla.org/en-US/docs/Glossary/Falsy). More specifically, the value is equal
+to the number of outstanding requests associated with the element. If the value is truthy after the last
+`fx:config` handler has ran to completion, the request will be dropped (i.e. not issued). This implies,
+if you do not [customize the behavior](#replace-existing-requests-in-flight), an element will drop all
+new requests whilst there is an outstanding request associated with it.
 
 In the [`fx:config`](#fxconfig) event you can also set the `evt.detail.cfg.confirm` property to a no-argument function.
 This function can return a Promise and can be used to asynchronously confirm that the request should be issued:
@@ -498,9 +503,8 @@ This config object has the following properties:
 * `headers` - An Object of name/value pairs to be sent as HTTP Request Headers
 * `target` - The target element that will be swapped when the response is processed
 * `swap` - The mechanism by which the element will be swapped
-* `body` - The body of the request, if present, a FormData object that holds the data of the form associated with the
-* `drop` - Whether this request will be dropped, defaults to
-           [truthy](https://developer.mozilla.org/en-US/docs/Glossary/Truthy) if a request is already in flight
+* `body` - The body of the request, if present, a FormData object that holds the data of the form associated with the request
+* `drop` - Whether this request will be dropped, defaults to the number of outstanding requests associated with the element
 * `transition` - The View Transition function, if it is available.  Set to `false` if you don't want a transition to occur
 * `preventTrigger` - A boolean (defaults to `true`) that, if true, will call `preventDefault()` on the triggering event
 * `signal` - The AbortSignal of the related AbortController for the request
@@ -515,12 +519,13 @@ Another property available on the `detail` of this event is `requests`, which wi
 [Set](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Set) of any existing
 outstanding requests for the element.
 
+###### replace existing requests in flight
 fixi does not implement request queuing like htmx does, but you can implement a simple
 "replace existing requests in flight" rule with the following JavaScript:
 
 ```js
 document.addEventListener("fx:config", (evt) => {
-    evt.detail.cfg.drop = false;  // allow this request to be issued even if there are other requests
+    evt.detail.cfg.drop = 0;  // allow this request to be issued even if there are other requests
     evt.detail.requests.forEach((cfg) => cfg.abort()); // abort all existing requests
 })
 ```
