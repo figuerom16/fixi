@@ -163,7 +163,7 @@ You can get support for fixi via:
 </tr>
 <tr>
 <td><code>fx-ignore</code></td>
-<td>Any element with this attribute on it or on a parent will not be processed for <code>fx-*</code> attributes</td>
+<td>Any element with this attribute on it or on an ancestor will not be processed for <code>fx-*</code> attributes</td>
 <td></td>
 </tr>
 </tbody>
@@ -190,7 +190,7 @@ fixi-powered elements are elements with the `fx-action` attribute on them.
 When fixi finds one it will establish an event listener on that element that will dispatch an AJAX request via 
 `fetch()` to the URL specified by `fx-action`.
 
-fixi will ignore any elements that have the `fx-ignore` attribute on them or on a parent.
+fixi will ignore any elements that have the `fx-ignore` attribute on them or on an ancestor.
 
 The event that will trigger the request is determined by the `fx-trigger` attribute.
 
@@ -297,7 +297,7 @@ you to listen for this event on `document` and receive it after every swap.
 
 ###### Notes on Targeting the Document Element (`html`)
 
-Note that if you wand to replace the entire document (that is, target the `html` element) you _must_ use an `innerHTML`
+Note that if you want to replace the entire document (that is, target the `html` element) you _must_ use an `innerHTML`
 swap, because the default `outerHTML` swap will fail with a [`NoModificationAllowed`](https://developer.mozilla.org/en-US/docs/Web/API/DOMException#nomodificationallowederror)
 error.
 
@@ -434,7 +434,7 @@ triggered on an element just after a <code>fetch()</code> request finishes norma
 <a href="#fxerror"><code>fx:error</code></a>
 </td>
 <td>
-triggered on an element if an exception occurs during a <code>fetch()</code>
+triggered on an element if something is thrown from a <code>fetch()</code>
 </td>
 </tr>
 <tr>
@@ -550,11 +550,10 @@ Calling `preventDefault()` on this event will prevent swapping from occurring.
 
 ##### `fx:error`
 
-The  `fx:error` event is triggered when a network error occurs. In this case the `cfg.text` will be set to a blank
-string, and the `evt.detail.cfg` object is available for modification.
-
-Calling `preventDefault()` on this event will prevent swapping from occurring. Note that `AbortError`s will also prevent
-swapping.
+The  `fx:error` event is triggered when a network error occurs or when the request is aborted using the
+`abort` function on the config. In this case the `evt.detail.cfg` object is available for modification
+and `cfg.response` and `cfg.text` will not be present. The `evt.detail.error` property contains the
+thrown value. If you receive this event, swapping will not occur, the processing is terminated early.
 
 ##### `fx:finally`
 
@@ -632,7 +631,7 @@ document.addEventListener("fx:swapped", (evt)=>{
 #### `elt.__fixi`
 
 The `__fixi` property will be added to any element that has an `fx-action` attribute on it assuming that the element
-or a parent is not marked `fx-ignore`.  
+or an ancestor is not marked `fx-ignore`.  
 
 The value of the property will be the event listener that is added to the element.  It also has two properties:
 
