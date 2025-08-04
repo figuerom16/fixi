@@ -161,7 +161,7 @@ You can get support for fixi via:
 </tr>
 <tr>
 <td><code>fx-ignore</code></td>
-<td>Any element with this attribute on it or on a parent will not be processed for <code>fx-*</code> attributes</td>
+<td>Any element with this attribute on it or on an ancestor will not be processed for <code>fx-*</code> attributes</td>
 <td></td>
 </tr>
 </tbody>
@@ -188,7 +188,7 @@ fixi-powered elements are elements with the `fx-action` attribute on them.
 When fixi finds one it will establish an event listener on that element that will dispatch an AJAX request via 
 `fetch()` to the URL specified by `fx-action`.
 
-fixi will ignore any elements that have the `fx-ignore` attribute on them or on a parent.
+fixi will ignore any elements that have the `fx-ignore` attribute on them or on an ancestor.
 
 The event that will trigger the request is determined by the `fx-trigger` attribute.
 
@@ -217,8 +217,13 @@ encoded body.
 
 Before a request is sent, the aforementioned [`fx:config`](#fxconfig) event is triggered, which can be used to configure
 aspects of the request. If `preventDefault()` is invoked in this event, the request will not be sent.
-The `evt.detail.cfg.drop` property will be set to `true` if there is an existing outstanding request associated with 
-the element and, if it is not set to `false` in an event handler, the request will be dropped (i.e. not issued).
+The `evt.detail.cfg.drop` property will be [truthy](https://developer.mozilla.org/en-US/docs/Glossary/Truthy)
+if there is an existing outstanding request associated with the element, otherwise the value will be
+[falsy](https://developer.mozilla.org/en-US/docs/Glossary/Falsy). More specifically, the value is equal
+to the number of outstanding requests associated with the element. If the value is truthy after the last
+`fx:config` handler has ran to completion, the request will be dropped (i.e. not issued). This implies,
+if you do not [customize the behavior](#replace-existing-requests-in-flight), an element will drop all
+new requests whilst there is an outstanding request associated with it.
 
 In the [`fx:config`](#fxconfig) event you can also set the `evt.detail.cfg.confirm` property to a no-argument function.
 This function can return a Promise and can be used to asynchronously confirm that the request should be issued:
@@ -295,7 +300,7 @@ you to listen for this event on `document` and receive it after every swap.
 
 ###### Notes on Targeting the Document Element (`html`)
 
-Note that if you wand to replace the entire document (that is, target the `html` element) you _must_ use an `innerHTML`
+Note that if you want to replace the entire document (that is, target the `html` element) you _must_ use an `innerHTML`
 swap, because the default `outerHTML` swap will fail with a [`NoModificationAllowed`](https://developer.mozilla.org/en-US/docs/Web/API/DOMException#nomodificationallowederror)
 error.
 
@@ -432,7 +437,7 @@ triggered on an element just after a <code>fetch()</code> request finishes norma
 <a href="#fxerror"><code>fx:error</code></a>
 </td>
 <td>
-triggered on an element if an exception occurs during a <code>fetch()</code>
+triggered on an element if something is thrown from a <code>fetch()</code>
 </td>
 </tr>
 <tr>
@@ -496,9 +501,8 @@ This config object has the following properties:
 * `headers` - An Object of name/value pairs to be sent as HTTP Request Headers
 * `target` - The target element that will be swapped when the response is processed
 * `swap` - The mechanism by which the element will be swapped
-* `body` - The body of the request, if present, a FormData object that holds the data of the form associated with the
-* `drop` - Whether this request will be dropped, defaults to
-           [truthy](https://developer.mozilla.org/en-US/docs/Glossary/Truthy) if a request is already in flight
+* `body` - The body of the request, if present, a FormData object that holds the data of the form associated with the request
+* `drop` - Whether this request will be dropped, defaults to the number of outstanding requests associated with the element
 * `transition` - The View Transition function, if it is available.  Set to `false` if you don't want a transition to occur
 * `preventTrigger` - A boolean (defaults to `true`) that, if true, will call `preventDefault()` on the triggering event
 * `signal` - The AbortSignal of the related AbortController for the request
@@ -513,12 +517,13 @@ Another property available on the `detail` of this event is `requests`, which wi
 [Set](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Set) of any existing
 outstanding requests for the element.
 
+###### replace existing requests in flight
 fixi does not implement request queuing like htmx does, but you can implement a simple
 "replace existing requests in flight" rule with the following JavaScript:
 
 ```js
 document.addEventListener("fx:config", (evt) => {
-    evt.detail.cfg.drop = false;  // allow this request to be issued even if there are other requests
+    evt.detail.cfg.drop = 0;  // allow this request to be issued even if there are other requests
     evt.detail.requests.forEach((cfg) => cfg.abort()); // abort all existing requests
 })
 ```
@@ -548,11 +553,10 @@ Calling `preventDefault()` on this event will prevent swapping from occurring.
 
 ##### `fx:error`
 
-The  `fx:error` event is triggered when a network error occurs. In this case the `cfg.text` will be set to a blank
-string, and the `evt.detail.cfg` object is available for modification.
-
-Calling `preventDefault()` on this event will prevent swapping from occurring. Note that `AbortError`s will also prevent
-swapping.
+The  `fx:error` event is triggered when a network error occurs or when the request is aborted using the
+`abort` function on the config. In this case the `evt.detail.cfg` object is available for modification
+and `cfg.response` and `cfg.text` will not be present. The `evt.detail.error` property contains the
+thrown value. If you receive this event, swapping will not occur, the processing is terminated early.
 
 ##### `fx:finally`
 
@@ -630,7 +634,7 @@ document.addEventListener("fx:swapped", (evt)=>{
 #### `elt.__fixi`
 
 The `__fixi` property will be added to any element that has an `fx-action` attribute on it assuming that the element
-or a parent is not marked `fx-ignore`.  
+or an ancestor is not marked `fx-ignore`.  
 
 The value of the property will be the event listener that is added to the element.  It also has two properties:
 
@@ -957,7 +961,7 @@ document.addEventListener('fx:config', (evt)=>{
     if (target.indexOf("closest ") == 0){
         evt.detail.cfg.target = evt.target.closest(target.substring(8))
     } else if (target.indexOf("find ") == 0){
-        evt.detail.cfg.target = evt.target.closest(target.substring(5))
+        evt.detail.cfg.target = evt.target.querySelector(target.substring(5))
     } else if (target.indexOf("next ") == 0){
         var matches = Array.from(document.querySelectorAll(target.substring(5)))
         evt.detail.cfg.target = matches.find((elt) => evt.target.compareDocumentPosition(elt) === Node.DOCUMENT_POSITION_FOLLOWING)
