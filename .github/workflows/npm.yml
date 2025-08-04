@@ -31,7 +31,7 @@ jobs:
             "name": "fixi-js",
             "version": "${{ steps.get_version.outputs.VERSION }}",
             "description": "fixi.js - A Small Generalized Hypermedia Controls Tool",
-            "main": "surreal.js",
+            "main": "fixi.js",
             "files": [
               "fixi.js",
               "README.md"
