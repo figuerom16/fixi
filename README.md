@@ -81,7 +81,7 @@ The fixi project consists of three files:
 
 ## Installing
 
-fixi is designed to be [vendored](https://htmx.org/essays/vendoring/), that is, copied, into your project:
+fixi is designed to be easily [vendored](https://htmx.org/essays/vendoring/), that is, copied, into your project:
 
 ```bash
 curl https://raw.githubusercontent.com/bigskysoftware/fixi/refs/tags/0.9.2/fixi.js >> fixi-0.9.2.js
@@ -108,7 +108,7 @@ You can also use the JSDelivr CDN for local development or testing:
         integrity="sha256-0957yKwrGW4niRASx0/UxJxBY/xBhYK63vDCnTF7hH4="></script>
 ```
 
-Finally, fixi is available on npm as the `fixi-js` package.
+Finally, fixi is available on NPM as the [`fixi-js`](https://www.npmjs.com/package/fixi-js) package.
 
 ## Support
 
