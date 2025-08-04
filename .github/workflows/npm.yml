@@ -33,7 +33,7 @@ jobs:
             "description": "fixi.js - A Small Generalized Hypermedia Controls Tool",
             "main": "surreal.js",
             "files": [
-              "fixi.js",
+              "fixi-js",
               "README.md"
             ],
             "repository": {
