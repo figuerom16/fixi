@@ -51,7 +51,7 @@ function $(s) { // s=selector, el=element, els=elements
 		onchil: (e, c)=>(Array.from(els[0].children).forEach(el => el.addEventListener(e, c)),this),
 		off: (e, c)=>(els.forEach(el => el.removeEventListener(e, c)), this),
 		run: (c)=>(els.forEach(el => c(el)), this),
-		send: (name, detail, bubbles = true)=>(els.forEach(el => el.dispatchEvent(new CustomEvent(name, { detail, bubbles }))), this),
+		send: (name, detail, bubbles = true, cancelable = true)=>(els.forEach(el => el.dispatchEvent(new CustomEvent(name, { detail, bubbles, cancelable }))), this),
 		// Add more chainables here
 	}
 }
@@ -101,7 +101,7 @@ function signal(init) {
 			let cfg = {
 				trigger:evt,
 				action:attr(elt, "fx-action", ""),
-				method:attr(elt, "fx-method")?.toUpperCase(),
+				method:attr(elt, "fx-method", "GET").toUpperCase(),
 				target:document.querySelector(attr(elt, "fx-target")) ?? elt,
 				swap:attr(elt, "fx-swap", "innerHTML"),
 				body,
@@ -157,7 +157,17 @@ function signal(init) {
 			if (ignore(n)) return
 			if (n.matches("[fx-method]")) init(n)
 		}
-		if(n.querySelectorAll) n.querySelectorAll("[fx-method]").forEach(init)
+		if(n.querySelectorAll) {
+			n.querySelectorAll("[fx-method]").forEach(init)
+			n.querySelectorAll("[fx-trigger]:not([fx-method])").forEach(e=>{
+				e.getAttribute("fx-trigger").split("|").forEach(t=>{
+					e.addEventListener(t, l=>{
+						const elt = l.target.closest("[fx-method]")
+						elt.dispatchEvent(new Event(elt.__fixi.evt, {cancelable:true, bubbles: true, composed:true}))
+					})
+				})
+			})
+		}
 	}
 	document.addEventListener("fx:process", (evt)=>process(evt.target))
 	document.addEventListener("DOMContentLoaded", ()=>{
@@ -259,7 +269,7 @@ document.addEventListener('fx:swapped',e=>{//Run Scripts then Create Icons
 	e.detail.cfg.target.querySelectorAll('script').forEach(s=>
 		s.replaceWith(Object.assign(document.createElement('script'),{textContent:s.textContent}))
 	)
-	lucide?.createIcons()
+	if (typeof lucide !== 'undefined') lucide.createIcons()
 })
 
 
