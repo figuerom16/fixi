@@ -87,7 +87,7 @@ function signal(init) {
 		elt.__fixi = async(evt)=>{
 			let reqs = elt.__fixi.requests ||= new Set()
 			let form = elt.form || elt.closest("form")
-			let body = new FormData(form ?? undefined, evt.submitter ?? elt.type === "submit" ? elt : undefined)
+			let body = new FormData(form ?? undefined, evt.submitter)
 			let tr = elt.closest("tr")
 			if (tr?.tagName === 'TR') {
 				for (const cell of tr.cells){
@@ -148,7 +148,7 @@ function signal(init) {
 			send(elt, "swapped", {cfg})
 			if (!document.contains(elt)) send(document, "swapped", {cfg})
 		}
-		elt.__fixi.evt = attr(elt, "fx-trigger", elt.matches("form") ? "submit" : elt.matches("input:not([type=button]),select,textarea") ? "change" : "click").split("|")
+		elt.__fixi.evt = attr(elt, "fx-trigger", elt.matches("form,form button[type=submit],form input[type=submit],form input[type=image]") ? "submit" : elt.matches("input:not([type=button]),select,textarea") ? "change" : "click").split("|")
 		elt.__fixi.evt.forEach(a=>{elt.addEventListener(a, elt.__fixi, options)})
 		send(elt, "inited", {}, false)
 	}
