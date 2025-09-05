@@ -70,7 +70,7 @@
 			send(elt, "swapped", {cfg})
 			if (!document.contains(elt)) send(document, "swapped", {cfg})
 		}
-		elt.__fixi.evt = attr(elt, "fx-trigger", elt.matches("form") ? "submit" : elt.matches("input:not([type=button]),select,textarea") ? "change" : "click")
+		elt.__fixi.evt = attr(elt, "fx-trigger", elt.matches("form,form button:not([type=button]):not([type=reset]),form input:is([type=submit],[type=image]") ? "submit" : elt.matches("input:not([type=button]),select,textarea") ? "change" : "click")
 		elt.addEventListener(elt.__fixi.evt, elt.__fixi, options)
 		send(elt, "inited", {}, false)
 	}
