@@ -86,17 +86,16 @@ function signal(init) {
 		if (elt.__fixi || ignore(elt) || !send(elt, "init", {options})) return
 		elt.__fixi = async(evt)=>{
 			let reqs = elt.__fixi.requests ||= new Set()
-			let form = elt.form || elt.closest("form")
-			let body = new FormData(form ?? undefined, evt.submitter)
-			let tr = elt.closest("tr")
-			if (tr?.tagName === 'TR') {
-				for (const cell of tr.cells){
+			let body = new FormData()
+			if (elt instanceof HTMLFormElement) body = new FormData(elt, evt.submitter)
+			else if (elt instanceof HTMLTableRowElement){
+				for (const cell of elt.cells){
 					const name = cell.getAttribute('name')
 					if(name) body.append(name, cell.innerText.trim())
 				}
 			}
-			else if (!form && elt.name) body.append(elt.name, elt.value)
-			if (!['file','image'].includes(elt.type) && !form?.querySelector('input[type="file"], input[type="image"]')) body = new URLSearchParams(body)
+			else if (elt.name) body.append(elt.name, elt.value)
+			if (!(['file','image'].includes(elt.type) || elt?.querySelector('input[type="file"],input[type="image"]'))) body = new URLSearchParams(body)
 			let ac = new AbortController()
 			let cfg = {
 				trigger:evt,
@@ -160,12 +159,12 @@ function signal(init) {
 		if(n.querySelectorAll) {
 			n.querySelectorAll("[fx-method]").forEach(init)
 			n.querySelectorAll("[fx-trigger]:not([fx-method])").forEach(e=>{
-				e.getAttribute("fx-trigger").split("|").forEach(t=>{
-					e.addEventListener(t, l=>{
-						const elt = l.target.closest("[fx-method]")
-						elt.dispatchEvent(new Event(elt.__fixi.evt, {cancelable:true, bubbles: true, composed:true}))
+				const p = e.closest("[fx-method]")
+				if (p){
+					e.getAttribute("fx-trigger").split("|").forEach(t=>{
+						e.addEventListener(t, _=>{p.dispatchEvent(new Event(p.__fixi.evt, {cancelable:true, bubbles: true, composed:true}))})
 					})
-				})
+				}
 			})
 		}
 	}
