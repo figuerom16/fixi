@@ -90,12 +90,12 @@ function signal(init) {
 			if (elt instanceof HTMLFormElement) body = new FormData(elt, evt.submitter)
 			else if (elt instanceof HTMLTableRowElement){
 				for (const cell of elt.cells){
-					const name = cell.getAttribute('name')
+					const name = cell.getAttribute("name")
 					if(name) body.append(name, cell.innerText.trim())
 				}
 			}
 			else if (elt.name) body.append(elt.name, elt.value)
-			if (!(['file','image'].includes(elt.type) || elt?.querySelector('input[type="file"],input[type="image"]'))) body = new URLSearchParams(body)
+			if (!(["file","image"].includes(elt.type) || elt?.querySelector("input[type=file],input[type=image]"))) body = new URLSearchParams(body)
 			let ac = new AbortController()
 			let cfg = {
 				trigger:evt,
@@ -140,7 +140,7 @@ function signal(init) {
 				if (cfg.swap instanceof Function) return cfg.swap(cfg)
 				else if (/(before|after)(begin|end)/.test(cfg.swap)) cfg.target.insertAdjacentHTML(cfg.swap, cfg.text)
 				else if(cfg.swap in cfg.target) cfg.target[cfg.swap] = cfg.text
-				else if(cfg.swap !== 'none') throw cfg.swap
+				else if(cfg.swap !== "none") throw cfg.swap
 			}
 			if (cfg.transition) await cfg.transition(doSwap).finished
 			else await doSwap()
