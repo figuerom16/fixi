@@ -126,8 +126,14 @@ function signal(init) {
 					if (!result) return
 				}
 				if (!send(elt, "before", {cfg, requests:reqs})) return
-				cfg.response = await cfg.fetch(cfg.action, cfg)
-				cfg.text = await cfg.response.text()
+				if (cfg.method == "LOCAL") {
+					const fn = eval(cfg.action)
+					if (typeof fn === "function") cfg.text = await fn(cfg)
+				}
+				else {
+					cfg.response = await cfg.fetch(cfg.action, cfg)
+					cfg.text = await cfg.response.text()
+				}
 				if (!send(elt, "after", {cfg})) return
 			} catch(error) {
 				send(elt, "error", {cfg, error})
