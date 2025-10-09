@@ -126,7 +126,7 @@ function signal(init) {
 					if (!result) return
 				}
 				if (!send(elt, "before", {cfg, requests:reqs})) return
-				if (cfg.method == "WEBVIEW") {
+				if (cfg.method == "LOCAL") {
 					const fn = eval(cfg.action)
 					if (typeof fn === "function") cfg.text = await fn(cfg)
 				}
