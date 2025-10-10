@@ -105,7 +105,6 @@ function signal(init) {
 				swap:attr(elt, "fx-swap", "innerHTML"),
 				body,
 				drop:reqs.size,
-				headers:{"FX-Tag":elt.tagName,"FX-Id":elt.id},
 				abort:ac.abort.bind(ac),
 				signal:ac.signal,
 				preventTrigger:true,
@@ -128,8 +127,10 @@ function signal(init) {
 				if (!send(elt, "before", {cfg, requests:reqs})) return
 				if (cfg.method == "LOCAL") {
 					const fn = eval(cfg.action)
-					if (typeof fn === "function") cfg.text = await fn(cfg)
-					if (cfg.text.startsWith("ERROR:")) cfg.response = {"status": 555}
+					if (typeof fn !== "function") return
+					cfg.text = await fn(Object.fromEntries(cfg.body))
+					cfg.response = {"status": 200}
+					if (cfg.text.startsWith('ERROR:')) cfg.response.status = 555
 				}
 				else {
 					cfg.response = await cfg.fetch(cfg.action, cfg)
@@ -253,6 +254,8 @@ document.addEventListener('fx:config',e=>{//Vals
 
 document.addEventListener('fx:before',_=>{//Clear Error & Success
 	$('#error').$.textContent = $('#success').$.textContent = ''
+	success.parentElement.style.display = 'none'
+	error.parentElement.style.display = 'none'
 })
 
 document.addEventListener('fx:after',e=>{//Select
@@ -263,18 +266,23 @@ document.addEventListener('fx:after',e=>{//Select
 })
 
 document.addEventListener('fx:after',e=>{//Set Error & Success
-	if(e.detail.cfg.response.status < 300) setTimeout(_=>{$('#success').$.textContent = ''}, 2000)
+	if (e.detail.cfg.response.status < 300) setTimeout(_ => {
+		$('#success').$.textContent = ''
+		success.parentElement.style.display = 'none'
+	}, 2000)
 	else if(e.detail.cfg.response.status < 400) {
 		if (e.detail.cfg.text == 'refresh'){document.location.reload(); return}
 		window.location.href = e.detail.cfg.text
 	}
-	else {e.detail.cfg.target = $('#error').$; e.detail.cfg.swap = 'innerHTML'}
+	else {e.detail.cfg.target = error; e.detail.cfg.swap = 'innerHTML'}
 })
 
 document.addEventListener('fx:swapped',e=>{//Run Scripts then Create Icons
 	e.detail.cfg.target.querySelectorAll('script').forEach(s=>
 		s.replaceWith(Object.assign(document.createElement('script'),{textContent:s.textContent}))
 	)
+	success.parentElement.style.display = (success.textContent == '') ? 'none' : 'block';
+	error.parentElement.style.display = (error.textContent == '') ? 'none' : 'block';
 	if (typeof lucide !== 'undefined') lucide.createIcons()
 })
 
@@ -387,13 +395,15 @@ function durationToNanos(durationString) {// This is golang specific. eg. 72h30m
 }
 
 // SETUP
-let theme = localStorage.getItem('theme') || 'dark'
-$('html').$.setAttribute('data-theme', theme)
-let topButton, botButton
+let topButton, botButton, success, error
 
 window.onload=_=>{
 	topButton = $('#scrollerTop')?.$
 	botButton = $('#scrollerBot')?.$
+	success = $('#success')?.$
+	error = $('#error')?.$
+	success.parentElement.style.display = 'none'
+	error.parentElement.style.display = 'none'
 	lucide.createIcons()
 }
 
