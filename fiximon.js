@@ -129,6 +129,7 @@ function signal(init) {
 				if (cfg.method == "LOCAL") {
 					const fn = eval(cfg.action)
 					if (typeof fn === "function") cfg.text = await fn(cfg)
+					if (cfg.text.startsWith("ERROR:")) cfg.response = {"status": 555}
 				}
 				else {
 					cfg.response = await cfg.fetch(cfg.action, cfg)
