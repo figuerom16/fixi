@@ -349,7 +349,6 @@ function sortTable(head) {
 		return isDescending ? -comp : comp
 	})
 	body.replaceChildren(heads, ...rows)
-	return true
 }
 
 function showType(show, head) {
