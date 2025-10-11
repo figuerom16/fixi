@@ -95,7 +95,7 @@ function signal(init) {
 				}
 			}
 			else if (elt.name) body.append(elt.name, elt.value)
-			if (!(["file","image"].includes(elt.type) || elt?.querySelector("input[type=file],input[type=image]"))) body = new URLSearchParams(body)
+			if (!elt.matches('input[type="file"], input[type="image"]')) body = new URLSearchParams(body)
 			let ac = new AbortController()
 			let cfg = {
 				trigger:evt,
