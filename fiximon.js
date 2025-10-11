@@ -417,12 +417,3 @@ window.addEventListener('scroll', _=>{
 		else botButton.style.display = "none"
 	}
 }, {passive: true})
-
-document.addEventListener('mousedown',e=>{//fclick
-	if(e.button || !e.target.closest('[fclick]')) return
-	e.preventDefault(); e.target.click()
-})
-document.addEventListener('touchstart',e=>{
-	if(!e.target.closest('[fclick]')) return
-	e.preventDefault(); e.target.click()
-})
