@@ -179,7 +179,7 @@ document.addEventListener('fx:config',e=>{//Vals
 })
 
 document.addEventListener('fx:before',_=>{//Clear Error & Success
-	$('#error').$.textContent = $('#success').$.textContent = ''
+	error.textContent = success.textContent = ''
 	success.parentElement.style.display = 'none'
 	error.parentElement.style.display = 'none'
 })
@@ -193,7 +193,7 @@ document.addEventListener('fx:after',e=>{//Select
 
 document.addEventListener('fx:after',e=>{//Set Error & Success
 	if (e.detail.cfg.response.status < 300) setTimeout(_ => {
-		$('#success').$.textContent = ''
+		success.textContent = ''
 		success.parentElement.style.display = 'none'
 	}, 2000)
 	else if(e.detail.cfg.response.status < 400) {
