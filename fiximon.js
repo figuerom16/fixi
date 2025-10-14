@@ -406,8 +406,8 @@ let topButton, botButton, success, error
 window.onload=_=>{
 	success = $('#success')?.$
 	error = $('#error')?.$
-	success?.parentElement.style.display = 'none'
-	error?.parentElement.style.display = 'none'
+	if (success) success.parentElement.style.display = 'none'
+	if (error) error.parentElement.style.display = 'none'
 	topButton = $('#scrollerTop')?.$
 	botButton = $('#scrollerBot')?.$
 	lucide.createIcons()
