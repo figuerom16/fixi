@@ -195,7 +195,7 @@ document.addEventListener('fx:after',e=>{//Set Error & Success
 	if (e.detail.cfg.response.status < 300) setTimeout(_ => {
 		success.textContent = ''
 		success.parentElement.style.display = 'none'
-	}, 2000)
+	}, 3000)
 	else if(e.detail.cfg.response.status < 400) {
 		if (e.detail.cfg.text == 'refresh'){document.location.reload(); return}
 		window.location.href = e.detail.cfg.text
