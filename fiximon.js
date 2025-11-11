@@ -51,7 +51,6 @@
 				if (!send(elt, "before", {cfg, requests:reqs})) return
 				if (cfg.method == "LOCAL") {
 					const fn = eval(cfg.action)
-					if (typeof fn !== "function") return
 					cfg.text = await fn(Object.fromEntries(cfg.body))
 					cfg.response = {"status": 200}
 					if (cfg.text.startsWith('ERROR:')) cfg.response.status = 555
