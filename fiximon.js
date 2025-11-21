@@ -338,7 +338,7 @@ function searchTable(table, term) {
 	let count = 0
 	let rows = [...table.rows].slice(1)
 	const len = rows.length
-	if (len > 10240 && !confirm(`WARNING! TABLE OVER 20K ROWS: ${len}\nJS FILTERING NOT RECOMMENDED. PROCEED?`)) return
+	if (len > 10240 && !confirm(`WARNING! TABLE OVER 10K ROWS: ${len}\nJS FILTERING NOT RECOMMENDED. PROCEED?`)) return
 	rows.forEach(row =>{
 		let found = false;
 		for (const cell of row.cells) {
@@ -356,7 +356,7 @@ function sortTable(head) {
 	const body = head.parentElement.parentElement
 	const rows = [...body.rows].slice(1)
 	const len = rows.length
-	if (len > 10240 && !confirm(`WARNING! TABLE OVER 20K ROWS: ${len}\nJS SORTING NOT RECOMMENDED. PROCEED?`)) return
+	if (len > 10240 && !confirm(`WARNING! TABLE OVER 10K ROWS: ${len}\nJS SORTING NOT RECOMMENDED. PROCEED?`)) return
 	const heads = head.parentElement
 	const column = [...heads.cells].indexOf(head)
 	for (let e of heads.cells) {if (['►','▲','▼'].includes(e.textContent.substr(-1))) e.textContent=e.textContent.slice(0, -1) + '►'}
