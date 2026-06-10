@@ -108,7 +108,7 @@
 		el(doc, "change", recompute, true)
 		process(doc.body)
 	})
-})()
+})();
 
 //FIXI
 (_=>{
@@ -216,7 +216,7 @@
 		document.__fixi_mo.observe(document.documentElement, {childList:true, subtree:true})
 		process(document.body)
 	})
-})()
+})();
 
 //FIXI ADDONS
 document.addEventListener('fx:init',e=>{//Disable During Request
