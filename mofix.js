@@ -3,10 +3,10 @@
 	let doc = document
 	if(doc.__moxi_mo) return
 	let liveFns = new Set(), pending = false,
-	recompute = ()=>{
+	recompute =_=>{
 		if (pending) return
 		pending = true
-		queueMicrotask(()=>{liveFns.forEach(f=>f()); setTimeout(()=>pending = false)})
+		queueMicrotask(_=>{liveFns.forEach(f=>f()); setTimeout(_=>pending = false)})
 	}
 	doc.__moxi_mo = new MutationObserver(recs=>{
 		recs.forEach(r=>r.type == "childList" && r.addedNodes.forEach(n=>process(n)))
@@ -16,7 +16,7 @@
 	fire = (elt, type, detail, bub)=>elt.dispatchEvent(new CustomEvent(type, {detail, cancelable:1, bubbles:bub??1, composed:1})),
 	el = (e,n,h,o)=>e.addEventListener(n,h,o),
 	DB = Symbol(),
-	mkDb = ()=>{let last = 0, j; return ms=>new Promise((r,rj)=>{j?.(DB); j = rj; let id = ++last; setTimeout(()=>id == last && (j = null, r()), ms)})},
+	mkDb =_=>{let last = 0, j; return ms=>new Promise((r,rj)=>{j?.(DB); j = rj; let id = ++last; setTimeout(_=>id == last && (j = null, r()), ms)})},
 	mkWait = ctx=>x=>new Promise(r=>typeof x == "number" ? setTimeout(r,x) : el(ctx,x,r,{once:1})),
 	ignore = elt=>elt.closest("[mx-ignore]"),
 	one = x=>x?[x]:[],
@@ -24,8 +24,8 @@
 	proxy = elts=>new Proxy({}, {
 		get:(_,p)=>{
 			if (p == "count") return elts.length
-			if (p == "arr") return ()=>elts.slice()
-			if (p == Symbol.iterator) return ()=>elts.values()
+			if (p == "arr") return _=>elts.slice()
+			if (p == Symbol.iterator) return _=>elts.values()
 			if (p == "trigger") return (t,d,b)=>elts.forEach(e=>fire(e,t,d,b))
 			if (p == "insert") return (pos,s)=>elts.forEach(e=>e.insertAdjacentHTML(POS[pos],s))
 			if (p == "take") return (cls,from)=>{
@@ -67,7 +67,7 @@
 			if (a.name == "live"){
 				let fn = new AF(...HARGS, a.value),
 				debounce = mkDb(),
-				run = ()=>elt.isConnected ? fn.call(elt, q, wait, trigger, debounce) : liveFns.delete(run)
+				run =_=>elt.isConnected ? fn.call(elt, q, wait, trigger, debounce) : liveFns.delete(run)
 				liveFns.add(run)
 				liveRuns.push(run)
 			} else if (a.name.startsWith("on-")){
@@ -75,13 +75,12 @@
 				has = m=>mods.includes(m), h = has("halt"), debounce = mkDb()
 				if (has("cc")) name = name.replace(/-([a-z])/g, (_,c)=>c.toUpperCase())
 				let target = has("outside") ? doc : elt,
-				opts = {capture: has("capture"), passive: has("passive")},
+				opts = {capture: has("capture"), passive: has("passive"), once: has("once")},
 				fn = new AF("event", ...HARGS, `with(event?.detail||{}){${a.value}}`),
 				handler = elt.__moxi[name] = evt=>{
 					if (evt && (has("self") && evt.target != elt || has("outside") && elt.contains(evt.target))) return
 					if (h || has("prevent")) evt?.preventDefault()
 					if (h || has("stop")) evt?.stopPropagation()
-					if (has("once")) target.removeEventListener(name, handler, opts)
 					return fn.call(elt, evt, q, wait, trigger, debounce).catch(e=>{if(e!=DB) throw e})
 				}
 				if (name == "init") handler()
@@ -102,7 +101,7 @@
 	gt.transition = fn=>doc.startViewTransition ? doc.startViewTransition(fn) : fn()
 	el(doc, "mx:process", evt=>process(evt.target))
 	el(doc, "refresh", recompute)
-	el(doc, "DOMContentLoaded", ()=>{
+	el(doc, "DOMContentLoaded", _=>{
 		doc.__moxi_mo.observe(de, {childList:1, subtree:1, attributes:1, characterData:1})
 		el(doc, "input", recompute, true)
 		el(doc, "change", recompute, true)
@@ -112,114 +111,114 @@
 
 //FIXI
 (_=>{
-	if(document.__fixi_mo) return
-	document.__fixi_mo = new MutationObserver((recs)=>recs.forEach((r)=>r.type === "childList" && r.addedNodes.forEach((n)=>process(n))))
-	let send = (elt, type, detail, bub)=>elt.dispatchEvent(new CustomEvent("fx:" + type, {detail, cancelable:true, bubbles:bub !== false, composed:true}))
-	let attr = (elt, name, defaultVal)=>elt.getAttribute(name) || defaultVal
-	let ignore = (elt)=>elt.closest("[fx-ignore]") != null
-	let init = (elt)=>{
+	if (document.__fixi_mo) return
+	document.__fixi_mo = new MutationObserver((recs) => recs.forEach((r) => r.type === "childList" && r.addedNodes.forEach((n) => process(n))))
+	let send = (elt, type, detail, bub) => elt.dispatchEvent(new CustomEvent("fx:" + type, { detail, cancelable: true, bubbles: bub !== false, composed: true }))
+	let attr = (elt, name, defaultVal) => elt.getAttribute(name) || defaultVal
+	let ignore = (elt) => elt.closest("[fx-ignore]") != null
+	let init = (elt) => {
 		let options = {}
-		if (elt.__fixi || ignore(elt) || !send(elt, "init", {options})) return
-		elt.__fixi = async(evt)=>{
+		if (elt.__fixi || ignore(elt) || !send(elt, "init", { options })) return
+		elt.__fixi = async (evt) => {
 			let reqs = elt.__fixi.requests ||= new Set()
 			let body = new FormData()
 			if (elt instanceof HTMLFormElement) body = new FormData(elt, evt.submitter)
-			else if (elt instanceof HTMLTableRowElement){
-				for (const cell of elt.cells){
+			else if (elt instanceof HTMLTableRowElement) {
+				for (const cell of elt.cells) {
 					const name = cell.getAttribute("name")
-					if(name) body.append(name, cell.innerText.trim())
+					if (name) body.append(name, cell.innerText.trim())
 				}
 			}
 			else if (elt.name) body.append(elt.name, elt.value)
 			if (!elt.matches('input[type="file"], input[type="image"]')) body = new URLSearchParams(body)
 			let ac = new AbortController()
 			let cfg = {
-				trigger:evt,
-				action:attr(elt, "fx-action", ""),
-				method:attr(elt, "fx-method", "GET").toUpperCase(),
-				target:document.querySelector(attr(elt, "fx-target")) ?? elt,
-				swap:attr(elt, "fx-swap", "innerHTML"),
+				trigger: evt,
+				action: attr(elt, "fx-action", ""),
+				method: attr(elt, "fx-method", "GET").toUpperCase(),
+				target: document.querySelector(attr(elt, "fx-target")) ?? elt,
+				swap: attr(elt, "fx-swap", "innerHTML"),
 				body,
-				drop:reqs.size,
-				abort:ac.abort.bind(ac),
-				signal:ac.signal,
-				preventTrigger:true,
-				transition:document.startViewTransition?.bind(document),
-				fetch:fetch.bind(window)
+				drop: reqs.size,
+				abort: ac.abort.bind(ac),
+				signal: ac.signal,
+				preventTrigger: true,
+				transition: document.startViewTransition?.bind(document),
+				fetch: fetch.bind(window)
 			}
-			let go = send(elt, "config", {cfg, requests:reqs})
+			let go = send(elt, "config", { cfg, requests: reqs })
 			if (cfg.preventTrigger) evt.preventDefault()
 			if (!go || cfg.drop) return
-			if (/GET|DELETE/.test(cfg.method)){
+			if (/GET|DELETE/.test(cfg.method)) {
 				if (cfg.body.size) cfg.action += (/\?/.test(cfg.action) ? "&" : "?") + cfg.body
 				cfg.body = null
 			}
 			reqs.add(cfg)
 			try {
-				if (cfg.confirm){
+				if (cfg.confirm) {
 					let result = await cfg.confirm()
 					if (!result) return
 				}
-				if (!send(elt, "before", {cfg, requests:reqs})) return
+				if (!send(elt, "before", { cfg, requests: reqs })) return
 				if (cfg.method == "LOCAL") {
 					const fn = eval(cfg.action)
 					cfg.text = await fn(Object.fromEntries(cfg.body))
-					cfg.response = {"status": 200}
+					cfg.response = { "status": 200 }
 					if (cfg.text.startsWith('ERROR:')) cfg.response.status = 555
 				}
 				else {
 					cfg.response = await cfg.fetch(cfg.action, cfg)
 					cfg.text = await cfg.response.text()
 				}
-				if (!send(elt, "after", {cfg})) return
-			} catch(error) {
-				send(elt, "error", {cfg, error})
+				if (!send(elt, "after", { cfg })) return
+			} catch (error) {
+				send(elt, "error", { cfg, error })
 				return
 			} finally {
 				reqs.delete(cfg)
-				send(elt, "finally", {cfg})
+				send(elt, "finally", { cfg })
 			}
-			let doSwap = _=>{
+			let doSwap =_=>{
 				if (cfg.swap instanceof Function) return cfg.swap(cfg)
 				else if (/(before|after)(begin|end)/.test(cfg.swap)) cfg.target.insertAdjacentHTML(cfg.swap, cfg.text)
-				else if(cfg.swap in cfg.target) cfg.target[cfg.swap] = cfg.text
-				else if(cfg.swap !== "none") throw cfg.swap
+				else if (cfg.swap in cfg.target) cfg.target[cfg.swap] = cfg.text
+				else if (cfg.swap !== "none") throw cfg.swap
 			}
 			if (cfg.transition) await cfg.transition(doSwap).finished
 			else await doSwap()
-			send(elt, "swapped", {cfg})
+			send(elt, "swapped", { cfg })
 			if (!document.contains(elt)) send(document, "swapped", {cfg})
 		}
 		elt.__fixi.evt = attr(elt, "fx-trigger", elt.matches("form") ? "submit" : elt.matches("input:not([type=button]),select,textarea") ? "change" : "click").split("|")
 		elt.__fixi.evt.forEach(a=>{elt.addEventListener(a, elt.__fixi, options)})
 		send(elt, "inited", {}, false)
 	}
-	let process = (n)=>{
-		if (n.matches){
+	let process =(n)=>{
+		if (n.matches) {
 			if (ignore(n)) return
 			if (n.matches("[fx-method]")) init(n)
 		}
-		if(n.querySelectorAll) {
+		if (n.querySelectorAll) {
 			n.querySelectorAll("[fx-method]").forEach(init)
 			n.querySelectorAll("[fx-trigger]:not([fx-method])").forEach(e=>{
 				const p = e.closest("[fx-method]")
-				if (p){
+				if (p) {
 					e.getAttribute("fx-trigger").split("|").forEach(t=>{
-						e.addEventListener(t, _=>{p.dispatchEvent(new Event(p.__fixi.evt, {cancelable:true, bubbles: true, composed:true}))})
+						e.addEventListener(t, _=>{p.dispatchEvent(new Event(p.__fixi.evt, {cancelable: true, bubbles: true, composed: true}))})
 					})
 				}
 			})
 		}
 	}
-	document.addEventListener("fx:process", (evt)=>process(evt.target))
-	document.addEventListener("DOMContentLoaded", ()=>{
-		document.__fixi_mo.observe(document.documentElement, {childList:true, subtree:true})
+	document.addEventListener("fx:process", evt=>process(evt.target))
+	document.addEventListener("DOMContentLoaded", _=>{
+		document.__fixi_mo.observe(document.documentElement, { childList: true, subtree: true })
 		process(document.body)
 	})
 })();
 
 //FIXI ADDONS
-document.addEventListener('fx:init',e=>{//Disable During Request
+document.addEventListener('fx:init', e=>{//Disable During Request
 	const el = e.target
 	if(!el.matches('[fx-disable]')) return
 	const disableSelector = el.getAttribute('fx-disable')
@@ -230,7 +229,7 @@ document.addEventListener('fx:init',e=>{//Disable During Request
 	})
 })
 
-document.addEventListener("fx:config", evt => {//Relative Selectors
+document.addEventListener("fx:config", evt=> {//Relative Selectors
 	const t = evt.target
 	let cmd = t.getAttribute("fx-target")
 	if (!cmd) return
@@ -248,7 +247,7 @@ document.addEventListener("fx:config", evt => {//Relative Selectors
 	}[m[1]](m[2]) : ctx.querySelector(cmd)
 })
 
-document.addEventListener('fx:config',e=>{//Vals
+document.addEventListener('fx:config', e=>{//Vals
 	const valsAttr = e.target.getAttribute('fx-vals')
 	if (!valsAttr) return
 	let vals
@@ -263,12 +262,6 @@ document.addEventListener('fx:config',e=>{//Vals
 	}
 })
 
-document.addEventListener('fx:before',_=>{//Clear Error & Success
-	error.textContent = success.textContent = ''
-	success.parentElement.style.display = 'none'
-	error.parentElement.style.display = 'none'
-})
-
 document.addEventListener('fx:after',e=>{//Select
 	const select = e.target.getAttribute('fx-select')
 	if (!select) return
@@ -276,96 +269,31 @@ document.addEventListener('fx:after',e=>{//Select
 	e.detail.cfg.text = t.content.querySelector(select).outerHTML
 })
 
-document.addEventListener('fx:after',e=>{//Set Error & Success
-	if (e.detail.cfg.response.status < 300) setTimeout(_ => {
-		success.textContent = ''
-		success.parentElement.style.display = 'none'
-	}, 3000)
+document.addEventListener('fx:after', e=>{//Set Error & Success
+	if (e.detail.cfg.response.status < 300) {
+		msg.classList.remove('alert-error');
+		msg.classList.add('alert-success');
+		wait(3000);
+		msg.firstElementChild.textContent = ''
+	}
 	else if(e.detail.cfg.response.status < 400) {
-		if (e.detail.cfg.text == 'refresh'){document.location.reload(); return}
+		if (e.detail.cfg.text == 'refresh') {document.location.reload();return}
 		window.location.href = e.detail.cfg.text
 	}
-	else {e.detail.cfg.target = error; e.detail.cfg.swap = 'innerHTML'}
+	else {
+		msg.classList.remove('alert-success');
+		msg.classList.add('alert-error');
+		e.detail.cfg.target = error;
+		e.detail.cfg.swap = 'innerHTML'
+	}
 })
 
-document.addEventListener('fx:swapped',e=>{//Run Scripts then Create Icons
-	// success.parentElement.style.display = (success.textContent == '') ? 'none' : 'block';
-	// error.parentElement.style.display = (error.textContent == '') ? 'none' : 'block';
+document.addEventListener('fx:swapped', _=>{//Run Scripts then Create Icons
 	if (typeof lucide !== 'undefined') lucide.createIcons()
 })
 
-
-//miniJQ
-function $(s) { // s=selector, el=element, els=elements
-	let el, els
-	const start = document.currentScript // Doesn't work in callback use Event or QuerySelector
-	if (!s) el = start.parentElement ?? console.warn('$(): Fails inside callback.')
-	else if (s instanceof Event) el = s.currentTarget ?? console.warn(`$(${s}): Event is Null`)
-	else if (typeof s !== 'string') {console.warn(`$(${s}): Not a String`); return null}
-	else if (s == '-') el = start.previousElementSibling ?? console.warn('$(\'-\'): Fails inside callback.')
-	else if (s.indexOf('closest ') == 0) el = start.closest(s.substring(8))
-	else if (s.indexOf('next ') == 0){
-		const matches = Array.from(document.querySelectorAll(s.substring(5)))
-		el = matches.find((el)=>start.compareDocumentPosition(el) === Node.DOCUMENT_POSITION_FOLLOWING)
-	}
-	else if (s.indexOf('previous ') == 0){
-		const matches = Array.from(document.querySelectorAll(s.substring(9))).reverse()
-		el = matches.find((el)=>start.compareDocumentPosition(el) === Node.DOCUMENT_POSITION_PRECEDING)
-	}
-	if (el) els = [el]
-	else {
-		els = Array.from(document.querySelectorAll(s))
-		if (els.length === 0) {console.warn(`$(${s}): QuerySelector is Null`); return null}
-	}
-	return { // e=event, c=callback, d=delay
-		$: els[0],
-		all: els,
-		closest: (n)=>{return els[0].closest(n)},
-		next: (n)=>{
-			const matches = Array.from(document.querySelectorAll(n))
-			return matches.find((el)=>els[0].compareDocumentPosition(el) === Node.DOCUMENT_POSITION_FOLLOWING)
-		},
-		previous: (n)=>{
-			const matches = Array.from(document.querySelectorAll(n)).reverse()
-			return matches.find((el)=>els[0].compareDocumentPosition(el) === Node.DOCUMENT_POSITION_PRECEDING)
-		},
-		nav: (nav)=>{
-			el = els[0]
-			for (const n of nav.split(' ')) {
-				switch (n) {
-					case 'parent': el = el.parentElement; break
-					case 'next': el = el.nextElementSibling; break
-					case 'previous': el = el.previousElementSibling; break
-					case 'first': el = el.firstElementChild; break
-					case 'last': el = el.lastElementChild; break
-					default: console.warn(`$: Nav ${n} is not Valid`)
-				}
-			}
-			return el
-		},
-		// Add more returns here
-		on: (e, c)=>(els.forEach(el => el.addEventListener(e, c)),this),
-		onchil: (e, c)=>(Array.from(els[0].children).forEach(el => el.addEventListener(e, c)),this),
-		off: (e, c)=>(els.forEach(el => el.removeEventListener(e, c)), this),
-		run: (c)=>(els.forEach(el => c(el)), this),
-		send: (name, detail, bubbles = true, cancelable = true)=>(els.forEach(el => el.dispatchEvent(new CustomEvent(name, { detail, bubbles, cancelable }))), this),
-		// Add more chainables here
-	}
-}
-
-
 //COMMON
 function oassign(tag, obj) {return Object.assign(document.createElement(tag), obj)}
-
-async function sleep(ms, e) {return await new Promise(resolve =>setTimeout(_=>{resolve(e)}, ms))}
-
-function debounce (c, d) {
-	let t
-	return _=>{
-		clearTimeout(t)
-		t = setTimeout(c, d)
-	}
-}
 
 function signal(init) {
 	let value = init
@@ -400,7 +328,6 @@ function generateKey(length=32) {
 	for (let i = 0; i < length; i++) key += chars[Math.floor(Math.random() * chars.length)]
 	return key
 }
-
 
 //TABLE Helpers
 function exportTable(table, sep='|', filename) {
@@ -482,16 +409,12 @@ function durationToNanos(durationString) {// This is golang specific. eg. 72h30m
 	return totalNanoseconds
 }
 
-//SETUP: error/success, scroller, lucide
-let topButton, botButton, success, error
-
-window.onload=_=>{
-	success = $('#success')?.$
-	error = $('#error')?.$
-	if (success) success.parentElement.style.display = 'none'
-	if (error) error.parentElement.style.display = 'none'
-	topButton = $('#scrollerTop')?.$
-	botButton = $('#scrollerBot')?.$
+//SETUP: msg, scroller, lucide
+let topButton, botButton, msg
+window.onload = _=>{
+	msg = q('#msg')
+	topButton = q('#scrollerTop')
+	botButton = q('#scrollerBot')
 	lucide.createIcons()
 }
 
