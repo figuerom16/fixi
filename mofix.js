@@ -3,8 +3,8 @@
 	let doc = document
 	if(doc.__moxi_mo) return
 	let liveFns = new Set(), pending = false,
-	recompute =_=>{
-		if (pending) return
+		recompute = evt=> {
+		if (pending || ignore(evt?.target)) return
 		pending = true
 		queueMicrotask(_=>{liveFns.forEach(f=>f()); setTimeout(_=>pending = false)})
 	}
@@ -18,7 +18,7 @@
 	DB = Symbol(),
 	mkDb =_=>{let last = 0, j; return ms=>new Promise((r,rj)=>{j?.(DB); j = rj; let id = ++last; setTimeout(_=>id == last && (j = null, r()), ms)})},
 	mkWait = ctx=>x=>new Promise(r=>typeof x == "number" ? setTimeout(r,x) : el(ctx,x,r,{once:1})),
-	ignore = elt=>elt.closest("[mx-ignore]"),
+	ignore = elt => elt?.closest("[mx-ignore]"),
 	one = x=>x?[x]:[],
 	POS = {before:"beforebegin",after:"afterend",start:"afterbegin",end:"beforeend"},
 	proxy = elts=>new Proxy({}, {
@@ -292,6 +292,66 @@ document.addEventListener('fx:swapped', _=>{//Run Scripts then Create Icons
 	if (typeof lucide !== 'undefined') lucide.createIcons()
 })
 
+
+//miniJQ
+function $(s) { // s=selector, el=element, els=elements
+	let el, els
+	const start = document.currentScript // Doesn't work in callback use Event or QuerySelector
+	if (!s) el = start.parentElement ?? console.warn('$(): Fails inside callback.')
+	else if (s instanceof Event) el = s.currentTarget ?? console.warn(`$(${s}): Event is Null`)
+	else if (typeof s !== 'string') {console.warn(`$(${s}): Not a String`); return null}
+	else if (s == '-') el = start.previousElementSibling ?? console.warn('$(\'-\'): Fails inside callback.')
+	else if (s.indexOf('closest ') == 0) el = start.closest(s.substring(8))
+	else if (s.indexOf('next ') == 0){
+		const matches = Array.from(document.querySelectorAll(s.substring(5)))
+		el = matches.find((el)=>start.compareDocumentPosition(el) === Node.DOCUMENT_POSITION_FOLLOWING)
+	}
+	else if (s.indexOf('previous ') == 0){
+		const matches = Array.from(document.querySelectorAll(s.substring(9))).reverse()
+		el = matches.find((el)=>start.compareDocumentPosition(el) === Node.DOCUMENT_POSITION_PRECEDING)
+	}
+	if (el) els = [el]
+	else {
+		els = Array.from(document.querySelectorAll(s))
+		if (els.length === 0) {console.warn(`$(${s}): QuerySelector is Null`); return null}
+	}
+	return { // e=event, c=callback, d=delay
+		$: els[0],
+		all: els,
+		closest: (n)=>{return els[0].closest(n)},
+		next: (n)=>{
+			const matches = Array.from(document.querySelectorAll(n))
+			return matches.find((el)=>els[0].compareDocumentPosition(el) === Node.DOCUMENT_POSITION_FOLLOWING)
+		},
+		previous: (n)=>{
+			const matches = Array.from(document.querySelectorAll(n)).reverse()
+			return matches.find((el)=>els[0].compareDocumentPosition(el) === Node.DOCUMENT_POSITION_PRECEDING)
+		},
+		nav: (nav)=>{
+			el = els[0]
+			for (const n of nav.split(' ')) {
+				switch (n) {
+					case 'parent': el = el.parentElement; break
+					case 'next': el = el.nextElementSibling; break
+					case 'previous': el = el.previousElementSibling; break
+					case 'first': el = el.firstElementChild; break
+					case 'last': el = el.lastElementChild; break
+					default: console.warn(`$: Nav ${n} is not Valid`)
+				}
+			}
+			return el
+		},
+		// Add more returns here
+		on: (e, c)=>(els.forEach(el => el.addEventListener(e, c)),this),
+		onchil: (e, c)=>(Array.from(els[0].children).forEach(el => el.addEventListener(e, c)),this),
+		off: (e, c)=>(els.forEach(el => el.removeEventListener(e, c)), this),
+		run: (c)=>(els.forEach(el => c(el)), this),
+		send: (name, detail, bubbles = true, cancelable = true)=>(els.forEach(el => el.dispatchEvent(new CustomEvent(name, { detail, bubbles, cancelable }))), this),
+		// Add more chainables here
+	}
+}
+
+
 //COMMON
 function oassign(tag, obj) {return Object.assign(document.createElement(tag), obj)}
 
@@ -320,13 +380,6 @@ function copyToClipboard(text) {
 	textarea.select()
 	document.execCommand('copy')
 	document.body.removeChild(textarea)
-}
-
-function generateKey(length=32) {
-	const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789-_'
-	let key = ''
-	for (let i = 0; i < length; i++) key += chars[Math.floor(Math.random() * chars.length)]
-	return key
 }
 
 //TABLE Helpers
@@ -408,23 +461,3 @@ function durationToNanos(durationString) {// This is golang specific. eg. 72h30m
 	if (lastIndex !== durationString.length) throw new Error(`Invalid characters found in duration string: "${durationString}"`)
 	return totalNanoseconds
 }
-
-//SETUP: msg, scroller, lucide
-let topButton, botButton, msg
-window.onload = _=>{
-	msg = q('#msg')
-	topButton = q('#scrollerTop')
-	botButton = q('#scrollerBot')
-	lucide.createIcons()
-}
-
-window.addEventListener('scroll', _=>{
-	if (topButton) {
-		if (document.documentElement.scrollTop > 100) topButton.style.display = "block"
-		else topButton.style.display = "none"
-	}
-	if (botButton) {
-		if (document.documentElement.scrollHeight - window.innerHeight - document.documentElement.scrollTop > 100) botButton.style.display = "block"
-		else botButton.style.display = "none"
-	}
-}, {passive: true})
