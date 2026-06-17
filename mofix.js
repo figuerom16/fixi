@@ -18,7 +18,7 @@
 	DB = Symbol(),
 	mkDb =_=>{let last = 0, j; return ms=>new Promise((r,rj)=>{j?.(DB); j = rj; let id = ++last; setTimeout(_=>id == last && (j = null, r()), ms)})},
 	mkWait = ctx=>x=>new Promise(r=>typeof x == "number" ? setTimeout(r,x) : el(ctx,x,r,{once:1})),
-	ignore =elt=>elt.closest("[mx-ignore]"),
+	ignore =elt=>elt?.closest("[mx-ignore]"),
 	POS = {before:"beforebegin",after:"afterend",start:"afterbegin",end:"beforeend"},
 	proxy = elts=>new Proxy({}, {
 		get:(_,p)=>{
@@ -38,30 +38,26 @@
 		},
 		set:(_,p,v)=>(elts.forEach(e=>e[p]=v),true)
 	}),
-	qf={
+	mkqf={
 		closest:(s,c,t)=>(c||t).closest(s),
 		first:(s,c,_)=>(c||doc).querySelector(s),
 		last:(s,c,_)=>[...(c||doc).querySelectorAll(s)].at(-1),
-		next:(s,c,t)=>[...doc.querySelectorAll(s)].find(el=>(c||t).compareDocumentPosition(el)&4),
-		prev:(s,c,t)=>[...doc.querySelectorAll(s)].findLast(el=>(c||t).compareDocumentPosition(el)&2)
+		next:(s,c,t)=>[...doc.querySelectorAll(s)].find(el=>(c||t).compareDocumentPosition(el) & 4),
+		prev:(s,c,t)=>[...doc.querySelectorAll(s)].findLast(el=>(c||t).compareDocumentPosition(el) & 2),
+		split:cmd=>cmd.split(/\s*->\s*/).filter(Boolean),
+		run:(cmd,c,t)=>{
+			const [,fn,s] = cmd.match(/^(next|prev|closest|first|last)\s+(.+)$/)||[]
+			return [fn,fn ? qf[fn](s,c,t) : (c||doc).querySelector(cmd)]
+		}
 	},
 	mkq = ctx=>sel=>{
 		if (typeof sel != "string") return proxy(sel.nodeType ? [sel] : [...sel])
-		const cmds = sel.split(/\s*->\s*/).filter(Boolean)
-		for (const [i, cmd] of cmds.entries()) {
-			const [, fn, s] = cmd.match(/^(next|prev|closest|first|last)\s+(.+)$/) || []
-			const isLast = i === cmds.length - 1
-			const root = i === 0 ? doc : ctx
-			if (!root) return proxy([])
-			if (fn) {
-				const res = qf[fn](s,ctx,root)
-				if (isLast) return proxy(res ? [res] : [])
-				ctx = res
-			} else {
-				if (isLast) return proxy([...root.querySelectorAll(cmd)])
-				ctx = root.querySelector(cmd)
-			}
-			if (!ctx) break
+		const cmds = mkqf.split(sel)
+		let i = 0
+		for (const cmd of cmds) {
+			const [fn, res] = qf.run(cmd, ++i > 1 ? ctx : undefined, ctx)
+			if (i === cmds.length) return proxy(fn ? (res ? [res] : []) : [...(i > 1 ? ctx : doc).querySelectorAll(cmd)])
+			if (!(ctx = res)) break
 		}
 		return proxy([])
 	},
@@ -103,6 +99,7 @@
 		for (let i = 0; i < r.snapshotLength; i++) init(r.snapshotItem(i))
 	},
 	gt = globalThis, de = doc.documentElement
+	gt.qf = mkqf
 	gt.q = mkq(de)
 	gt.wait = mkWait(de)
 	gt.transition = fn=>doc.startViewTransition ? doc.startViewTransition(fn) : fn()
@@ -236,20 +233,10 @@ document.addEventListener('fx:init', e=>{//Disable During Request
 	})
 })
 
-sf={//Selector Functions:(Selector, Ctx, Target)
-	closest:(s,c,t)=>(c||t).closest(s),
-	first:(s,c,_)=>(c||document).querySelector(s),
-	last:(s,c,_)=>[...(c||document).querySelectorAll(s)].at(-1),
-	next:(s,c,t)=>[...document.querySelectorAll(s)].find(el=>(c||t).compareDocumentPosition(el)&4),
-	prev:(s,c,t)=>[...document.querySelectorAll(s)].findLast(el=>(c||t).compareDocumentPosition(el)&2)
-}
-
-document.addEventListener("fx:config", e=>{//Relative Selectors
+document.addEventListener("fx:config", e => {//Moxi Relative Selectors
 	let c, t = e.target
-	for (const cmd of t.getAttribute("fx-target")?.split(/\s*->\s*/).filter(Boolean)||[]) {
-		const [, fn, s] = cmd.match(/^(next|prev|closest|first|last)\s+(.+)$/)||[]
-		e.detail.cfg.target = c = fn ? qf[fn](s,c,t) : (c||document).querySelector(cmd)
-		if (!c) break
+	for (const cmd of qf.split(t.getAttribute("fx-target") || "")) {
+		if (!(e.detail.cfg.target = c = qf.run(cmd, c, t)[1])) break
 	}
 })
 
@@ -277,19 +264,19 @@ document.addEventListener('fx:after',e=>{//Select
 
 document.addEventListener('fx:after', e=>{//Set Error & Success
 	if (e.detail.cfg.response.status < 300) {
-		msg.classList.remove('alert-error')
-		msg.classList.add('alert-success')
+		toast.classList.remove('alert-error')
+		toast.classList.add('alert-success')
 		wait(3000)
-		msg.firstElementChild.textContent = ''
+		msg.textContent = ''
 	}
 	else if(e.detail.cfg.response.status < 400) {
 		if (e.detail.cfg.text == 'refresh') {document.location.reload();return}
 		window.location.href = e.detail.cfg.text
 	}
 	else {
-		msg.classList.remove('alert-success')
-		msg.classList.add('alert-error')
-		e.detail.cfg.target = error;
+		toast.classList.remove('alert-success')
+		toast.classList.add('alert-error')
+		e.detail.cfg.target = msg;
 		e.detail.cfg.swap = 'innerHTML'
 	}
 })
@@ -300,23 +287,6 @@ document.addEventListener('fx:swapped', _=>{//Run Scripts then Create Icons
 
 //COMMON
 function oassign(tag, obj) {return Object.assign(document.createElement(tag), obj)}
-
-function signal(init) {
-	let value = init
-	const subs = new Set()
-	const sig = _=>{return value}
-	sig.set = newValue=>{
-		if (newValue === value) return
-		value = newValue
-		subs.forEach(sub=>sub(value))
-	}
-	sig.sub = cb=>{
-		subs.add(cb)
-		return _=>{subs.delete(cb)}
-	}
-	sig.clear = _=>{subs.clear()}
-	return sig
-}
 
 function copyToClipboard(text) {
 	if (navigator.clipboard && navigator.clipboard.writeText) {navigator.clipboard.writeText(text);return}
