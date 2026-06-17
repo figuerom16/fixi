@@ -19,13 +19,6 @@
 	mkDb =_=>{let last = 0, j; return ms=>new Promise((r,rj)=>{j?.(DB); j = rj; let id = ++last; setTimeout(_=>id == last && (j = null, r()), ms)})},
 	mkWait = ctx=>x=>new Promise(r=>typeof x == "number" ? setTimeout(r,x) : el(ctx,x,r,{once:1})),
 	ignore =elt=>elt.closest("[mx-ignore]"),
-	qf={
-		closest:(s,c,t)=>(c||t).closest(s),
-		first:(s,c,_)=>(c||doc).querySelector(s),
-		last:(s,c,_)=>[...(c||doc).querySelectorAll(s)].at(-1),
-		next:(s,c,t)=>[...doc.querySelectorAll(s)].find(el=>(c||t).compareDocumentPosition(el)&4),
-		prev:(s,c,t)=>[...doc.querySelectorAll(s)].findLast(el=>(c||t).compareDocumentPosition(el)&2)
-	},
 	POS = {before:"beforebegin",after:"afterend",start:"afterbegin",end:"beforeend"},
 	proxy = elts=>new Proxy({}, {
 		get:(_,p)=>{
@@ -45,6 +38,13 @@
 		},
 		set:(_,p,v)=>(elts.forEach(e=>e[p]=v),true)
 	}),
+	qf={
+		closest:(s,c,t)=>(c||t).closest(s),
+		first:(s,c,_)=>(c||doc).querySelector(s),
+		last:(s,c,_)=>[...(c||doc).querySelectorAll(s)].at(-1),
+		next:(s,c,t)=>[...doc.querySelectorAll(s)].find(el=>(c||t).compareDocumentPosition(el)&4),
+		prev:(s,c,t)=>[...doc.querySelectorAll(s)].findLast(el=>(c||t).compareDocumentPosition(el)&2)
+	},
 	mkq = ctx=>sel=>{
 		if (typeof sel != "string") return proxy(sel.nodeType ? [sel] : [...sel])
 		const cmds = sel.split(/\s*->\s*/).filter(Boolean)
