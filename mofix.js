@@ -47,7 +47,7 @@
 		split:cmd=>cmd.split(/\s*->\s*/).filter(Boolean),
 		run:(cmd,c,t)=>{
 			const [,fn,s] = cmd.match(/^(next|prev|closest|first|last)\s+(.+)$/)||[]
-			return [fn,fn ? qf[fn](s,c,t) : (c||doc).querySelector(cmd)]
+			return [fn,fn ? mkqf[fn](s,c,t) : (c||doc).querySelector(cmd)]
 		}
 	},
 	mkq = ctx=>sel=>{
@@ -55,7 +55,7 @@
 		const cmds = mkqf.split(sel)
 		let i = 0
 		for (const cmd of cmds) {
-			const [fn, res] = qf.run(cmd, ++i > 1 ? ctx : undefined, ctx)
+			const [fn, res] = mkqf.run(cmd, ++i > 1 ? ctx : undefined, ctx)
 			if (i === cmds.length) return proxy(fn ? (res ? [res] : []) : [...(i > 1 ? ctx : doc).querySelectorAll(cmd)])
 			if (!(ctx = res)) break
 		}
