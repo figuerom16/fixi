@@ -3,7 +3,7 @@
 	let doc = document
 	if(doc.__moxi_mo) return
 	let liveFns = new Set(), pending = false,
-		recompute = evt=> {
+	recompute = evt=> {
 		if (pending || ignore(evt?.target)) return
 		pending = true
 		queueMicrotask(_=>{liveFns.forEach(f=>f()); setTimeout(_=>pending = false)})
@@ -18,8 +18,14 @@
 	DB = Symbol(),
 	mkDb =_=>{let last = 0, j; return ms=>new Promise((r,rj)=>{j?.(DB); j = rj; let id = ++last; setTimeout(_=>id == last && (j = null, r()), ms)})},
 	mkWait = ctx=>x=>new Promise(r=>typeof x == "number" ? setTimeout(r,x) : el(ctx,x,r,{once:1})),
-	ignore = elt => elt?.closest("[mx-ignore]"),
-	one = x=>x?[x]:[],
+	ignore =elt=>elt.closest("[mx-ignore]"),
+	qf={
+		closest:(s,c,t)=>(c||t).closest(s),
+		first:(s,c,_)=>(c||doc).querySelector(s),
+		last:(s,c,_)=>[...(c||doc).querySelectorAll(s)].at(-1),
+		next:(s,c,t)=>[...doc.querySelectorAll(s)].find(el=>(c||t).compareDocumentPosition(el)&4),
+		prev:(s,c,t)=>[...doc.querySelectorAll(s)].findLast(el=>(c||t).compareDocumentPosition(el)&2)
+	},
 	POS = {before:"beforebegin",after:"afterend",start:"afterbegin",end:"beforeend"},
 	proxy = elts=>new Proxy({}, {
 		get:(_,p)=>{
@@ -41,22 +47,23 @@
 	}),
 	mkq = ctx=>sel=>{
 		if (typeof sel != "string") return proxy(sel.nodeType ? [sel] : [...sel])
-		let im = sel.match(/^(.+)\s+in\s+(.+)$/), root = doc
-		if (im){ sel = im[1]; root = im[2] == "this" ? ctx : doc.querySelector(im[2]) }
-		if (!root) return proxy([])
-		let m = sel.match(/^(next|prev|closest|first|last)\s+(.+)$/), elts
-		if (m){
-			let [,d,s] = m, cdp = e=>ctx.compareDocumentPosition(e)
-			if (d == "closest") elts = one(ctx.closest(s))
-			else {
-				let all = [...root.querySelectorAll(s)]
-				if (d == "first") elts = all.slice(0,1)
-				else if (d == "last") elts = all.slice(-1)
-				else if (d == "next") elts = one(all.find(e=>cdp(e) & 4))
-				else elts = one(all.reverse().find(e=>cdp(e) & 2))
+		const cmds = sel.split(/\s*->\s*/).filter(Boolean)
+		for (const [i, cmd] of cmds.entries()) {
+			const [, fn, s] = cmd.match(/^(next|prev|closest|first|last)\s+(.+)$/) || []
+			const isLast = i === cmds.length - 1
+			const root = i === 0 ? doc : ctx
+			if (!root) return proxy([])
+			if (fn) {
+				const res = qf[fn](s,ctx,root)
+				if (isLast) return proxy(res ? [res] : [])
+				ctx = res
+			} else {
+				if (isLast) return proxy([...root.querySelectorAll(cmd)])
+				ctx = root.querySelector(cmd)
 			}
-		} else elts = [...root.querySelectorAll(sel)]
-		return proxy(elts)
+			if (!ctx) break
+		}
+		return proxy([])
 	},
 	init = elt=>{
 		if (elt.__moxi || ignore(elt)) return
@@ -229,22 +236,21 @@ document.addEventListener('fx:init', e=>{//Disable During Request
 	})
 })
 
-document.addEventListener("fx:config", evt=> {//Relative Selectors
-	const t = evt.target
-	let cmd = t.getAttribute("fx-target")
-	if (!cmd) return
-	let ctx = document
-	const im = cmd.match(/^(.+)\s+in\s+(.+)$/)
-	if (im) {cmd = im[1]; ctx = im[2] == "this" ? t : document.querySelector(im[2])}
-	if (!ctx) return
-	const m = cmd.match(/^(next|prev|closest|first|last)\s+(.+)$/)
-	evt.detail.cfg.target = m ? {
-		closest: s => t.closest(s),
-		first: s => ctx.querySelector(s),
-		last: s => [...ctx.querySelectorAll(s)].pop(),
-		next: s => [...document.querySelectorAll(s)].find(e=>t.compareDocumentPosition(e) & 4),
-		prev: s => [...document.querySelectorAll(s)].reverse().find(e=>t.compareDocumentPosition(e) & 2),
-	}[m[1]](m[2]) : ctx.querySelector(cmd)
+sf={//Selector Functions:(Selector, Ctx, Target)
+	closest:(s,c,t)=>(c||t).closest(s),
+	first:(s,c,_)=>(c||document).querySelector(s),
+	last:(s,c,_)=>[...(c||document).querySelectorAll(s)].at(-1),
+	next:(s,c,t)=>[...document.querySelectorAll(s)].find(el=>(c||t).compareDocumentPosition(el)&4),
+	prev:(s,c,t)=>[...document.querySelectorAll(s)].findLast(el=>(c||t).compareDocumentPosition(el)&2)
+}
+
+document.addEventListener("fx:config", e=>{//Relative Selectors
+	let c, t = e.target
+	for (const cmd of t.getAttribute("fx-target")?.split(/\s*->\s*/).filter(Boolean)||[]) {
+		const [, fn, s] = cmd.match(/^(next|prev|closest|first|last)\s+(.+)$/)||[]
+		e.detail.cfg.target = c = fn ? qf[fn](s,c,t) : (c||document).querySelector(cmd)
+		if (!c) break
+	}
 })
 
 document.addEventListener('fx:config', e=>{//Vals
@@ -271,9 +277,9 @@ document.addEventListener('fx:after',e=>{//Select
 
 document.addEventListener('fx:after', e=>{//Set Error & Success
 	if (e.detail.cfg.response.status < 300) {
-		msg.classList.remove('alert-error');
-		msg.classList.add('alert-success');
-		wait(3000);
+		msg.classList.remove('alert-error')
+		msg.classList.add('alert-success')
+		wait(3000)
 		msg.firstElementChild.textContent = ''
 	}
 	else if(e.detail.cfg.response.status < 400) {
@@ -281,8 +287,8 @@ document.addEventListener('fx:after', e=>{//Set Error & Success
 		window.location.href = e.detail.cfg.text
 	}
 	else {
-		msg.classList.remove('alert-success');
-		msg.classList.add('alert-error');
+		msg.classList.remove('alert-success')
+		msg.classList.add('alert-error')
 		e.detail.cfg.target = error;
 		e.detail.cfg.swap = 'innerHTML'
 	}
@@ -291,66 +297,6 @@ document.addEventListener('fx:after', e=>{//Set Error & Success
 document.addEventListener('fx:swapped', _=>{//Run Scripts then Create Icons
 	if (typeof lucide !== 'undefined') lucide.createIcons()
 })
-
-
-//miniJQ
-function $(s) { // s=selector, el=element, els=elements
-	let el, els
-	const start = document.currentScript // Doesn't work in callback use Event or QuerySelector
-	if (!s) el = start.parentElement ?? console.warn('$(): Fails inside callback.')
-	else if (s instanceof Event) el = s.currentTarget ?? console.warn(`$(${s}): Event is Null`)
-	else if (typeof s !== 'string') {console.warn(`$(${s}): Not a String`); return null}
-	else if (s == '-') el = start.previousElementSibling ?? console.warn('$(\'-\'): Fails inside callback.')
-	else if (s.indexOf('closest ') == 0) el = start.closest(s.substring(8))
-	else if (s.indexOf('next ') == 0){
-		const matches = Array.from(document.querySelectorAll(s.substring(5)))
-		el = matches.find((el)=>start.compareDocumentPosition(el) === Node.DOCUMENT_POSITION_FOLLOWING)
-	}
-	else if (s.indexOf('previous ') == 0){
-		const matches = Array.from(document.querySelectorAll(s.substring(9))).reverse()
-		el = matches.find((el)=>start.compareDocumentPosition(el) === Node.DOCUMENT_POSITION_PRECEDING)
-	}
-	if (el) els = [el]
-	else {
-		els = Array.from(document.querySelectorAll(s))
-		if (els.length === 0) {console.warn(`$(${s}): QuerySelector is Null`); return null}
-	}
-	return { // e=event, c=callback, d=delay
-		$: els[0],
-		all: els,
-		closest: (n)=>{return els[0].closest(n)},
-		next: (n)=>{
-			const matches = Array.from(document.querySelectorAll(n))
-			return matches.find((el)=>els[0].compareDocumentPosition(el) === Node.DOCUMENT_POSITION_FOLLOWING)
-		},
-		previous: (n)=>{
-			const matches = Array.from(document.querySelectorAll(n)).reverse()
-			return matches.find((el)=>els[0].compareDocumentPosition(el) === Node.DOCUMENT_POSITION_PRECEDING)
-		},
-		nav: (nav)=>{
-			el = els[0]
-			for (const n of nav.split(' ')) {
-				switch (n) {
-					case 'parent': el = el.parentElement; break
-					case 'next': el = el.nextElementSibling; break
-					case 'previous': el = el.previousElementSibling; break
-					case 'first': el = el.firstElementChild; break
-					case 'last': el = el.lastElementChild; break
-					default: console.warn(`$: Nav ${n} is not Valid`)
-				}
-			}
-			return el
-		},
-		// Add more returns here
-		on: (e, c)=>(els.forEach(el => el.addEventListener(e, c)),this),
-		onchil: (e, c)=>(Array.from(els[0].children).forEach(el => el.addEventListener(e, c)),this),
-		off: (e, c)=>(els.forEach(el => el.removeEventListener(e, c)), this),
-		run: (c)=>(els.forEach(el => c(el)), this),
-		send: (name, detail, bubbles = true, cancelable = true)=>(els.forEach(el => el.dispatchEvent(new CustomEvent(name, { detail, bubbles, cancelable }))), this),
-		// Add more chainables here
-	}
-}
-
 
 //COMMON
 function oassign(tag, obj) {return Object.assign(document.createElement(tag), obj)}
@@ -436,7 +382,6 @@ function showType(show, head) {
 	if (show) for (let i = 0; i < head.cells.length; i++) head.cells[i].innerHTML = head.cells[i].innerHTML.replace(/<span style="display: none;">\[(.*?)\]<\/span>/g, '[$1]')
 	else for (let i = 0; i < head.cells.length; i++) head.cells[i].innerHTML = head.cells[i].innerHTML.replace(/\[(.*?)\]/g, '<span style="display: none;">[$1]</span>')
 }
-
 
 //GOLANG Helpers
 const NANO_MULTIPLIERS = {
