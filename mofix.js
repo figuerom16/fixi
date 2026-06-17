@@ -20,7 +20,7 @@
 	mkWait = ctx=>x=>new Promise(r=>typeof x == "number" ? setTimeout(r,x) : el(ctx,x,r,{once:1})),
 	ignore =elt=>elt?.closest("[mx-ignore]"),
 	POS = {before:"beforebegin",after:"afterend",start:"afterbegin",end:"beforeend"},
-	proxy = elts=>new Proxy({}, {
+	proxy = elts=>new Proxy({},{
 		get:(_,p)=>{
 			if (p == "count") return elts.length
 			if (p == "arr") return _=>elts.slice()
@@ -56,7 +56,7 @@
 		let i = 0
 		for (const cmd of cmds) {
 			const [fn, res] = mkqf.run(cmd, ++i > 1 ? ctx : undefined, ctx)
-			if (i === cmds.length) return proxy(fn ? (res ? [res] : []) : [...(i > 1 ? ctx : doc).querySelectorAll(cmd)])
+			if (i == cmds.length) return proxy(fn ? (res ? [res] : []) : [...(i > 1 ? ctx : doc).querySelectorAll(cmd)])
 			if (!(ctx = res)) break
 		}
 		return proxy([])
@@ -134,7 +134,7 @@
 				}
 			}
 			else if (elt.name) body.append(elt.name, elt.value)
-			if (!elt.matches('input[type="file"], input[type="image"]')) body = new URLSearchParams(body)
+			if (!elt.matches('input[type="file"],input[type="image"]')) body = new URLSearchParams(body)
 			let ac = new AbortController()
 			let cfg = {
 				trigger: evt,
@@ -176,8 +176,7 @@
 				}
 				if (!send(elt, "after", { cfg })) return
 			} catch (error) {
-				send(elt, "error", { cfg, error })
-				return
+				send(elt, "error", { cfg, error }); return
 			} finally {
 				reqs.delete(cfg)
 				send(elt, "finally", { cfg })
@@ -197,7 +196,7 @@
 		elt.__fixi.evt.forEach(a=>{elt.addEventListener(a, elt.__fixi, options)})
 		send(elt, "inited", {}, false)
 	}
-	let process =(n)=>{
+	let process =n=>{
 		if (n.matches) {
 			if (ignore(n)) return
 			if (n.matches("[fx-method]")) init(n)
@@ -246,11 +245,11 @@ document.addEventListener('fx:config', e=>{//Vals
 	let vals
 	if(valsAttr.startsWith('js:')) vals = new Function('return ' + valsAttr.slice(3))()
 	else vals = new Function('return ' + valsAttr)()
-	if(typeof vals !== 'object' || vals === null || Array.isArray(vals)){
+	if(typeof vals !== 'object' || vals == null || Array.isArray(vals)){
 		console.error('fx-vals not a valid object:', vals);return
 	}
 	for (let key in vals){
-		if(typeof key === 'string' && key.trim() === '') continue
+		if(typeof key === 'string' && key.trim() == '') continue
 		e.detail.cfg.body.append(key, vals[key])
 	}
 })
@@ -301,7 +300,7 @@ function copyToClipboard(text) {
 //TABLE Helpers
 function exportTable(table, sep='|', filename) {
 	const rows = [...table.rows]
-	const data = rows.filter(row => row.style.display !== 'none').map((row, index)=>[...row.cells].map(cell=>index=== 0?cell.innerText.slice(0, -2):cell.textContent))
+	const data = rows.filter(row => row.style.display != 'none').map((row, index)=>[...row.cells].map(cell=>index== 0?cell.innerText.slice(0, -2):cell.textContent))
 	saveCSV(data.map(row => row.join(sep)).join('\n'), filename)
 }
 
@@ -339,7 +338,7 @@ function sortTable(head) {
 	const heads = head.parentElement
 	const column = [...heads.cells].indexOf(head)
 	for (let e of heads.cells) {if (['►','▲','▼'].includes(e.textContent.substr(-1))) e.textContent=e.textContent.slice(0, -1) + '►'}
-	const isDescending = arrow === '▼'
+	const isDescending = arrow == '▼'
 	head.textContent = head.textContent.slice(0, -1) + (isDescending ? '▲' : '▼')
 	rows.sort((a, b) => {
 		const comp = a.cells[column].textContent.localeCompare(b.cells[column].textContent, undefined, { numeric: true })
@@ -368,11 +367,11 @@ function durationToNanos(durationString) {// This is golang specific. eg. 72h30m
 	let totalNanoseconds = 0
 	let lastIndex = 0
 	const matches = [...durationString.matchAll(/(\d+)(ns|us|ms|s|m|h)/g)]
-	if (matches.length === 0 && durationString.length > 0) throw new Error(`Invalid duration string format: "${durationString}"`)
+	if (matches.length == 0 && durationString.length > 0) throw new Error(`Invalid duration string format: "${durationString}"`)
 	for (const match of matches) {
 		totalNanoseconds += parseInt(match[1], 10) * NANO_MULTIPLIERS[match[2]]
 		lastIndex = match.index + match[0].length
 	}
-	if (lastIndex !== durationString.length) throw new Error(`Invalid characters found in duration string: "${durationString}"`)
+	if (lastIndex != durationString.length) throw new Error(`Invalid characters found in duration string: "${durationString}"`)
 	return totalNanoseconds
 }
