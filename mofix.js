@@ -259,7 +259,6 @@ document.addEventListener('fx:after',e=>{//Select
 	e.detail.cfg.text = t.content.querySelector(select).outerHTML
 })
 
-
 document.addEventListener('fx:after', e=>{//Set Error & Success
 	if (e.detail.cfg.response.status < 300) {
 		toast.classList.remove('alert-error')
