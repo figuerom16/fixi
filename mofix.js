@@ -232,7 +232,7 @@ document.addEventListener('fx:init', e=>{//Disable During Request
 	})
 })
 
-document.addEventListener("fx:config", e => {//Moxi Relative Selectors
+document.addEventListener("fx:config",e=> {//Moxi Relative Selectors
 	let c, t = e.target
 	for (const cmd of qf.split(t.getAttribute("fx-target") || "")) {
 		if (!(e.detail.cfg.target = c = qf.run(cmd, c, t)[1])) break
@@ -297,6 +297,12 @@ function copyToClipboard(text) {
 	document.body.removeChild(textarea)
 }
 
+function generateKey() { // Create 16 character Device ID.
+	const bytes = crypto.getRandomValues(new Uint8Array(24))
+	const binary = String.fromCharCode(...bytes)
+	return btoa(binary).replace(/[+/]/g, char => char === '+' ? '-' : '_')
+}
+
 //TABLE Helpers
 function exportTable(table, sep='|', filename) {
 	const rows = [...table.rows]
@@ -345,11 +351,6 @@ function sortTable(head) {
 		return isDescending ? -comp : comp
 	})
 	body.replaceChildren(heads, ...rows)
-}
-
-function showType(show, head) {
-	if (show) for (let i = 0; i < head.cells.length; i++) head.cells[i].innerHTML = head.cells[i].innerHTML.replace(/<span style="display: none;">\[(.*?)\]<\/span>/g, '[$1]')
-	else for (let i = 0; i < head.cells.length; i++) head.cells[i].innerHTML = head.cells[i].innerHTML.replace(/\[(.*?)\]/g, '<span style="display: none;">[$1]</span>')
 }
 
 //GOLANG Helpers
