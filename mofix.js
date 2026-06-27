@@ -259,6 +259,30 @@ document.addEventListener('fx:after',e=>{//Select
 	e.detail.cfg.text = t.content.querySelector(select).outerHTML
 })
 
+
+document.addEventListener('fx:after', e=>{//Set Error & Success
+	if (e.detail.cfg.response.status < 300) {
+		toast.classList.remove('alert-error')
+		toast.classList.add('alert-success')
+		wait(3000)
+		msg.textContent = ''
+	}
+	else if(e.detail.cfg.response.status < 400) {
+		if (e.detail.cfg.text == 'refresh') {document.location.reload();return}
+		window.location.href = e.detail.cfg.text
+	}
+	else {
+		toast.classList.remove('alert-success')
+		toast.classList.add('alert-error')
+		e.detail.cfg.target = msg;
+		e.detail.cfg.swap = 'innerHTML'
+	}
+})
+
+document.addEventListener('fx:swapped', _=>{//Run Scripts then Create Icons
+	if (typeof lucide !== 'undefined') lucide.createIcons()
+})
+
 (_=>{//PAXI
 	let mx = (o,n,ids)=>{
 		if (o.nodeType !== n.nodeType || o.nodeName !== n.nodeName){
@@ -302,29 +326,6 @@ document.addEventListener('fx:after',e=>{//Select
 		if (e.detail.cfg.swap === "morph") e.detail.cfg.swap = (cfg)=>morph(cfg.target, cfg.text)
 	})
 })();
-
-document.addEventListener('fx:after', e=>{//Set Error & Success
-	if (e.detail.cfg.response.status < 300) {
-		toast.classList.remove('alert-error')
-		toast.classList.add('alert-success')
-		wait(3000)
-		msg.textContent = ''
-	}
-	else if(e.detail.cfg.response.status < 400) {
-		if (e.detail.cfg.text == 'refresh') {document.location.reload();return}
-		window.location.href = e.detail.cfg.text
-	}
-	else {
-		toast.classList.remove('alert-success')
-		toast.classList.add('alert-error')
-		e.detail.cfg.target = msg;
-		e.detail.cfg.swap = 'innerHTML'
-	}
-})
-
-document.addEventListener('fx:swapped', _=>{//Run Scripts then Create Icons
-	if (typeof lucide !== 'undefined') lucide.createIcons()
-})
 
 //COMMON
 function oassign(tag, obj) {return Object.assign(document.createElement(tag), obj)}
