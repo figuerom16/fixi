@@ -42,8 +42,8 @@
 		closest:(s,c,t)=>(c||t).closest(s),
 		first:(s,c,_)=>(c||doc).querySelector(s),
 		last:(s,c,_)=>[...(c||doc).querySelectorAll(s)].at(-1),
-		next:(s,c,t)=>[...doc.querySelectorAll(s)].find(el=>(c||t).compareDocumentPosition(el) & 4),
-		prev:(s,c,t)=>[...doc.querySelectorAll(s)].findLast(el=>(c||t).compareDocumentPosition(el) & 2),
+		next:(s,c,t,r=c||t)=>s.slice(0,3) == "sib" ? r.nextElementSibling : [...doc.querySelectorAll(s)].find(el =>r.compareDocumentPosition(el) & 4),
+		prev:(s,c,t,r=c||t)=>s.slice(0,3) == "sib" ? r.previousElementSibling : [...doc.querySelectorAll(s)].findLast(el =>r.compareDocumentPosition(el) & 2),
 		split:cmd=>cmd.split(/\s*->\s*/).filter(Boolean),
 		run:(cmd,c,t)=>{
 			const [,fn,s] = cmd.match(/^(closest|first|last|next|prev)\s+(.+)$/)||[]
@@ -131,7 +131,7 @@
 			if (elt instanceof HTMLFormElement) body = new FormData(elt, evt.submitter)
 			else if (elt instanceof HTMLTableRowElement) {
 				for (const cell of elt.cells) {
-					const name = cell.getAttribute("name")
+					const name = attr(cell, "name")
 					if (name) body.append(name, cell.innerText.trim())
 				}
 			}
