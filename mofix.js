@@ -1,4 +1,5 @@
-(_=>{//MOXI
+//MOXI
+(_=>{
 	let doc = document
 	if(doc.__moxi_mo) return
 	let liveFns = new Set(), pending = false,
@@ -13,10 +14,10 @@
 	})
 	let AF = async function(){}.constructor, HARGS = ["q", "wait", "trigger", "debounce"],
 	fire = (elt, type, detail, bub)=>elt.dispatchEvent(new CustomEvent(type, {detail, cancelable:1, bubbles:bub??1, composed:1})),
-	el = (e,n,h,o)=>e.addEventListener(n,h,o),
+	ael = (e,n,h,o)=>e.addEventListener(n,h,o),
 	DB = Symbol(),
 	mkDb =_=>{let last = 0, j; return ms=>new Promise((r,rj)=>{j?.(DB); j = rj; let id = ++last; setTimeout(_=>id == last && (j = null, r()), ms)})},
-	mkWait = ctx=>x=>new Promise(r=>typeof x == "number" ? setTimeout(r,x) : el(ctx,x,r,{once:1})),
+	mkWait = ctx=>x=>new Promise(r=>typeof x == "number" ? setTimeout(r,x) : ael(ctx,x,r,{once:1})),
 	ignore =elt=>elt?.closest("[mx-ignore]"),
 	POS = {before:"beforebegin",after:"afterend",start:"afterbegin",end:"beforeend"},
 	proxy = elts=>new Proxy({},{
@@ -86,7 +87,7 @@
 					return fn.call(elt, evt, q, wait, trigger, debounce).catch(e=>{if(e!=DB) throw e})
 				}
 				if (name == "init") handler()
-				else el(target, name, handler, opts)
+				else ael(target, name, handler, opts)
 			}
 		}
 		liveRuns.forEach(r=>r())
@@ -102,19 +103,22 @@
 	gt.q = mkq(de)
 	gt.wait = mkWait(de)
 	gt.transition = fn=>doc.startViewTransition ? doc.startViewTransition(fn) : fn()
-	el(doc, "mx:process", evt=>process(evt.target))
-	el(doc, "refresh", recompute)
-	el(doc, "DOMContentLoaded", _=>{
+	ael(doc, "mx:process", evt=>process(evt.target))
+	ael(doc, "refresh", recompute)
+	ael(doc, "DOMContentLoaded", _=>{
 		doc.__moxi_mo.observe(de, {childList:1, subtree:1, attributes:1, characterData:1})
-		el(doc, "input", recompute, true)
-		el(doc, "change", recompute, true)
+		ael(doc, "input", recompute, true)
+		ael(doc, "change", recompute, true)
 		process(doc.body)
 	})
 })();
 
-(_=>{//FIXI
-	if (document.__fixi_mo) return
-	document.__fixi_mo = new MutationObserver((recs) => recs.forEach((r) => r.type === "childList" && r.addedNodes.forEach((n) => process(n))))
+//FIXI
+(_ => {
+	let doc = document
+	if (doc.__fixi_mo) return
+	doc.__fixi_mo = new MutationObserver((recs) => recs.forEach((r) => r.type === "childList" && r.addedNodes.forEach((n) => process(n))))
+	let ael = (e,n,h,o)=>e.addEventListener(n,h,o)
 	let send = (elt, type, detail, bub) => elt.dispatchEvent(new CustomEvent("fx:" + type, { detail, cancelable: true, bubbles: bub !== false, composed: true }))
 	let attr = (elt, name, defaultVal) => elt.getAttribute(name) || defaultVal
 	let ignore = (elt) => elt.closest("[fx-ignore]") != null
@@ -138,14 +142,14 @@
 				trigger: evt,
 				action: attr(elt, "fx-action", ""),
 				method: attr(elt, "fx-method", "GET").toUpperCase(),
-				target: document.querySelector(attr(elt, "fx-target")) ?? elt,
+				target: doc.querySelector(attr(elt, "fx-target")) ?? elt,
 				swap: attr(elt, "fx-swap", "innerHTML"),
 				body,
 				drop: reqs.size,
 				abort: ac.abort.bind(ac),
 				signal: ac.signal,
 				preventTrigger: true,
-				transition: document.startViewTransition?.bind(document),
+				transition: doc.startViewTransition?.bind(doc),
 				fetch: fetch.bind(window)
 			}
 			let go = send(elt, "config", { cfg, requests: reqs })
@@ -188,10 +192,10 @@
 			if (cfg.transition) await cfg.transition(doSwap).finished
 			else await doSwap()
 			send(elt, "swapped", { cfg })
-			if (!document.contains(elt)) send(document, "swapped", {cfg})
+			if (!doc.contains(elt)) send(doc, "swapped", {cfg})
 		}
 		elt.__fixi.evt = attr(elt, "fx-trigger", elt.matches("form") ? "submit" : elt.matches("input:not([type=button]),select,textarea") ? "change" : "click").split("|")
-		elt.__fixi.evt.forEach(a=>{elt.addEventListener(a, elt.__fixi, options)})
+		elt.__fixi.evt.forEach(a=>{ael(elt, a, elt.__fixi, options)})
 		send(elt, "inited", {}, false)
 	}
 	let process =n=>{
@@ -204,22 +208,80 @@
 			n.querySelectorAll("[fx-trigger]:not([fx-method])").forEach(e=>{
 				const p = e.closest("[fx-method]")
 				if (p) {
-					e.getAttribute("fx-trigger").split("|").forEach(t=>{
-						e.addEventListener(t, _=>{p.dispatchEvent(new Event(p.__fixi.evt, {cancelable: true, bubbles: true, composed: true}))})
+					attr(e, "fx-trigger").split("|").forEach(t=>{
+						ael(e, t, _=>{p.dispatchEvent(new Event(p.__fixi.evt, {cancelable: true, bubbles: true, composed: true}))})
 					})
 				}
 			})
 		}
 	}
-	document.addEventListener("fx:process", evt=>process(evt.target))
-	document.addEventListener("DOMContentLoaded", _=>{
-		document.__fixi_mo.observe(document.documentElement, { childList: true, subtree: true })
-		process(document.body)
+	ael(doc, "fx:process", evt=>process(evt.target))
+	ael(doc, "DOMContentLoaded", _=>{
+		doc.__fixi_mo.observe(doc.documentElement, { childList: true, subtree: true })
+		process(doc.body)
+	})
+})();
+
+(_=>{
+	let mx = (o, n, ids)=>{
+		if (o.nodeType !== n.nodeType || o.nodeName !== n.nodeName){
+			n.querySelectorAll?.("[id]").forEach((ne)=>{
+				if (!n.contains(ne)) return
+				let oe = ids[ne.id]
+				if (oe){ delete ids[ne.id]; mx(oe, ne, ids); ne.replaceWith(oe) }
+			})
+			return o.replaceWith(n)
+		}
+		if (o.nodeType === 3 || o.nodeType === 8){
+			if (o.nodeValue !== n.nodeValue) o.nodeValue = n.nodeValue
+			return
+		}
+		for (let a of [...o.attributes]) if (!n.hasAttribute(a.name)) o.removeAttribute(a.name)
+		for (let a of n.attributes) if (o.getAttribute(a.name) !== a.value) o.setAttribute(a.name, a.value)
+		let oIds = {}
+		for (let c of o.children) if (c.id) oIds[c.id] = c
+		let oc = o.firstChild, nc = n.firstChild, on, nn, m
+		while (oc && nc){
+			on = oc.nextSibling; nn = nc.nextSibling
+			if (nc.id){
+				m = oIds[nc.id]
+				if (m && m !== oc){ o.insertBefore(m, oc); mx(m, nc, ids); nc = nn; continue }
+				if (!m){ o.insertBefore(nc, oc); nc = nn; continue }
+			}
+			mx(oc, nc, ids)
+			oc = on; nc = nn
+		}
+		while (oc){ on = oc.nextSibling; oc.remove(); oc = on }
+		while (nc){ nn = nc.nextSibling; o.appendChild(nc); nc = nn }
+	}
+	window.morph = (target, html)=>{
+		let t = document.createElement("template")
+		t.innerHTML = html
+		let ids = {}
+		target.querySelectorAll("[id]").forEach(e=>ids[e.id] = e)
+		mx(target, t.content.firstElementChild, ids)
+	}
+	document.addEventListener("fx:config", e=>{
+		if (e.detail.cfg.swap === "morph") e.detail.cfg.swap = cfg=>morph(cfg.target, cfg.text)
 	})
 })();
 
 //FIXI ADDONS
-document.addEventListener('fx:init', e=>{//Disable During Request
+document.addEventListener('fx:init',e=>{//Debounce
+	let t = e.target
+	if (!t.hasAttribute('fx-debounce')) return
+	t.addEventListener('fx:inited', _=>{
+		t.removeEventListener(t.__fixi.evt, t.__fixi)
+		let debounceTime = parseInt(t.getAttribute('fx-debounce'))
+		let timeout = null
+		t.addEventListener(t.__fixi.evt,e=>{
+			clearTimeout(timeout)
+			timeout = setTimeout(_=>t.__fixi(e), debounceTime)
+		})
+	})
+})
+
+document.addEventListener('fx:init',e=>{//Disable During Request
 	const el = e.target
 	if(!el.matches('[fx-disable]')) return
 	const disableSelector = el.getAttribute('fx-disable')
@@ -228,6 +290,20 @@ document.addEventListener('fx:init', e=>{//Disable During Request
 		disableTarget.disabled = true
 		el.addEventListener('fx:after', (afterEvt)=>{if(afterEvt.target == el) disableTarget.disabled = false})
 	})
+})
+
+document.addEventListener("fx:init",e=>{//Polling
+	let elt = e.target
+	if (elt.matches("[ext-fx-poll-interval]")){
+		elt.addEventListener("fx:inited",_=>{
+			elt.__fixi.pollInterval = setInterval(_ => { elt.dispatchEvent(new CustomEvent("poll")) }, parseInt(elt.getAttribute("fx-poll")))
+		})
+	}
+})
+
+document.addEventListener('fx:config',e=>{//Confirm Dialog
+	const confirmationMessage = e.getAttribute('fx-confirm')
+	if(confirmationMessage) e.detail.cfg.confirm =_=>confirm(confirmationMessage)
 })
 
 document.addEventListener("fx:config",e=> {//Moxi Relative Selectors
@@ -278,53 +354,9 @@ document.addEventListener('fx:after', e=>{//Set Error & Success
 	}
 })
 
-document.addEventListener('fx:swapped', _=>{//Run Scripts then Create Icons
-	if (typeof lucide !== 'undefined') lucide.createIcons()
+document.addEventListener('fx:swapped', _=>{//Create Icons
+	lucide.createIcons()
 })
-
-(_=>{//PAXI
-	let mx = (o,n,ids)=>{
-		if (o.nodeType !== n.nodeType || o.nodeName !== n.nodeName){
-			n.querySelectorAll?.("[id]").forEach((ne)=>{
-				if (!n.contains(ne)) return
-				let oe = ids[ne.id]
-				if (oe){ delete ids[ne.id]; mx(oe, ne, ids); ne.replaceWith(oe) }
-			})
-			return o.replaceWith(n)
-		}
-		if (o.nodeType === 3 || o.nodeType === 8){
-			if (o.nodeValue !== n.nodeValue) o.nodeValue = n.nodeValue
-			return
-		}
-		for (let a of [...o.attributes]) if (!n.hasAttribute(a.name)) o.removeAttribute(a.name)
-		for (let a of n.attributes) if (o.getAttribute(a.name) !== a.value) o.setAttribute(a.name, a.value)
-		let oIds = {}
-		for (let c of o.children) if (c.id) oIds[c.id] = c
-		let oc = o.firstChild, nc = n.firstChild, on, nn, m
-		while (oc && nc){
-			on = oc.nextSibling; nn = nc.nextSibling
-			if (nc.id){
-				m = oIds[nc.id]
-				if (m && m !== oc){ o.insertBefore(m, oc); mx(m, nc, ids); nc = nn; continue }
-				if (!m){ o.insertBefore(nc, oc); nc = nn; continue }
-			}
-			mx(oc, nc, ids)
-			oc = on; nc = nn
-		}
-		while (oc){ on = oc.nextSibling; oc.remove(); oc = on }
-		while (nc){ nn = nc.nextSibling; o.appendChild(nc); nc = nn }
-	}
-	window.morph = (target, html)=>{
-		let t = document.createElement("template")
-		t.innerHTML = html
-		let ids = {}
-		target.querySelectorAll("[id]").forEach((e)=>ids[e.id] = e)
-		mx(target, t.content.firstElementChild, ids)
-	}
-	document.addEventListener("fx:config", (e)=>{
-		if (e.detail.cfg.swap === "morph") e.detail.cfg.swap = (cfg)=>morph(cfg.target, cfg.text)
-	})
-})();
 
 //COMMON
 function oassign(tag, obj) {return Object.assign(document.createElement(tag), obj)}
@@ -337,12 +369,6 @@ function copyToClipboard(text) {
 	textarea.select()
 	document.execCommand('copy')
 	document.body.removeChild(textarea)
-}
-
-function generateKey() { // Create 16 character Device ID.
-	const bytes = crypto.getRandomValues(new Uint8Array(24))
-	const binary = String.fromCharCode(...bytes)
-	return btoa(binary).replace(/[+/]/g, char => char === '+' ? '-' : '_')
 }
 
 //TABLE Helpers
@@ -395,7 +421,19 @@ function sortTable(head) {
 	body.replaceChildren(heads, ...rows)
 }
 
-const NANO_MULTIPLIERS = {//GOLANG Helpers
+function showType(show, head) {
+	if (show) for (let i = 0; i < head.cells.length; i++) head.cells[i].innerHTML = head.cells[i].innerHTML.replace(/<span style="display: none;">\[(.*?)\]<\/span>/g, '[$1]')
+	else for (let i = 0; i < head.cells.length; i++) head.cells[i].innerHTML = head.cells[i].innerHTML.replace(/\[(.*?)\]/g, '<span style="display: none;">[$1]</span>')
+}
+
+function generateKey() { // Create 16 character Device ID.
+	const bytes = crypto.getRandomValues(new Uint8Array(12))
+	const binary = String.fromCharCode(...bytes)
+	return btoa(binary).replace(/[+/]/g, char => char === '+' ? '-' : '_')
+}
+
+//GOLANG Helpers
+const NANO_MULTIPLIERS = {
 	ns: 1,
 	us: 1000,
 	ms: 1000 * 1000,
