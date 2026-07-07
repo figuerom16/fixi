@@ -45,7 +45,7 @@
 		next:(s,c,t,r=c||t)=>s.slice(0,3) == "sib" ? r.nextElementSibling : [...doc.querySelectorAll(s)].find(el =>r.compareDocumentPosition(el) & 4),
 		prev:(s,c,t,r=c||t)=>s.slice(0,3) == "sib" ? r.previousElementSibling : [...doc.querySelectorAll(s)].findLast(el =>r.compareDocumentPosition(el) & 2),
 		split:cmd=>cmd.split(/\s*->\s*/).filter(Boolean),
-		run: (cmd,c,t) => {
+		run:(cmd,c,t)=>{
 			if (!cmd) return c
 			const [,fn,s] = cmd.match(/^(closest|first|last|next|prev)\s+(.+)$/)||[]
 			return [fn,fn ? mkqf[fn](s,c,t) : (c||doc).querySelector(cmd)]
