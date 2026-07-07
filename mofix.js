@@ -426,8 +426,8 @@ function showType(show, head) {
 	else for (let i = 0; i < head.cells.length; i++) head.cells[i].innerHTML = head.cells[i].innerHTML.replace(/\[(.*?)\]/g, '<span style="display: none;">[$1]</span>')
 }
 
-function generateKey() { // Create 16 character Device ID.
-	const bytes = crypto.getRandomValues(new Uint8Array(12))
+function generateKey() { // Create 32 character Device ID.
+	const bytes = crypto.getRandomValues(new Uint8Array(24))
 	const binary = String.fromCharCode(...bytes)
 	return btoa(binary).replace(/[+/]/g, char => char === '+' ? '-' : '_')
 }
