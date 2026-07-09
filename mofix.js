@@ -294,9 +294,7 @@ document.addEventListener('fx:after', e=>{//Set Error & Success
 	}
 })
 
-document.addEventListener('fx:swapped', _=>{//Create Icons
-	lucide.createIcons()
-})
+document.addEventListener('fx:swapped', _=>{lucide.createIcons()})//Create Icons
 
 //COMMON
 function oassign(tag, obj) {return Object.assign(document.createElement(tag), obj)}
