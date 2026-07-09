@@ -307,6 +307,12 @@ function copyToClipboard(text) {
 	document.body.removeChild(textarea)
 }
 
+function generateKey() { // Create 32 character Device ID.
+	const bytes = crypto.getRandomValues(new Uint8Array(24))
+	const binary = String.fromCharCode(...bytes)
+	return btoa(binary).replace(/[+/]/g, char => char === '+' ? '-' : '_')
+}
+
 //TABLE Helpers
 function exportTable(table, sep='|', filename) {
 	const rows = [...table.rows]
@@ -362,14 +368,7 @@ function showType(show, head) {
 	else for (let i = 0; i < head.cells.length; i++) head.cells[i].innerHTML = head.cells[i].innerHTML.replace(/\[(.*?)\]/g, '<span style="display: none;">[$1]</span>')
 }
 
-function generateKey() { // Create 32 character Device ID.
-	const bytes = crypto.getRandomValues(new Uint8Array(24))
-	const binary = String.fromCharCode(...bytes)
-	return btoa(binary).replace(/[+/]/g, char => char === '+' ? '-' : '_')
-}
-
-//GOLANG Helpers
-const NANO_MULTIPLIERS = {
+const NANO_MULTIPLIERS = {//GOLANG Helper
 	ns: 1,
 	us: 1000,
 	ms: 1000 * 1000,
