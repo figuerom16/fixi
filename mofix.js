@@ -52,9 +52,8 @@
 	},
 	mkq = ctx=>sel=>{
 		if (typeof sel != "string") return proxy(sel.nodeType ? [sel] : [...sel])
-		const cmds = mkqf.split(sel)
 		let i = 0
-		for (const cmd of cmds) {
+		for (const cmd of mkqf.split(sel)) {
 			const [fn, res] = mkqf.run(cmd, ++i > 1 ? ctx : undefined, ctx)
 			if (i == cmds.length) return proxy(fn ? (res ? [res] : []) : [...(i > 1 ? ctx : doc).querySelectorAll(cmd)])
 			if (!(ctx = res)) break
