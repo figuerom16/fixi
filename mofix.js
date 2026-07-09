@@ -268,17 +268,6 @@
 })();
 
 //FIXI ADDONS
-document.addEventListener('fx:init',e=>{//Disable During Request
-	const el = e.target
-	if(!el.matches('[fx-disable]')) return
-	const disableSelector = el.getAttribute('fx-disable')
-	el.addEventListener('fx:before',_=>{
-		let disableTarget = disableSelector == "" ? el : document.querySelector(disableSelector)
-		disableTarget.disabled = true
-		el.addEventListener('fx:after', (afterEvt)=>{if(afterEvt.target == el) disableTarget.disabled = false})
-	})
-})
-
 document.addEventListener("fx:config",e=> {//Moxi Relative Selectors
 	let c, t = e.target
 	for (const cmd of qf.split(t.getAttribute("fx-target") || "")) {
