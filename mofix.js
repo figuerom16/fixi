@@ -120,7 +120,7 @@
 	if (doc.__fixi_mo) return
 	doc.__fixi_mo = new MutationObserver((recs) => recs.forEach((r) => r.type === "childList" && r.addedNodes.forEach((n) => process(n))))
 	let ael = (e,n,h,o)=>e.addEventListener(n,h,o)
-	let send = (elt, type, detail, bub) => elt.dispatchEvent(new CustomEvent("fx:" + type, { detail, cancelable: true, bubbles: bub !== false, composed: true }))
+	let send = (elt, type, detail, bub) => elt.dispatchEvent(new CustomEvent("fx:" + type, { detail, cancelable: 1, bubbles: bub??1, composed: 1 }))
 	let attr = (elt, name, defaultVal) => elt.getAttribute(name) || defaultVal
 	let ignore = (elt) => elt.closest("[fx-ignore]") != null
 	let init = (elt) => {
@@ -210,7 +210,7 @@
 				const p = e.closest("[fx-method]")
 				if (p) {
 					attr(e, "fx-trigger").split("|").forEach(t=>{
-						ael(e, t, _=>{p.dispatchEvent(new Event(p.__fixi.evt, {cancelable: true, bubbles: true, composed: true}))})
+						ael(e, t, _=>{p.dispatchEvent(new Event(p.__fixi.evt, {cancelable: 1, bubbles: 1, composed: 1}))})
 					})
 				}
 			})
@@ -218,7 +218,7 @@
 	}
 	ael(doc, "fx:process", evt=>process(evt.target))
 	ael(doc, "DOMContentLoaded", _=>{
-		doc.__fixi_mo.observe(doc.documentElement, { childList: true, subtree: true })
+		doc.__fixi_mo.observe(doc.documentElement, { childList: 1, subtree: 1 })
 		process(doc.body)
 	})
 })();
