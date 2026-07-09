@@ -275,21 +275,6 @@ document.addEventListener("fx:config",e=> {//Moxi Relative Selectors
 	}
 })
 
-document.addEventListener('fx:config', e=>{//Vals
-	const valsAttr = e.target.getAttribute('fx-vals')
-	if (!valsAttr) return
-	let vals
-	if(valsAttr.startsWith('js:')) vals = new Function('return ' + valsAttr.slice(3))()
-	else vals = new Function('return ' + valsAttr)()
-	if(typeof vals !== 'object' || vals == null || Array.isArray(vals)){
-		console.error('fx-vals not a valid object:', vals);return
-	}
-	for (let key in vals){
-		if(typeof key === 'string' && key.trim() == '') continue
-		e.detail.cfg.body.append(key, vals[key])
-	}
-})
-
 document.addEventListener('fx:after', e=>{//Set Error & Success
 	if (e.detail.cfg.response.status < 300) {
 		toast.classList.remove('alert-error')
