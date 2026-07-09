@@ -268,20 +268,6 @@
 })();
 
 //FIXI ADDONS
-document.addEventListener('fx:init',e=>{//Debounce
-	let t = e.target
-	if (!t.hasAttribute('fx-debounce')) return
-	t.addEventListener('fx:inited', _=>{
-		t.removeEventListener(t.__fixi.evt, t.__fixi)
-		let debounceTime = parseInt(t.getAttribute('fx-debounce'))
-		let timeout = null
-		t.addEventListener(t.__fixi.evt,e=>{
-			clearTimeout(timeout)
-			timeout = setTimeout(_=>t.__fixi(e), debounceTime)
-		})
-	})
-})
-
 document.addEventListener('fx:init',e=>{//Disable During Request
 	const el = e.target
 	if(!el.matches('[fx-disable]')) return
@@ -291,20 +277,6 @@ document.addEventListener('fx:init',e=>{//Disable During Request
 		disableTarget.disabled = true
 		el.addEventListener('fx:after', (afterEvt)=>{if(afterEvt.target == el) disableTarget.disabled = false})
 	})
-})
-
-document.addEventListener("fx:init",e=>{//Polling
-	let elt = e.target
-	if (elt.matches("[ext-fx-poll-interval]")){
-		elt.addEventListener("fx:inited",_=>{
-			elt.__fixi.pollInterval = setInterval(_ => { elt.dispatchEvent(new CustomEvent("poll")) }, parseInt(elt.getAttribute("fx-poll")))
-		})
-	}
-})
-
-document.addEventListener('fx:config',e=>{//Confirm Dialog
-	const confirmationMessage = e.getAttribute('fx-confirm')
-	if(confirmationMessage) e.detail.cfg.confirm =_=>confirm(confirmationMessage)
 })
 
 document.addEventListener("fx:config",e=> {//Moxi Relative Selectors
@@ -327,13 +299,6 @@ document.addEventListener('fx:config', e=>{//Vals
 		if(typeof key === 'string' && key.trim() == '') continue
 		e.detail.cfg.body.append(key, vals[key])
 	}
-})
-
-document.addEventListener('fx:after',e=>{//Select
-	const select = e.target.getAttribute('fx-select')
-	if (!select) return
-	const t = Object.assign(document.createElement('template'),{innerHTML:e.detail.cfg.text})
-	e.detail.cfg.text = t.content.querySelector(select).outerHTML
 })
 
 document.addEventListener('fx:after', e=>{//Set Error & Success
