@@ -1,5 +1,4 @@
-//MOXI
-(_=>{
+(_=>{//MOXI
 	let doc = document
 	if(doc.__moxi_mo) return
 	let liveFns = new Set(), pending = false,
@@ -114,8 +113,7 @@
 	})
 })();
 
-//FIXI
-(_ => {
+(_=>{//FIXI
 	let doc = document
 	if (doc.__fixi_mo) return
 	doc.__fixi_mo = new MutationObserver((recs) => recs.forEach((r) => r.type === "childList" && r.addedNodes.forEach((n) => process(n))))
@@ -223,7 +221,7 @@
 	})
 })();
 
-(_=>{
+(_=>{//PAXI
 	let mx = (o, n, ids)=>{
 		if (o.nodeType !== n.nodeType || o.nodeName !== n.nodeName){
 			n.querySelectorAll?.("[id]").forEach((ne)=>{
