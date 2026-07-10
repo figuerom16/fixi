@@ -38,28 +38,26 @@
 		set:(_,p,v)=>(elts.forEach(e=>e[p]=v),true)
 	}),
 	mkqf={
-		closest:(s,c,t)=>(c||t).closest(s),
-		first:(s,c,_)=>(c||doc).querySelector(s),
-		last:(s,c,_)=>[...(c||doc).querySelectorAll(s)].at(-1),
-		next:(s,c,t,r=c||t)=>s.slice(0,3) == "sib" ? r.nextElementSibling : [...doc.querySelectorAll(s)].find(el =>r.compareDocumentPosition(el) & 4),
-		prev:(s,c,t,r=c||t)=>s.slice(0,3) == "sib" ? r.previousElementSibling : [...doc.querySelectorAll(s)].findLast(el =>r.compareDocumentPosition(el) & 2),
-		split:cmd=>cmd.split(/\s*->\s*/).filter(Boolean),
-		run:(cmd,c,t)=>{
-			if (!cmd) return c
-			const [,fn,s] = cmd.match(/^(closest|first|last|next|prev)\s+(.+)$/)||[]
-			return [fn,fn ? mkqf[fn](s,c,t) : (c||doc).querySelector(cmd)]
+		closest:(s,c)=>c.closest(s),
+		first:(s,c)=>(c||doc).querySelector(s),
+		last:(s,c)=>[...(c||doc).querySelectorAll(s)].at(-1),
+		next:(s,c)=>s.startsWith("sib") ? c.nextElementSibling : [...doc.querySelectorAll(s)].find(el =>c.compareDocumentPosition(el) & 4),
+		prev:(s,c)=>s.startsWith("sib") ? c.previousElementSibling : [...doc.querySelectorAll(s)].findLast(el =>c.compareDocumentPosition(el) & 2),
+		run:(s,c)=>{
+			if(!s) return [c]
+			const cmds=s.split(/\s*->\s*/)
+			for (let i = 0; i < cmds.length; i++){
+				const cm = cmds[i].trim()
+				if (!cm) continue
+				const m=cm.match(/^(closest|first|last|next|prev)\s+(.+)$/)
+				if(i==cmds.length-1) return m ? [mkqf[m[1]](m[2],c)] : [...(i?c:doc).querySelectorAll(cm)]
+				c = m ? mkqf[m[1]](m[2],c) : (c||doc).querySelector(cm)
+				if(!c) break
+			}
+			return []
 		}
 	},
-	mkq = ctx=>sel=>{
-		if (typeof sel != "string") return proxy(sel.nodeType ? [sel] : [...sel])
-		let i = 0
-		for (const cmd of mkqf.split(sel)) {
-			const [fn, res] = mkqf.run(cmd, ++i > 1 ? ctx : undefined, ctx)
-			if (i == cmds.length) return proxy(fn ? (res ? [res] : []) : [...(i > 1 ? ctx : doc).querySelectorAll(cmd)])
-			if (!(ctx = res)) break
-		}
-		return proxy([])
-	},
+	mkq = ctx=>sel=>proxy(typeof sel != "string" ? (sel.nodeType ? [sel] : [...sel]) : mkqf.run(sel, ctx)),
 	init = elt=>{
 		if (elt.__moxi || ignore(elt)) return
 		if (!fire(elt, "mx:init", {})) return
