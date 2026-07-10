@@ -263,11 +263,8 @@
 })();
 
 //FIXI ADDONS
-document.addEventListener("fx:config",e=> {//Moxi Relative Selectors
-	let c, t = e.target
-	for (const cmd of qf.split(t.getAttribute("fx-target") || "")) {
-		if (!(e.detail.cfg.target = c = qf.run(cmd, c, t)[1])) break
-	}
+document.addEventListener("fx:config", e => {//Moxi Relative Selectors
+	e.detail.cfg.target = qf.run(t.getAttribute("fx-target") || "", e.target)[0]
 })
 
 document.addEventListener('fx:after', e=>{//Set Error & Success
