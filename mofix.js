@@ -38,14 +38,14 @@
 		set:(_,p,v)=>(elts.forEach(e=>e[p]=v),true)
 	}),
 	mkqf={
-		closest:(s,c)=>c.closest(s),
-		first:(s,c)=>(c||doc).querySelector(s),
-		last:(s,c)=>[...(c||doc).querySelectorAll(s)].at(-1),
+		closest:(s,c)=>s.startsWith("par") ? c.parentElement : c.closest(s),
+		first:(s,c)=>s.startsWith("chi") ? c.firstElementChild : (c||doc).querySelector(s),
+		last:(s,c)=>s.startsWith("chi") ? c.lastElementChild : [...(c||doc).querySelectorAll(s)].at(-1),
 		next:(s,c)=>s.startsWith("sib") ? c.nextElementSibling : [...doc.querySelectorAll(s)].find(el =>c.compareDocumentPosition(el) & 4),
 		prev:(s,c)=>s.startsWith("sib") ? c.previousElementSibling : [...doc.querySelectorAll(s)].findLast(el =>c.compareDocumentPosition(el) & 2),
 		run:(s,c)=>{
 			if(!s) return [c]
-			const cmds=s.split(/\s*->\s*/)
+			const cmds=s.split("->")
 			for (let i = 0; i < cmds.length; i++){
 				const cm = cmds[i].trim()
 				if (!cm) continue
