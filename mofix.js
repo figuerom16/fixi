@@ -57,7 +57,7 @@
 			return []
 		}
 	},
-	mkq = ctx=>sel=>proxy(typeof sel != "string" ? (sel.nodeType ? [sel] : [...sel]) : mkqf.run(sel, ctx)),
+	mkq=ctx=>(sel="")=>proxy(typeof sel != "string" ? (sel.nodeType ? [sel] : [...sel]) : mkqf.run(sel, ctx)),
 	init = elt=>{
 		if (elt.__moxi || ignore(elt)) return
 		if (!fire(elt, "mx:init", {})) return
