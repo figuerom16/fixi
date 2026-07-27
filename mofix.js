@@ -22,6 +22,7 @@
 	proxy = elts=>new Proxy({},{
 		get:(_,p)=>{
 			if (p == "count") return elts.length
+			if (p === "one") return _=>elts[0]
 			if (p == "arr") return _=>elts.slice()
 			if (p == Symbol.iterator) return _=>elts.values()
 			if (p == "trigger") return (t,d,b)=>elts.forEach(e=>fire(e,t,d,b))
@@ -341,7 +342,7 @@ function searchTable(table, term) {
 function sortTable(head) {
 	const arrow = head.textContent.substr(-1)
 	if (!['►','▲','▼'].includes(arrow)) return
-	const body = head.parentElement.parentElement
+	const body = head.closest('table')
 	const rows = [...body.rows].slice(1)
 	const len = rows.length
 	if (len > 10240 && !confirm(`WARNING! TABLE OVER 10K ROWS: ${len}\nJS SORTING NOT RECOMMENDED. PROCEED?`)) return
