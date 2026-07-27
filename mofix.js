@@ -22,7 +22,7 @@
 	proxy = elts=>new Proxy({},{
 		get:(_,p)=>{
 			if (p == "count") return elts.length
-			if (p === "one") return _=>elts[0]
+			if (p == "one") return _=>elts[0]
 			if (p == "arr") return _=>elts.slice()
 			if (p == Symbol.iterator) return _=>elts.values()
 			if (p == "trigger") return (t,d,b)=>elts.forEach(e=>fire(e,t,d,b))
