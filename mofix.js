@@ -268,9 +268,14 @@ document.addEventListener("fx:config", e=>{//Moxi Relative Selectors
 	e.detail.cfg.target = qf.run(e.target.getAttribute("fx-target") || "", e.target)[0]
 })
 
+document.addEventListener("fx:before", e => {//Clear Toast
+	msg.textContent = ''
+	toast.classList.remove('alert-error')
+	toast.classList.remove('alert-success')
+})
+
 document.addEventListener('fx:after', e=>{//Set Error/Success & Redirect/Refresh
 	if (e.detail.cfg.response.status < 300) {
-		toast.classList.remove('alert-error')
 		toast.classList.add('alert-success')
 	}
 	else if(e.detail.cfg.response.status < 400) {
@@ -278,7 +283,6 @@ document.addEventListener('fx:after', e=>{//Set Error/Success & Redirect/Refresh
 		window.location.href = e.detail.cfg.text
 	}
 	else {
-		toast.classList.remove('alert-success')
 		toast.classList.add('alert-error')
 		e.detail.cfg.target = msg;
 		e.detail.cfg.swap = 'innerHTML'
