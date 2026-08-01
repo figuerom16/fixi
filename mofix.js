@@ -264,16 +264,14 @@
 })();
 
 //FIXI ADDONS
-document.addEventListener("fx:config", e => {//Moxi Relative Selectors
-	e.detail.cfg.target = qf.run(t.getAttribute("fx-target") || "", e.target)[0]
+document.addEventListener("fx:config", e=>{//Moxi Relative Selectors
+	e.detail.cfg.target = qf.run(e.target.getAttribute("fx-target") || "", e.target)[0]
 })
 
 document.addEventListener('fx:after', e=>{//Set Error & Success
 	if (e.detail.cfg.response.status < 300) {
 		toast.classList.remove('alert-error')
 		toast.classList.add('alert-success')
-		wait(3000)
-		msg.textContent = ''
 	}
 	else if(e.detail.cfg.response.status < 400) {
 		if (e.detail.cfg.text == 'refresh') {document.location.reload();return}
