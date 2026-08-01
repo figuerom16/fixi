@@ -268,7 +268,7 @@ document.addEventListener("fx:config", e=>{//Moxi Relative Selectors
 	e.detail.cfg.target = qf.run(e.target.getAttribute("fx-target") || "", e.target)[0]
 })
 
-document.addEventListener('fx:after', e=>{//Set Error & Success
+document.addEventListener('fx:after', e=>{//Set Error/Success & Redirect/Refresh
 	if (e.detail.cfg.response.status < 300) {
 		toast.classList.remove('alert-error')
 		toast.classList.add('alert-success')
