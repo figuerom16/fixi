@@ -265,7 +265,7 @@
 
 //FIXI ADDONS
 document.addEventListener("fx:config", e=>{//Moxi Relative Selectors
-	e.detail.cfg.target = qf.run(e.target.getAttribute("fx-target") || "", e.target)[0]
+	e.detail.cfg.target = qf.run(e.target.getAttribute("fx-target"), e.target)[0]
 })
 
 document.addEventListener("fx:before", e => {//Clear Toast
