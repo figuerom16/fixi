@@ -316,7 +316,7 @@ function rowForm(row) {
 		const ctrl = td.querySelector('input,select,textarea') || td
 		const type = ctrl === td ? 'text' : ctrl.type
 		let prop = 'value'
-		if (type == 'text') prop = 'text'
+		if (type == 'text') prop = 'textContent'
 		else if (type == 'checkbox') prop = 'checked'
 		const value = td.getAttribute('value')
 		if (value) {
