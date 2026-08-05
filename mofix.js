@@ -314,20 +314,18 @@ function generateKey() { // Create 32 character Device ID.
 function rowForm(row) {
 	row.querySelectorAll('td[value]').forEach(td=>{
 		const ctrl = td.querySelector('input,select,textarea') || td
-		const content = ctrl === td
-		const checkbox = !content && ctrl.matches('input[type="checkbox"]')
-		const radio = !content && ctrl.matches('input[type="radio"]')
+		const type = ctrl === td ? 'content' : ctrl.type
 		let prop = 'value'
-		if (content) prop = 'textContent'
-		else if (checkbox) prop = 'checked'
+		if (type == 'content') prop = 'textContent'
+		else if (type == 'checkbox') prop = 'checked'
 		const value = td.getAttribute('value')
 		if (value) {
-			if (checkbox) ctrl.checked = value == 'true'
-			else if (radio) ctrl.checked = ctrl.value == value
+			if (type == 'checkbox') ctrl.checked = value == 'true'
+			else if (type == 'radio') ctrl.checked = ctrl.value == value
 			else ctrl[prop] = value
 		}
-		ctrl.addEventListener(checkbox || radio ? 'change' : 'input', _=>{
-			if (radio && !ctrl.checked) td.setAttribute('value', '')
+		ctrl.addEventListener(type == 'checkbox' || type == 'radio' ? 'change' : 'input', _=>{
+			if (type == 'radio' && !ctrl.checked) td.setAttribute('value', '')
 			else td.setAttribute('value', String(ctrl[prop]))
 		})
 	})
