@@ -324,7 +324,7 @@ function rowForm(row) {
 			else if (type == 'radio') ctrl.checked = ctrl.value == value
 			else ctrl[prop] = value
 		}
-		ctrl.addEventListener(type == 'checkbox' || type == 'radio' ? 'change' : 'input', _=>{
+		ctrl.addEventListener(['checkbox','radio'].includes(type) ? 'change' : 'input', _=>{
 			if (type == 'radio' && !ctrl.checked) td.setAttribute('value', '')
 			else td.setAttribute('value', String(ctrl[prop]))
 		})
