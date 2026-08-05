@@ -314,9 +314,9 @@ function generateKey() { // Create 32 character Device ID.
 function rowForm(row) {
 	row.querySelectorAll('td[value]').forEach(td=>{
 		const ctrl = td.querySelector('input,select,textarea') || td
-		const type = ctrl === td ? 'content' : ctrl.type
+		const type = ctrl === td ? 'text' : ctrl.type
 		let prop = 'value'
-		if (type == 'content') prop = 'textContent'
+		if (type == 'text') prop = 'text'
 		else if (type == 'checkbox') prop = 'checked'
 		const value = td.getAttribute('value')
 		if (value) {
