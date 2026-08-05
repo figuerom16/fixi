@@ -311,6 +311,28 @@ function generateKey() { // Create 32 character Device ID.
 }
 
 //TABLE Helpers
+function rowForm(row) {
+	row.querySelectorAll('td[value]').forEach(td=>{
+		const ctrl = td.querySelector('input,select,textarea') || td
+		const content = ctrl === td
+		const checkbox = !content && ctrl.matches('input[type="checkbox"]')
+		const radio = !content && ctrl.matches('input[type="radio"]')
+		let prop = 'value'
+		if (content) prop = 'textContent'
+		else if (checkbox) prop = 'checked'
+		const value = td.getAttribute('value')
+		if (value) {
+			if (checkbox) ctrl.checked = value == 'true'
+			else if (radio) ctrl.checked = ctrl.value == value
+			else ctrl[prop] = value
+		}
+		ctrl.addEventListener(checkbox || radio ? 'change' : 'input', _=>{
+			if (radio && !ctrl.checked) td.setAttribute('value', '')
+			else td.setAttribute('value', String(ctrl[prop]))
+		})
+	})
+}
+
 function exportTable(table, sep='|', filename) {
 	const rows = [...table.rows]
 	const data = rows.filter(row => row.style.display != 'none').map((row, index)=>[...row.cells].map(cell=>index== 0?cell.innerText.slice(0, -2):cell.textContent))
