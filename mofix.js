@@ -129,7 +129,7 @@
 			else if (elt instanceof HTMLTableRowElement) {
 				for (const cell of elt.cells) {
 					const name = attr(cell, "name")
-					if (name) body.append(name, cell.innerText.trim())
+					if (name) body.append(name, attr(cell, "value", "").trim())
 				}
 			}
 			else if (elt.name) body.append(elt.name, elt.value)
