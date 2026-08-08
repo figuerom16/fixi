@@ -217,6 +217,29 @@
 		doc.__fixi_mo.observe(doc.documentElement, { childList: 1, subtree: 1 })
 		process(doc.body)
 	})
+
+	//FIXI ADDONS
+	ael(doc, "fx:config",e=>{//Moxi Relative Selectors
+		e.detail.cfg.target = qf.run(e.target.getAttribute("fx-target"), e.target)[0]
+	})
+	ael(doc,"fx:before",_=>{//Clear Toast
+		msg.textContent = ''
+		toast.classList.remove('alert-error')
+		toast.classList.remove('alert-success')
+	})
+	ael(doc,'fx:after',e=>{//Set Error/Success & Redirect/Refresh
+		if (e.detail.cfg.response.status < 300) toast.classList.add('alert-success')
+		else if (e.detail.cfg.response.status < 400) {
+			if (e.detail.cfg.text == 'refresh') { document.location.reload(); return }
+			window.location.href = e.detail.cfg.text
+		}
+		else {
+			toast.classList.add('alert-error')
+			e.detail.cfg.target = msg;
+			e.detail.cfg.swap = 'innerHTML'
+		}
+	})
+	ael(doc,'fx:swapped',_=>{ lucide.createIcons()})//Create Icons
 })();
 
 (_=>{//PAXI
@@ -263,143 +286,187 @@
 	})
 })();
 
-//FIXI ADDONS
-document.addEventListener("fx:config", e=>{//Moxi Relative Selectors
-	e.detail.cfg.target = qf.run(e.target.getAttribute("fx-target"), e.target)[0]
-})
-
-document.addEventListener("fx:before", e => {//Clear Toast
-	msg.textContent = ''
-	toast.classList.remove('alert-error')
-	toast.classList.remove('alert-success')
-})
-
-document.addEventListener('fx:after', e=>{//Set Error/Success & Redirect/Refresh
-	if (e.detail.cfg.response.status < 300) {
-		toast.classList.add('alert-success')
-	}
-	else if(e.detail.cfg.response.status < 400) {
-		if (e.detail.cfg.text == 'refresh') {document.location.reload();return}
-		window.location.href = e.detail.cfg.text
-	}
-	else {
-		toast.classList.add('alert-error')
-		e.detail.cfg.target = msg;
-		e.detail.cfg.swap = 'innerHTML'
-	}
-})
-
-document.addEventListener('fx:swapped', _=>{lucide.createIcons()})//Create Icons
-
-//COMMON
-function oassign(tag, obj) {return Object.assign(document.createElement(tag), obj)}
-
-function copyToClipboard(text) {
-	if (navigator.clipboard && navigator.clipboard.writeText) {navigator.clipboard.writeText(text);return}
-	const textarea = oassign('textarea')
-	textarea.value = text
-	document.body.appendChild(textarea)
-	textarea.select()
-	document.execCommand('copy')
-	document.body.removeChild(textarea)
-}
-
-function generateKey() { // Create 32 character Device ID.
-	const bytes = crypto.getRandomValues(new Uint8Array(24))
-	const binary = String.fromCharCode(...bytes)
-	return btoa(binary).replace(/[+/]/g, char => char === '+' ? '-' : '_')
-}
-
-//TABLE Helpers
-function rowForm(row) {
-	row.querySelectorAll('td[value]').forEach(td=>{
-		const ctrl = td.querySelector('input,select,textarea') || td
-		const type = ctrl === td ? 'content' : ctrl.type
-		let prop = 'value'
-		if (type == 'content') prop = 'textContent'
-		else if (type == 'checkbox') prop = 'checked'
-		const value = td.getAttribute('value')
-		if (value) {
-			if (type == 'checkbox') ctrl.checked = value == 'true'
-			else ctrl[prop] = value
+const OmegaTable = {//OmegaTable
+	getArrows() {return{neut:'▶',desc:'▼',asc:'▲'}},
+	getHeaders(table) {//Returns object with headers.
+		const {neut,desc,asc} = this.getArrows()
+		return [...table.tHead.rows[0].cells].map(cell => cell.textContent.replace(new RegExp(`[${neut}${desc}${asc}]$`),'').trim())
+	},
+	tr(tr) {//Row setup to put td values back into controls
+		tr.querySelectorAll('td[value]').forEach(td=>{
+			const value = td.getAttribute('value')
+			if (!value) return
+			const fset = td.querySelector('fieldset')?.querySelectorAll('input[type="radio"],input[type="checkbox"]')
+			const ctrl = td.querySelector('input,select,textarea') || td
+			if (ctrl === td) ctrl.textContent = value
+			else if (fset?.length) {
+				const values = value ? value.split('|') : []
+				fset.forEach(input => input.checked = values.includes(input.value))
+			}
+			else if (ctrl.type == 'checkbox') ctrl.checked = value == 'true'
+			else if (ctrl.multiple) {
+				const values = value ? value.split('|') : []
+				Array.from(ctrl.options).forEach(option => option.selected = values.includes(option.value))
+			}
+			else ctrl.value = value
+		})
+	},
+	tbody(tbody) {//tbodyHandler
+		const ctrlVal=ctrl=>{//Control Value Helper Functions
+			const fset = ctrl.closest('fieldset')
+			if (fset && ctrl.type == 'radio') return ctrl.value.replace(/\|/g,'')
+			if (fset && ctrl.type == 'checkbox') return [...fset.querySelectorAll('input[type="checkbox"]')]
+				.filter(input=>input.checked).map(input=>input.value.replace(/\|/g,'')).join('|')
+			if (ctrl.type == 'checkbox') return ctrl.checked
+			if (ctrl.multiple) return [...ctrl.selectedOptions].map(option=>option.value.replace(/\|/g,'')).join('|')
+			return ctrl.value
 		}
-		ctrl.addEventListener(type == 'checkbox' ? 'change' : 'input', _=>{td.setAttribute('value', String(ctrl[prop]))})
-	})
-}
-
-function exportTable(table, sep='|', filename) {
-	const rows = [...table.rows]
-	const data = rows.filter(row => row.style.display != 'none').map((row, index)=>[...row.cells].map(cell=>index== 0?cell.innerText.slice(0, -2):cell.textContent))
-	saveCSV(data.map(row => row.join(sep)).join('\n'), filename)
-}
-
-function saveCSV(text, filename='export.csv') {
-	const a = oassign('a')
-	a.href = URL.createObjectURL(new Blob([text], {type: 'text/csv'}))
-	a.download = filename
-	a.click()
-	URL.revokeObjectURL(a.href)
-}
-
-function searchTable(table, term) {
-	let count = 0
-	let rows = [...table.rows].slice(1)
-	const len = rows.length
-	if (len > 10240 && !confirm(`WARNING! TABLE OVER 10K ROWS: ${len}\nJS FILTERING NOT RECOMMENDED. PROCEED?`)) return
-	rows.forEach(row =>{
-		let found = false;
-		for (const cell of row.cells) {
-			if (cell.textContent.includes(term)) {found = true;break}
-		}
-		if (found) {row.style.display = ''; count++}
-		else row.style.display = 'none'
-	})
-	return count
-}
-
-function sortTable(head) {
-	const arrow = head.textContent.substr(-1)
-	if (!['►','▲','▼'].includes(arrow)) return
-	const body = head.closest('table')
-	const rows = [...body.rows].slice(1)
-	const len = rows.length
-	if (len > 10240 && !confirm(`WARNING! TABLE OVER 10K ROWS: ${len}\nJS SORTING NOT RECOMMENDED. PROCEED?`)) return
-	const heads = head.parentElement
-	const column = [...heads.cells].indexOf(head)
-	for (let e of heads.cells) {if (['►','▲','▼'].includes(e.textContent.substr(-1))) e.textContent=e.textContent.slice(0, -1) + '►'}
-	const isDescending = arrow == '▼'
-	head.textContent = head.textContent.slice(0, -1) + (isDescending ? '▲' : '▼')
-	rows.sort((a, b) => {
-		const comp = a.cells[column].textContent.localeCompare(b.cells[column].textContent, undefined, { numeric: true })
-		return isDescending ? -comp : comp
-	})
-	body.replaceChildren(heads, ...rows)
-}
-
-function showType(show, head) {
-	if (show) for (let i = 0; i < head.cells.length; i++) head.cells[i].innerHTML = head.cells[i].innerHTML.replace(/<span style="display: none;">\[(.*?)\]<\/span>/g, '[$1]')
-	else for (let i = 0; i < head.cells.length; i++) head.cells[i].innerHTML = head.cells[i].innerHTML.replace(/\[(.*?)\]/g, '<span style="display: none;">[$1]</span>')
-}
-
-const NANO_MULTIPLIERS = {//GOLANG Helper
-	ns: 1,
-	us: 1000,
-	ms: 1000 * 1000,
-	s: 1000 * 1000 * 1000,
-	m: 60 * 1000 * 1000 * 1000,
-	h: 60 * 60 * 1000 * 1000 * 1000,
-}
-
-function durationToNanos(durationString) {// This is golang specific. eg. 72h30m1s100ms10us5ns
-	if (!durationString) return 0
-	let totalNanoseconds = 0
-	let lastIndex = 0
-	const matches = [...durationString.matchAll(/(\d+)(ns|us|ms|s|m|h)/g)]
-	if (matches.length == 0 && durationString.length > 0) throw new Error(`Invalid duration string format: "${durationString}"`)
-	for (const match of matches) {
-		totalNanoseconds += parseInt(match[1], 10) * NANO_MULTIPLIERS[match[2]]
-		lastIndex = match.index + match[0].length
+		tbody.addEventListener('input',e=>{//Input updates value on td
+			const td = e.target.closest('td[value]')
+			if (!td) return
+			const ctrl = e.target.closest('input,select,textarea') || td
+			td.setAttribute('value', ctrl === td ? td.textContent : ctrlVal(ctrl))
+		})
+		tbody.addEventListener('click',e=>{//Click Focus
+			const td = e.target.closest('td')
+			if (!td || !tbody.contains(td) || e.target.closest('fieldset,input,select,textarea')) return
+			td.tabIndex = -1
+			td.focus()
+			const selection = window.getSelection()
+			const range = document.createRange()
+			range.selectNodeContents(td)
+			selection.removeAllRanges()
+			selection.addRange(range)
+		})
+		tbody.addEventListener('keydown',e=>{//Space click, CTRL + arrow Nav, CTRL + c
+			if (e.key == ' ' && e.target.matches('td')) {
+				const button = e.target.querySelector('button')
+				if (button) {button.click(); e.preventDefault(); return}
+			}
+			if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() == 'c') {
+				const td = e.target.closest('td')
+				if (td) {
+					const value = td.hasAttribute('value') ? td.getAttribute('value') : td.textContent
+					navigator.clipboard.writeText(String(value))
+					e.preventDefault()
+				}
+				return
+			}
+			if (!(e.ctrlKey || e.metaKey) || !['ArrowUp','ArrowDown','ArrowLeft','ArrowRight'].includes(e.key)) return
+			const td = e.target.closest('tbody td')
+			if (!td || !tbody.contains(td)) return
+			const rows = [...tbody.rows].filter(row=>row.style.display != 'none')
+			const row = td.parentElement, rowIndex = rows.indexOf(row)
+			if (rowIndex < 0) return
+			let nextRowIndex = rowIndex, nextCellIndex = td.cellIndex
+			if (e.key == 'ArrowUp') nextRowIndex--
+			if (e.key == 'ArrowDown') nextRowIndex++
+			if (e.key == 'ArrowLeft') nextCellIndex--
+			if (e.key == 'ArrowRight') nextCellIndex++
+			const next = rows[nextRowIndex]?.cells[nextCellIndex]
+			if (!next) {e.preventDefault();return}
+			const ctrl = next.querySelector('input,select,textarea')
+			if (ctrl) {
+				window.getSelection()?.removeAllRanges()
+				ctrl.tabIndex = -1
+				ctrl.focus()
+				if (typeof ctrl.select == 'function') ctrl.select()
+			} else {
+				next.tabIndex = -1
+				next.focus()
+				const selection = window.getSelection()
+				const range = document.createRange()
+				range.selectNodeContents(next)
+				selection.removeAllRanges()
+				selection.addRange(range)
+			}
+			e.preventDefault()
+		})
+	},
+	thead(thead) {//Column Sorter
+		const table = thead.closest('table')
+		const tbody = table.tBodies[0]
+		const {neut,desc,asc} = this.getArrows()
+		const headers = this.getHeaders(table)
+		const arrows = new Set([neut, desc, asc])
+		thead.querySelectorAll('th').forEach(th=>{
+			if (!arrows.has(th.textContent.at(-1))) return
+			th.classList.add('clickable')
+			th.addEventListener('click',_=>{
+				const arrow = th.textContent.substr(-1)
+				const heads = thead.rows[0].cells
+				const rows = [...tbody.rows]
+				const len = rows.length
+				if (len > 10240 && !confirm(`WARNING! TABLE OVER 10K ROWS: ${len}\nJS SORTING NOT RECOMMENDED. PROCEED?`)) return
+				for (let e of heads) {if (arrows.has(e.textContent.at(-1))) e.textContent = headers[e.cellIndex] + ' ' + neut}
+				const isDescending = arrow == desc
+				th.textContent = headers[th.cellIndex] + ' ' + (isDescending ? asc : desc)
+				rows.sort((a, b) => {
+					const aValue = a.cells[th.cellIndex]?.getAttribute('value') ?? a.cells[th.cellIndex]?.textContent ?? ''
+					const bValue = b.cells[th.cellIndex]?.getAttribute('value') ?? b.cells[th.cellIndex]?.textContent ?? ''
+					const comp = aValue.localeCompare(bValue, undefined, { numeric: true })
+					return isDescending ? -comp : comp
+				})
+				tbody.append(...rows)
+			})
+		})
+	},
+	search(table,column = '',term = '') {//Search Table which sets unmatched rows to hide. Returns result count.
+		const tbody = table.tBodies[0]
+		let rows = [...tbody.rows]
+		if (!term) {rows.forEach(row=>row.style.display = ''); return 0}
+		let columnIndex = column ? this.getHeaders(table).indexOf(column) : null
+		const len = rows.length
+		let count = 0
+		if (len > 10240 && !confirm(`WARNING! TABLE OVER 10K ROWS: ${len}\nJS FILTERING NOT RECOMMENDED. PROCEED?`)) return
+		rows.forEach(row =>{
+			let cells = columnIndex === null ? row.cells : [row.cells[columnIndex]]
+			let found = [...cells].some(cell => (cell?.getAttribute('value') ?? cell?.textContent ?? '').includes(term))
+			if (found) {row.style.display = ''; count++}
+			else row.style.display = 'none'
+		})
+		return count
+	},
+	save(table,sep = '|',filename = 'output.csv'){//Save table as CSV file
+		if (!table.tBodies[0] || !table.tHead) return
+		const data = [this.getHeaders(table),...[...table.tBodies[0].rows].filter(row => row.style.display != 'none').map(row => [...row.cells].map(cell => cell.getAttribute('value')))]
+		const a = Common.oassign('a')
+		a.href = URL.createObjectURL(new Blob([data.map(row => row.join(sep)).join('\n')], {type: 'text/csv'}))
+		a.download = filename
+		a.click()
+		URL.revokeObjectURL(a.href)
 	}
-	if (lastIndex != durationString.length) throw new Error(`Invalid characters found in duration string: "${durationString}"`)
-	return totalNanoseconds
 }
+
+const Common = {//COMMON utility functions
+	oassign(tag, obj) {return Object.assign(document.createElement(tag), obj)},
+	generateKey(){ // Create 32 character Device ID.
+		const bytes = crypto.getRandomValues(new Uint8Array(24))
+		const binary = String.fromCharCode(...bytes)
+		return btoa(binary).replace(/[+/]/g, char => char === '+' ? '-' : '_')
+	},
+	durationToNanos(durationString) {// This is golang specific. eg. 72h30m1s100ms10us5ns
+		const NANO_MULTIPLIERS = {
+			ns: 1,
+			us: 1000,
+			ms: 1000 * 1000,
+			s: 1000 * 1000 * 1000,
+			m: 60 * 1000 * 1000 * 1000,
+			h: 60 * 60 * 1000 * 1000 * 1000,
+		}
+		if (!durationString) return 0
+		let totalNanoseconds = 0
+		let lastIndex = 0
+		const matches = [...durationString.matchAll(/(\d+)(ns|us|ms|s|m|h)/g)]
+		if (matches.length == 0 && durationString.length > 0) throw new Error(`Invalid duration string format: "${durationString}"`)
+		for (const match of matches) {
+			totalNanoseconds += parseInt(match[1], 10) * NANO_MULTIPLIERS[match[2]]
+			lastIndex = match.index + match[0].length
+		}
+		if (lastIndex != durationString.length) throw new Error(`Invalid characters found in duration string: "${durationString}"`)
+		return totalNanoseconds
+	}
+}
+
+//Globals
+const toast = q('#toast'), msg = q('#msg')
