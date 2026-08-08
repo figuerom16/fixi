@@ -239,7 +239,7 @@
 			e.detail.cfg.swap = 'innerHTML'
 		}
 	})
-	ael(doc,'fx:swapped',_=>{ lucide.createIcons()})//Create Icons
+	ael(doc,'fx:swapped',_=>{lucide.createIcons()})//Create Icons
 })();
 
 (_=>{//PAXI
@@ -438,7 +438,7 @@ const OmegaTable = {//OmegaTable
 	}
 }
 
-const Common = {//COMMON utility functions
+const Common = {//Common utility functions
 	oassign(tag, obj) {return Object.assign(document.createElement(tag), obj)},
 	generateKey(){ // Create 32 character Device ID.
 		const bytes = crypto.getRandomValues(new Uint8Array(24))
@@ -467,6 +467,3 @@ const Common = {//COMMON utility functions
 		return totalNanoseconds
 	}
 }
-
-//Globals
-const toast = q('#toast'), msg = q('#msg')
