@@ -132,7 +132,9 @@
 					if (name) body.append(name, attr(cell, "value", "").trim())
 				}
 			}
-			else if (elt.name) body.append(elt.name, elt.value)
+			else if (elt.name) {
+				for (const value of elt.files || [elt.value]) body.append(elt.name, value)
+			}
 			if (!elt.matches('input[type="file"],input[type="image"]')) body = new URLSearchParams(body)
 			let ac = new AbortController()
 			let cfg = {
@@ -222,10 +224,13 @@
 	ael(doc, "fx:config",e=>{//Moxi Relative Selectors
 		e.detail.cfg.target = qf.run(e.target.getAttribute("fx-target"), e.target)[0]
 	})
-	ael(doc,"fx:before",_=>{//Clear Toast
+	ael(doc,"fx:before",e=>{//Clear Toast
 		msg.textContent = ''
 		toast.classList.remove('alert-error')
 		toast.classList.remove('alert-success')
+		const target = e.detail.cfg.trigger.target
+		const container = target.tagName == 'FORM' ? target : target.parentElement
+		container.querySelectorAll("[aria-invalid=true]").forEach(el => {el.removeAttribute('aria-invalid');el.nextElementSibling.textContent = ''})
 	})
 	ael(doc,'fx:after',e=>{//Set Error/Success & Redirect/Refresh
 		if (e.detail.cfg.response.status < 300) toast.classList.add('alert-success')
@@ -237,6 +242,20 @@
 			toast.classList.add('alert-error')
 			e.detail.cfg.target = msg;
 			e.detail.cfg.swap = 'innerHTML'
+			if (e.detail.cfg.response.status == 422) {
+				const errs = e.detail.cfg.text.split('<br>')
+				const target = e.detail.cfg.trigger.target
+				const container = target.tagName == 'FORM' ? target : target.parentElement
+				e.detail.cfg.text = errs[0]
+				for (let i = 1; i < errs.length; i++) {
+					const [name, errmsg] = errs[i].split(':')
+					const small = container.querySelector(`[name=${name}]`)?.nextElementSibling
+					if (!small) { e.detail.cfg.text += '<br>' + errs[i]; continue}
+					small.textContent = errmsg
+					small.previousElementSibling.setAttribute('aria-invalid','true')
+				}
+				container.querySelector("[aria-invalid=true]")?.focus()
+			}
 		}
 	})
 	ael(doc,'fx:swapped',_=>{lucide.createIcons()})//Create Icons
@@ -293,6 +312,7 @@ const OmegaTable = {//OmegaTable
 		return [...table.tHead.rows[0].cells].map(cell => cell.textContent.replace(new RegExp(`[${neut}${desc}${asc}]$`),'').trim())
 	},
 	tr(tr) {//Row setup to put td values back into controls
+		if (!(tr instanceof HTMLTableRowElement)) {console.error("OmegaTable.tr: Must be attached to Table Row Element!");return}
 		tr.querySelectorAll('td[value]').forEach(td=>{
 			const value = td.getAttribute('value')
 			if (!value) return
@@ -312,6 +332,7 @@ const OmegaTable = {//OmegaTable
 		})
 	},
 	tbody(tbody) {//tbodyHandler
+		if (tbody.tagName != 'TBODY') {console.error("OmegaTable.tbody: Must be attached to Table Tbody!");return}
 		const ctrlVal=ctrl=>{//Control Value Helper Functions
 			const fset = ctrl.closest('fieldset')
 			if (fset && ctrl.type == 'radio') return ctrl.value.replace(/\|/g,'')
@@ -384,6 +405,7 @@ const OmegaTable = {//OmegaTable
 		})
 	},
 	thead(thead) {//Column Sorter
+		if (thead.tagName != 'THEAD') {console.error("OmegaTable.thead: Must be attached to Table Head Element!");return}
 		const table = thead.closest('table')
 		const tbody = table.tBodies[0]
 		const {neut,desc,asc} = this.getArrows()
