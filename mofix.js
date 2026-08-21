@@ -1,26 +1,32 @@
-function q(s,c=document) {//Traversal QuerySelector
+const qops = {//Query ops
+	closest:(s,c)=>s.startsWith("par")?c.parentElement:c.closest(s),
+	first:(s,c)=>s.startsWith("chi")?c.firstElementChild:c.querySelector(s),
+	last:(s,c)=>s.startsWith("chi")?c.lastElementChild:[...c.querySelectorAll(s)].at(-1),
+	next:(s,c)=>s.startsWith("sib")?c.nextElementSibling:[...document.querySelectorAll(s)].find(el=>c.compareDocumentPosition(el)&4),
+	prev:(s,c)=>s.startsWith("sib")?c.previousElementSibling:[...document.querySelectorAll(s)].findLast(el=>c.compareDocumentPosition(el)&2),
+}
+
+function q(s,c=document){//Query one element
 	if (!s) return c
-	const ops = {
-		closest:(s,c)=>s.startsWith("par") ? c.parentElement : c.closest(s),
-		first:(s,c)=>s.startsWith("chi") ? c.firstElementChild : c.querySelector(s),
-		last:(s,c)=>s.startsWith("chi") ? c.lastElementChild : [...c.querySelectorAll(s)].at(-1),
-		next:(s,c)=>s.startsWith("sib") ? c.nextElementSibling : [...document.querySelectorAll(s)].find(el =>c.compareDocumentPosition(el) & 4),
-		prev:(s,c)=>s.startsWith("sib") ? c.previousElementSibling : [...document.querySelectorAll(s)].findLast(el =>c.compareDocumentPosition(el) & 2),
-	}
 	const cmds = s.split("->")
 	for (let i = 0; i < cmds.length; i++) {
 		const cm = cmds[i].trim()
 		if (!cm) continue
 		const m = cm.match(/^(closest|first|last|next|prev)\s+(.+)$/)
-		if (i==cmds.length-1) {
-			if (m) return ops[m[1]](m[2],c) ?? null
-			const ns = [...c.querySelectorAll(cm)]
-			return ns.length==1?ns[0]:ns
-		}
-		c = m ? ops[m[1]](m[2],c):c.querySelector(cm)
+		if (i == cmds.length - 1) return m ? qops[m[1]](m[2], c) ?? null : c.querySelector(cm)
+		c = m ? qops[m[1]](m[2],c):c.querySelector(cm)
 		if (!c) return null
 	}
 	return c
+}
+
+function qa(s,c=document){//Query all elements
+	if (!s) return [c]
+	const p=s.lastIndexOf("->")
+	if (p<0) return [...c.querySelectorAll(s)]
+	const el=q(s.slice(0,p),c)
+	if (!el) return []
+	return [...el.querySelectorAll(s.slice(p+2).trim())]
 }
 
 (_=>{//MOXI
@@ -36,7 +42,7 @@ function q(s,c=document) {//Traversal QuerySelector
 		recs.forEach(r=>r.type == "childList" && r.addedNodes.forEach(n=>process(n)))
 		recompute()
 	})
-	let AF = async function(){}.constructor, HARGS = ["q", "wait", "trigger", "debounce"],
+	let AF = async function(){}.constructor, HARGS = ["q", "qa", "wait", "trigger", "debounce"],
 	fire = (elt, type, detail, bub)=>elt.dispatchEvent(new CustomEvent(type, {detail, cancelable:1, bubbles:bub??1, composed:1})),
 	ael = (e,n,h,o)=>e.addEventListener(n,h,o),
 	DB = Symbol(),
@@ -47,12 +53,12 @@ function q(s,c=document) {//Traversal QuerySelector
 		if (elt.__moxi || ignore(elt)) return
 		if (!fire(elt, "mx:init", {})) return
 		elt.__moxi = {}
-		let wait = mkWait(elt), trigger = fire.bind(0,elt), liveRuns = []
+		let qs=s=>q(s,elt), qsa=s=>qa(s,elt), wait = mkWait(elt), trigger = fire.bind(0,elt), liveRuns = []
 		for (let a of elt.attributes){
 			if (a.name == "live"){
 				let fn = new AF(...HARGS, a.value),
 				debounce = mkDb(),
-				run =_=>elt.isConnected ? fn.call(elt, q, wait, trigger, debounce) : liveFns.delete(run)
+				run =_=>elt.isConnected ? fn.call(elt, qs, qsa, wait, trigger, debounce) : liveFns.delete(run)
 				liveFns.add(run)
 				liveRuns.push(run)
 			} else if (a.name.startsWith("on-")){
@@ -66,7 +72,7 @@ function q(s,c=document) {//Traversal QuerySelector
 					if (evt && (has("self") && evt.target != elt || has("outside") && elt.contains(evt.target))) return
 					if (h || has("prevent")) evt?.preventDefault()
 					if (h || has("stop")) evt?.stopPropagation()
-					return fn.call(elt, evt, q, wait, trigger, debounce).catch(e=>{if(e!=DB) throw e})
+					return fn.call(elt, evt, qs, qsa, wait, trigger, debounce).catch(e=>{if(e!=DB) throw e})
 				}
 				if (name == "init") handler()
 				else ael(target, name, handler, opts)
