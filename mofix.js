@@ -4,29 +4,34 @@ const qops = {//Query ops
 	last:(s,c)=>s.startsWith("chi")?c.lastElementChild:[...c.querySelectorAll(s)].at(-1),
 	next:(s,c)=>s.startsWith("sib")?c.nextElementSibling:[...document.querySelectorAll(s)].find(el=>c.compareDocumentPosition(el)&4),
 	prev:(s,c)=>s.startsWith("sib")?c.previousElementSibling:[...document.querySelectorAll(s)].findLast(el=>c.compareDocumentPosition(el)&2),
+	re:/^(closest|first|last|next|prev)\s+(.+)$/,
 }
 
-function q(s,c=document){//Query one element
+function q(s,c=document){//Query one
 	if (!s) return c
 	const cmds = s.split("->")
 	for (let i = 0; i < cmds.length; i++) {
 		const cm = cmds[i].trim()
 		if (!cm) continue
-		const m = cm.match(/^(closest|first|last|next|prev)\s+(.+)$/)
-		if (i == cmds.length - 1) return m ? qops[m[1]](m[2], c) ?? null : c.querySelector(cm)
+		const m = cm.match(qops.re)
+		if (i==cmds.length-1) return m ? qops[m[1]](m[2], c) ?? null : c.querySelector(cm)
 		c = m ? qops[m[1]](m[2],c):c.querySelector(cm)
 		if (!c) return null
 	}
 	return c
 }
 
-function qa(s,c=document){//Query all elements
+function qa(s,c=document){//Query all
 	if (!s) return [c]
 	const p=s.lastIndexOf("->")
 	if (p<0) return [...c.querySelectorAll(s)]
-	const el=q(s.slice(0,p),c)
-	if (!el) return []
-	return [...el.querySelectorAll(s.slice(p+2).trim())]
+	const head=q(s.slice(0,p),c)
+	if (!head) return []
+	const tail=s.slice(p+2).trim()
+	const m=tail.match(qops.re)
+	if (!m) return [...head.querySelectorAll(tail)]
+	const el=qops[m[1]](m[2],head)
+	return el?[el]:[]
 }
 
 (_=>{//MOXI
@@ -43,7 +48,6 @@ function qa(s,c=document){//Query all elements
 		recompute()
 	})
 	let AF = async function(){}.constructor, HARGS = ["q", "qa", "wait", "trigger", "debounce"],
-	fire = (elt, type, detail, bub)=>elt.dispatchEvent(new CustomEvent(type, {detail, cancelable:1, bubbles:bub??1, composed:1})),
 	ael = (e,n,h,o)=>e.addEventListener(n,h,o),
 	DB = Symbol(),
 	mkDb =_=>{let last = 0, j; return ms=>new Promise((r,rj)=>{j?.(DB); j = rj; let id = ++last; setTimeout(_=>id == last && (j = null, r()), ms)})},
