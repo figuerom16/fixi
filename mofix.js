@@ -1,3 +1,28 @@
+function q(s,c=document) {//Traversal QuerySelector
+	if (!s) return c
+	const ops = {
+		closest:(s,c)=>s.startsWith("par") ? c.parentElement : c.closest(s),
+		first:(s,c)=>s.startsWith("chi") ? c.firstElementChild : c.querySelector(s),
+		last:(s,c)=>s.startsWith("chi") ? c.lastElementChild : [...c.querySelectorAll(s)].at(-1),
+		next:(s,c)=>s.startsWith("sib") ? c.nextElementSibling : [...document.querySelectorAll(s)].find(el =>c.compareDocumentPosition(el) & 4),
+		prev:(s,c)=>s.startsWith("sib") ? c.previousElementSibling : [...document.querySelectorAll(s)].findLast(el =>c.compareDocumentPosition(el) & 2),
+	}
+	const cmds = s.split("->")
+	for (let i = 0; i < cmds.length; i++) {
+		const cm = cmds[i].trim()
+		if (!cm) continue
+		const m = cm.match(/^(closest|first|last|next|prev)\s+(.+)$/)
+		if (i==cmds.length-1) {
+			if (m) return ops[m[1]](m[2],c) ?? null
+			const ns = [...c.querySelectorAll(cm)]
+			return ns.length==1?ns[0]:ns
+		}
+		c = m ? ops[m[1]](m[2],c):c.querySelector(cm)
+		if (!c) return null
+	}
+	return c
+}
+
 (_=>{//MOXI
 	let doc = document
 	if(doc.__moxi_mo) return
@@ -18,52 +43,11 @@
 	mkDb =_=>{let last = 0, j; return ms=>new Promise((r,rj)=>{j?.(DB); j = rj; let id = ++last; setTimeout(_=>id == last && (j = null, r()), ms)})},
 	mkWait = ctx=>x=>new Promise(r=>typeof x == "number" ? setTimeout(r,x) : ael(ctx,x,r,{once:1})),
 	ignore =elt=>elt?.closest("[mx-ignore]"),
-	POS = {before:"beforebegin",after:"afterend",start:"afterbegin",end:"beforeend"},
-	proxy = elts=>new Proxy({},{
-		get:(_,p)=>{
-			if (p == "count") return elts.length
-			if (p == "one") return _=>elts[0]
-			if (p == "arr") return _=>elts.slice()
-			if (p == Symbol.iterator) return _=>elts.values()
-			if (p == "trigger") return (t,d,b)=>elts.forEach(e=>fire(e,t,d,b))
-			if (p == "insert") return (pos,s)=>elts.forEach(e=>e.insertAdjacentHTML(POS[pos],s))
-			if (p == "take") return (cls,from)=>{
-				for (let e of typeof from == "string" ? doc.querySelectorAll(from) : from) e.classList.remove(cls)
-				for (let e of elts) e.classList.add(cls)
-			}
-			let v = elts[0]?.[p]
-			if (v?.call) return (...a)=>elts.map(e=>e[p](...a))[0]
-			if (v && typeof v == "object") return proxy(elts.map(e=>e[p]))
-			return v
-		},
-		set:(_,p,v)=>(elts.forEach(e=>e[p]=v),true)
-	}),
-	mkqf={
-		closest:(s,c)=>s.startsWith("par") ? c.parentElement : c.closest(s),
-		first:(s,c)=>s.startsWith("chi") ? c.firstElementChild : (c||doc).querySelector(s),
-		last:(s,c)=>s.startsWith("chi") ? c.lastElementChild : [...(c||doc).querySelectorAll(s)].at(-1),
-		next:(s,c)=>s.startsWith("sib") ? c.nextElementSibling : [...doc.querySelectorAll(s)].find(el =>c.compareDocumentPosition(el) & 4),
-		prev:(s,c)=>s.startsWith("sib") ? c.previousElementSibling : [...doc.querySelectorAll(s)].findLast(el =>c.compareDocumentPosition(el) & 2),
-		run:(s,c)=>{
-			if(!s) return [c]
-			const cmds=s.split("->")
-			for (let i = 0; i < cmds.length; i++){
-				const cm = cmds[i].trim()
-				if (!cm) continue
-				const m=cm.match(/^(closest|first|last|next|prev)\s+(.+)$/)
-				if(i==cmds.length-1) return m ? [mkqf[m[1]](m[2],c)] : [...(i?c:doc).querySelectorAll(cm)]
-				c = m ? mkqf[m[1]](m[2],c) : (c||doc).querySelector(cm)
-				if(!c) break
-			}
-			return []
-		}
-	},
-	mkq=ctx=>(sel="")=>proxy(typeof sel != "string" ? (sel.nodeType ? [sel] : [...sel]) : mkqf.run(sel, ctx)),
 	init = elt=>{
 		if (elt.__moxi || ignore(elt)) return
 		if (!fire(elt, "mx:init", {})) return
 		elt.__moxi = {}
-		let q = mkq(elt), wait = mkWait(elt), trigger = fire.bind(0,elt), liveRuns = []
+		let wait = mkWait(elt), trigger = fire.bind(0,elt), liveRuns = []
 		for (let a of elt.attributes){
 			if (a.name == "live"){
 				let fn = new AF(...HARGS, a.value),
@@ -97,8 +81,6 @@
 		for (let i = 0; i < r.snapshotLength; i++) init(r.snapshotItem(i))
 	},
 	gt = globalThis, de = doc.documentElement
-	gt.qf = mkqf
-	gt.q = mkq(de)
 	gt.wait = mkWait(de)
 	gt.transition = fn=>doc.startViewTransition ? doc.startViewTransition(fn) : fn()
 	ael(doc, "mx:process", evt=>process(evt.target))
@@ -222,7 +204,7 @@
 
 	//FIXI ADDONS
 	ael(doc, "fx:config",e=>{//Moxi Relative Selectors
-		e.detail.cfg.target = qf.run(e.target.getAttribute("fx-target"), e.target)[0]
+		e.detail.cfg.target = q(e.target.getAttribute("fx-target"), e.target)
 	})
 	ael(doc,"fx:before",e=>{//Clear Toast
 		msg.textContent = ''
