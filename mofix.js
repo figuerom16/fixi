@@ -1,4 +1,4 @@
-const qops = {//Query ops
+const qops={//Query ops
 	closest:(s,c)=>s.startsWith("par")?c.parentElement:c.closest(s),
 	first:(s,c)=>s.startsWith("chi")?c.firstElementChild:c.querySelector(s),
 	last:(s,c)=>s.startsWith("chi")?c.lastElementChild:[...c.querySelectorAll(s)].at(-1),
@@ -8,8 +8,9 @@ const qops = {//Query ops
 }
 
 function q(s,c=document){//Query one
-	if (!s) return c
+	if (!s||!c) return c
 	const cmds = s.split("->")
+	if (cmds[0].trim()=="doc") {c=document; cmds.shift()}
 	for (let i = 0; i < cmds.length; i++) {
 		const cm = cmds[i].trim()
 		if (!cm) continue
@@ -22,7 +23,7 @@ function q(s,c=document){//Query one
 }
 
 function qa(s,c=document){//Query all
-	if (!s) return [c]
+	if (!s||!c) return []
 	const p=s.lastIndexOf("->")
 	if (p<0) return [...c.querySelectorAll(s)]
 	const head=q(s.slice(0,p),c)
@@ -133,7 +134,7 @@ function qa(s,c=document){//Query all
 				trigger: evt,
 				action: attr(elt, "fx-action", ""),
 				method: attr(elt, "fx-method", "GET").toUpperCase(),
-				target: doc.querySelector(attr(elt, "fx-target")) ?? elt,
+				target: q(attr(elt, "fx-target"),elt),
 				swap: attr(elt, "fx-swap", "innerHTML"),
 				body,
 				drop: reqs.size,
@@ -195,14 +196,12 @@ function qa(s,c=document){//Query all
 			if (n.matches("[fx-method]")) init(n)
 		}
 		if (n.querySelectorAll) {
-			n.querySelectorAll("[fx-method]").forEach(init)
-			n.querySelectorAll("[fx-trigger]:not([fx-method])").forEach(e=>{
-				const p = e.closest("[fx-method]")
-				if (p) {
-					attr(e, "fx-trigger").split("|").forEach(t=>{
-						ael(e, t, _=>{p.dispatchEvent(new Event(p.__fixi.evt, {cancelable: 1, bubbles: 1, composed: 1}))})
-					})
-				}
+			qa("[fx-method]",n).forEach(init)
+			qa("[fx-trigger]:not([fx-method])",n).forEach(e=>{
+				const p = q("closest [fx-method]",e)
+				if (!p) return
+				const fire =_=>p.dispatchEvent(new Event(p.__fixi.evt,{cancelable:1,bubbles:1,composed:1}))
+				attr(e,"fx-trigger").split("|").forEach(t=>{ael(e,t,fire)})
 			})
 		}
 	}
@@ -213,21 +212,18 @@ function qa(s,c=document){//Query all
 	})
 
 	//FIXI ADDONS
-	ael(doc, "fx:config",e=>{//Moxi Relative Selectors
-		e.detail.cfg.target = q(e.target.getAttribute("fx-target"), e.target)
-	})
 	ael(doc,"fx:before",e=>{//Clear Toast
 		msg.textContent = ''
 		toast.classList.remove('alert-error')
 		toast.classList.remove('alert-success')
 		const target = e.detail.cfg.trigger.target
-		const container = target.tagName == 'FORM' ? target : target.parentElement
-		container.querySelectorAll("[aria-invalid=true]").forEach(el => {el.removeAttribute('aria-invalid');el.nextElementSibling.textContent = ''})
+		const eform = target.tagName == 'FORM' ? target : target.parentElement
+		qa("[aria-invalid=true]",eform).forEach(el=>{el.removeAttribute('aria-invalid');el.nextElementSibling.textContent=''})
 	})
 	ael(doc,'fx:after',e=>{//Set Error/Success & Redirect/Refresh
 		if (e.detail.cfg.response.status < 300) toast.classList.add('alert-success')
 		else if (e.detail.cfg.response.status < 400) {
-			if (e.detail.cfg.text == 'refresh') { document.location.reload(); return }
+			if (e.detail.cfg.text == 'refresh') {document.location.reload();return}
 			window.location.href = e.detail.cfg.text
 		}
 		else {
@@ -237,16 +233,16 @@ function qa(s,c=document){//Query all
 			if (e.detail.cfg.response.status == 422) {
 				const errs = e.detail.cfg.text.split('<br>')
 				const target = e.detail.cfg.trigger.target
-				const container = target.tagName == 'FORM' ? target : target.parentElement
+				const eform = target.tagName == 'FORM' ? target : target.parentElement
 				e.detail.cfg.text = errs[0]
 				for (let i = 1; i < errs.length; i++) {
 					const [name, errmsg] = errs[i].split(':')
-					const small = container.querySelector(`[name=${name}]`)?.nextElementSibling
+					const small = q(`[name=${name}]`,eform)?.nextElementSibling
 					if (!small) { e.detail.cfg.text += '<br>' + errs[i]; continue}
 					small.textContent = errmsg
 					small.previousElementSibling.setAttribute('aria-invalid','true')
 				}
-				container.querySelector("[aria-invalid=true]")?.focus()
+				q("[aria-invalid=true]",eform)?.focus()
 			}
 		}
 	})
@@ -256,7 +252,7 @@ function qa(s,c=document){//Query all
 (_=>{//PAXI
 	let mx = (o, n, ids)=>{
 		if (o.nodeType !== n.nodeType || o.nodeName !== n.nodeName){
-			n.querySelectorAll?.("[id]").forEach((ne)=>{
+			qa("[id]",n).forEach((ne)=>{
 				if (!n.contains(ne)) return
 				let oe = ids[ne.id]
 				if (oe){ delete ids[ne.id]; mx(oe, ne, ids); ne.replaceWith(oe) }
@@ -289,7 +285,7 @@ function qa(s,c=document){//Query all
 		let t = document.createElement("template")
 		t.innerHTML = html
 		let ids = {}
-		target.querySelectorAll("[id]").forEach(e=>ids[e.id] = e)
+		qa("[id]",target).forEach(e=>ids[e.id]=e)
 		mx(target, t.content.firstElementChild, ids)
 	}
 	document.addEventListener("fx:config", e=>{
@@ -305,21 +301,15 @@ const OmegaTable = {//OmegaTable
 	},
 	tr(tr) {//Row setup to put td values back into controls
 		if (!(tr instanceof HTMLTableRowElement)) {console.error("OmegaTable.tr: Must be attached to Table Row Element!");return}
-		tr.querySelectorAll('td[value]').forEach(td=>{
+		qa('td[value]',tr).forEach(td=>{
 			const value = td.getAttribute('value')
 			if (!value) return
-			const fset = td.querySelector('fieldset')?.querySelectorAll('input[type="radio"],input[type="checkbox"]')
-			const ctrl = td.querySelector('input,select,textarea') || td
-			if (ctrl === td) ctrl.textContent = value
-			else if (fset?.length) {
-				const values = value ? value.split('|') : []
-				fset.forEach(input => input.checked = values.includes(input.value))
-			}
+			const values = value.split('|')
+			qa('fieldset->input[type="radio"],input[type="checkbox"]',td).forEach(input=>input.checked = values.includes(input.value))
+			const ctrl = q('input,select,textarea', td) || td
+			if (!ctrl) ctrl.textContent = value
 			else if (ctrl.type == 'checkbox') ctrl.checked = value == 'true'
-			else if (ctrl.multiple) {
-				const values = value ? value.split('|') : []
-				Array.from(ctrl.options).forEach(option => option.selected = values.includes(option.value))
-			}
+			else if (ctrl.multiple) Array.from(ctrl.options).forEach(option=>option.selected = values.includes(option.value))
 			else ctrl.value = value
 		})
 	},
@@ -328,8 +318,7 @@ const OmegaTable = {//OmegaTable
 		const ctrlVal=ctrl=>{//Control Value Helper Functions
 			const fset = ctrl.closest('fieldset')
 			if (fset && ctrl.type == 'radio') return ctrl.value.replace(/\|/g,'')
-			if (fset && ctrl.type == 'checkbox') return [...fset.querySelectorAll('input[type="checkbox"]')]
-				.filter(input=>input.checked).map(input=>input.value.replace(/\|/g,'')).join('|')
+			if (fset && ctrl.type == 'checkbox') return qa('input[type="checkbox"]',fset).filter(input=>input.checked).map(input=>input.value.replace(/\|/g,'')).join('|')
 			if (ctrl.type == 'checkbox') return ctrl.checked
 			if (ctrl.multiple) return [...ctrl.selectedOptions].map(option=>option.value.replace(/\|/g,'')).join('|')
 			return ctrl.value
@@ -353,7 +342,7 @@ const OmegaTable = {//OmegaTable
 		})
 		tbody.addEventListener('keydown',e=>{//Space click, CTRL + arrow Nav, CTRL + c
 			if (e.key == ' ' && e.target.matches('td')) {
-				const button = e.target.querySelector('button')
+				const button = q('button',e.target)
 				if (button) {button.click(); e.preventDefault(); return}
 			}
 			if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() == 'c') {
@@ -378,7 +367,7 @@ const OmegaTable = {//OmegaTable
 			if (e.key == 'ArrowRight') nextCellIndex++
 			const next = rows[nextRowIndex]?.cells[nextCellIndex]
 			if (!next) {e.preventDefault();return}
-			const ctrl = next.querySelector('input,select,textarea')
+			const ctrl = q('input,select,textarea',next)
 			if (ctrl) {
 				window.getSelection()?.removeAllRanges()
 				ctrl.tabIndex = -1
@@ -403,7 +392,7 @@ const OmegaTable = {//OmegaTable
 		const {neut,desc,asc} = this.getArrows()
 		const headers = this.getHeaders(table)
 		const arrows = new Set([neut, desc, asc])
-		thead.querySelectorAll('th').forEach(th=>{
+		qa('th',thead).forEach(th=>{
 			if (!arrows.has(th.textContent.at(-1))) return
 			th.classList.add('clickable')
 			th.addEventListener('click',_=>{
@@ -452,7 +441,7 @@ const OmegaTable = {//OmegaTable
 	}
 }
 
-const Common = {//Common utility functions
+const Util = {//Utility functions
 	oassign(tag, obj) {return Object.assign(document.createElement(tag), obj)},
 	generateKey(){ // Create 32 character Device ID.
 		const bytes = crypto.getRandomValues(new Uint8Array(24))
