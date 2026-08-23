@@ -73,9 +73,14 @@ qa('.todo-list -> .checkbox').forEach(item => {
 })
 ```
 
+## ALL
+
+- Some minor formatting
+- replaced all QuerySelector and QuerySelectorAll with `q()` and `qa()`
+
 ## Moxi Mods
 
-- Removed q() and its proxy functionality. q() and qa() are now it's own standalone functions.
+- Removed `q()` and its proxy functionality. `q()` and `qa()` are now it's own standalone functions.
 - Added in proposed Github PRs #1 and #2.
 
 ## Fixi Mods
@@ -87,7 +92,7 @@ qa('.todo-list -> .checkbox').forEach(item => {
 - When element is input of type file or image make data a multipart form.
 - Remove extra headers and configurations.
 - Use q() for target.
-- Add in LOCAL Method for calling in JS function and swapping in HTML.
+- Add in LOCAL Method for calling in client JS function and swapping in HTML.
 - fx-trigger now supports multiple triggers fx-trigger="click|mouseout|mouseover"
 - Directly add in Toast, Error/Success & Redirect/Refresh, and Lucide Icon Creation.
 
