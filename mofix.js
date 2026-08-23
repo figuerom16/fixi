@@ -305,7 +305,7 @@ const OmegaTable = {//OmegaTable
 			else ctrl.value = value
 		})
 	},
-	tbody(tbody) {//tbodyHandler
+	tbody(tbody) {//tbody Handler
 		if (tbody.tagName != 'TBODY') {console.error("OmegaTable.tbody: Must be attached to Table Tbody!");return}
 		const ctrlVal=ctrl=>{//Control Value Helper Functions
 			const fset = ctrl.closest('fieldset')
