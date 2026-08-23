@@ -49,6 +49,7 @@ function qa(s,c=document){//Query all
 		recompute()
 	})
 	let AF = async function(){}.constructor, HARGS = ["q", "qa", "wait", "trigger", "debounce"],
+	fire = (elt, type, detail, bub)=>elt.dispatchEvent(new CustomEvent(type,{detail,cancelable:1,bubbles:bub??1,composed:1})),
 	ael = (e,n,h,o)=>e.addEventListener(n,h,o),
 	DB = Symbol(),
 	mkDb =_=>{let last = 0, j; return ms=>new Promise((r,rj)=>{j?.(DB); j = rj; let id = ++last; setTimeout(_=>id == last && (j = null, r()), ms)})},
