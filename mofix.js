@@ -53,7 +53,7 @@ function qa(s,c=document){//Query all
 	DB = Symbol(),
 	mkDb =_=>{let last = 0, j; return ms=>new Promise((r,rj)=>{j?.(DB); j = rj; let id = ++last; setTimeout(_=>id == last && (j = null, r()), ms)})},
 	mkWait = ctx=>x=>new Promise(r=>typeof x == "number" ? setTimeout(r,x) : ael(ctx,x,r,{once:1})),
-	ignore =elt=>elt?.closest("[mx-ignore]"),
+	ignore = elt=>elt?.closest("[mx-ignore]"),
 	init = elt=>{
 		if (elt.__moxi || ignore(elt)) return
 		if (!fire(elt, "mx:init", {})) return
@@ -195,15 +195,7 @@ function qa(s,c=document){//Query all
 			if (ignore(n)) return
 			if (n.matches("[fx-method]")) init(n)
 		}
-		if (n.querySelectorAll) {
-			qa("[fx-method]",n).forEach(init)
-			qa("[fx-trigger]:not([fx-method])",n).forEach(e=>{
-				const p = q("closest [fx-method]",e)
-				if (!p) return
-				const fire =_=>p.dispatchEvent(new Event(p.__fixi.evt,{cancelable:1,bubbles:1,composed:1}))
-				attr(e,"fx-trigger").split("|").forEach(t=>{ael(e,t,fire)})
-			})
-		}
+		qa("[fx-method]",n).forEach(init)
 	}
 	ael(doc, "fx:process", evt=>process(evt.target))
 	ael(doc, "DOMContentLoaded", _=>{
@@ -442,8 +434,7 @@ const OmegaTable = {//OmegaTable
 }
 
 const Util = {//Utility functions
-	oassign(tag, obj) {return Object.assign(document.createElement(tag), obj)},
-	generateKey(){ // Create 32 character Device ID.
+	generateKey(){ // Create 32 character ID.
 		const bytes = crypto.getRandomValues(new Uint8Array(24))
 		const binary = String.fromCharCode(...bytes)
 		return btoa(binary).replace(/[+/]/g, char => char === '+' ? '-' : '_')

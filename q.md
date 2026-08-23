@@ -21,16 +21,16 @@ SPECIAL LIBRARY CASE: A chain can begin with `doc` manually setting context back
 The command syntax is:
 
 ```text
-command selector
+command <selector|shortcut>
 ```
 
 | Command | Behavior |
 | --- | --- |
-| `closest selector` | Finds the closest matching ancestor of the current element. `closest parent` returns its direct parent. |
-| `first selector` | Finds the first matching descendant. `first child` returns the first element child. |
-| `last selector` | Finds the last matching descendant. `last child` returns the last element child. |
-| `next selector` | Finds the next matching element in document order. `next sibling` returns the next element sibling. |
-| `prev selector` | Finds the previous matching element in document order. `prev sibling` returns the previous element sibling. |
+| `closest sel:par` | Finds the closest matching ancestor of the current element. `closest parent` returns its direct parent. |
+| `first sel:chi` | Finds the first matching descendant. `first child` returns the first element child. |
+| `last sel:chi` | Finds the last matching descendant. `last child` returns the last element child. |
+| `next sel:sib` | Finds the next matching element in document order. `next sibling` returns the next element sibling. |
+| `prev sel:sib` | Finds the previous matching element in document order. `prev sibling` returns the previous element sibling. |
 
 > **Note:** The special `parent`, `child`, and `sibling` shortcuts only require their first three characters: `par`, `chi`, and `sib`. For example, `closest par` and `next sib` use the same special behavior.
 
