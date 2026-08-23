@@ -39,7 +39,7 @@ function qa(s,c=document){//Query all
 	let doc = document
 	if(doc.__moxi_mo) return
 	let liveFns = new Set(), pending = false,
-	recompute = evt=> {
+	recompute = evt=>{
 		if (pending || ignore(evt?.target)) return
 		pending = true
 		queueMicrotask(_=>{liveFns.forEach(f=>f()); setTimeout(_=>pending = false)})
