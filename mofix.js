@@ -203,7 +203,6 @@ function qa(s,c=document){//Query all
 		doc.__fixi_mo.observe(doc.documentElement, { childList: 1, subtree: 1 })
 		process(doc.body)
 	})
-
 	//FIXI ADDONS
 	ael(doc,"fx:before",e=>{//Clear Toast
 		msg.textContent = ''
