@@ -102,6 +102,8 @@ qa('.todo-list -> .checkbox').forEach(item => {
 
 ## OmegaTable
 
+Add dynamic functionality to standard tables with editing, sorting, searching, and saving capabilities.
+
 - getArrows() - Helper: User defined sorting arrows for Table Header
 - getHeaders() - Helper: returns table Headers
 - tr(tr) - Init: Uses defined td values to set inner td controls
@@ -112,6 +114,8 @@ qa('.todo-list -> .checkbox').forEach(item => {
 - NOTE: Highlighting selected cells is done through CSS (not here).
 
 ## Util
+
+Just some helper functions for myself.
 
 - generateKey() - creates 32 character Base64URL ID
 - durationtoNanos - convert Golang duration string to nanoseconds.
