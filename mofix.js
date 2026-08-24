@@ -4,7 +4,7 @@ const qops={//Query ops
 	last:(s,c)=>s.startsWith("chi")?c.lastElementChild:[...c.querySelectorAll(s)].at(-1),
 	next:(s,c)=>s.startsWith("sib")?c.nextElementSibling:[...document.querySelectorAll(s)].find(el=>c.compareDocumentPosition(el)&4),
 	prev:(s,c)=>s.startsWith("sib")?c.previousElementSibling:[...document.querySelectorAll(s)].findLast(el=>c.compareDocumentPosition(el)&2),
-	re:/^(closest|first|last|next|prev)\s+(.+)$/,
+	re:/^(closest|first|last|next|prev)\s+(.+)$/
 }
 
 function q(s,c=document){//Query one
@@ -196,7 +196,7 @@ function qa(s,c=document){//Query all
 			if (ignore(n)) return
 			if (n.matches("[fx-method]")) init(n)
 		}
-		qa("[fx-method]",n).forEach(init)
+		if(n.querySelectorAll) qa("[fx-method]",n).forEach(init)
 	}
 	ael(doc, "fx:process", evt=>process(evt.target))
 	ael(doc, "DOMContentLoaded", _=>{
