@@ -297,9 +297,10 @@ const OmegaTable = {//OmegaTable
 			const value = td.getAttribute('value')
 			if (!value) return
 			const values = value.split('|')
-			qa('fieldset->input[type="radio"],input[type="checkbox"]',td).forEach(input=>input.checked = values.includes(input.value))
-			const ctrl = q('input,select,textarea', td) || td
-			if (!ctrl) ctrl.textContent = value
+			const fset = qa('fieldset->input[type="radio"],input[type="checkbox"]', td)
+			if (fset.length != 0){fset.forEach(input=>{input.checked = values.includes(input.value)});return}
+			const ctrl = q('input,select,textarea', td)
+			if (!ctrl) td.textContent = value
 			else if (ctrl.type == 'checkbox') ctrl.checked = value == 'true'
 			else if (ctrl.multiple) Array.from(ctrl.options).forEach(option=>option.selected = values.includes(option.value))
 			else ctrl.value = value
