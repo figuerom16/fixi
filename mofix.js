@@ -1,16 +1,19 @@
+const doc = document
+EventTarget.prototype.ael = EventTarget.prototype.addEventListener
+
 const qops={//Query ops
 	closest:(s,c)=>s.startsWith("par")?c.parentElement:c.closest(s),
 	first:(s,c)=>s.startsWith("chi")?c.firstElementChild:c.querySelector(s),
 	last:(s,c)=>s.startsWith("chi")?c.lastElementChild:[...c.querySelectorAll(s)].at(-1),
-	next:(s,c)=>s.startsWith("sib")?c.nextElementSibling:[...document.querySelectorAll(s)].find(el=>c.compareDocumentPosition(el)&4),
-	prev:(s,c)=>s.startsWith("sib")?c.previousElementSibling:[...document.querySelectorAll(s)].findLast(el=>c.compareDocumentPosition(el)&2),
+	next:(s,c)=>s.startsWith("sib")?c.nextElementSibling:[...doc.querySelectorAll(s)].find(el=>c.compareDocumentPosition(el)&4),
+	prev:(s,c)=>s.startsWith("sib")?c.previousElementSibling:[...doc.querySelectorAll(s)].findLast(el=>c.compareDocumentPosition(el)&2),
 	re:/^(closest|first|last|next|prev)\s+(.+)$/
 }
 
-function q(s,c=document){//Query one
-	if (!s||!c) return c
+function q(s,c) {//Query one
+	c = c || doc.currentScript || (this instanceof Element ? this : null) || globalThis.event?.target || doc
+	if (!s) return c
 	const cmds = s.split("->")
-	if (cmds[0].trim()=="doc") {c=document; cmds.shift()}
 	for (let i = 0; i < cmds.length; i++) {
 		const cm = cmds[i].trim()
 		if (!cm) continue
@@ -22,8 +25,9 @@ function q(s,c=document){//Query one
 	return c
 }
 
-function qa(s,c=document){//Query all
-	if (!s||!c) return []
+function qa(s,c) {//Query all
+	c = c || doc.currentScript || (this instanceof Element ? this : null) || globalThis.event?.target || doc
+	if (!s) return [c]
 	const p=s.lastIndexOf("->")
 	if (p<0) return [...c.querySelectorAll(s)]
 	const head=q(s.slice(0,p),c)
@@ -36,7 +40,6 @@ function qa(s,c=document){//Query all
 }
 
 (_=>{//MOXI
-	let doc = document
 	if(doc.__moxi_mo) return
 	let liveFns = new Set(), pending = false,
 	recompute = evt=>{
@@ -49,11 +52,10 @@ function qa(s,c=document){//Query all
 		recompute()
 	})
 	let AF = async function(){}.constructor, HARGS = ["q", "qa", "wait", "trigger", "debounce"],
-	fire = (elt, type, detail, bub)=>elt.dispatchEvent(new CustomEvent(type,{detail,cancelable:1,bubbles:bub??1,composed:1})),
-	ael = (e,n,h,o)=>e.addEventListener(n,h,o),
+	fire = (elt,type,detail,bub)=>elt.dispatchEvent(new CustomEvent(type,{detail,cancelable:1,bubbles:bub??1,composed:1})),
 	DB = Symbol(),
 	mkDb =_=>{let last = 0, j; return ms=>new Promise((r,rj)=>{j?.(DB); j = rj; let id = ++last; setTimeout(_=>id == last && (j = null, r()), ms)})},
-	mkWait = ctx=>x=>new Promise(r=>typeof x == "number" ? setTimeout(r,x) : ael(ctx,x,r,{once:1})),
+	mkWait = ctx=>x=>new Promise(r=>typeof x == "number" ? setTimeout(r,x) : ctx.ael(x,r,{once:1})),
 	ignore = elt=>elt?.closest("[mx-ignore]"),
 	init = elt=>{
 		if (elt.__moxi || ignore(elt)) return
@@ -81,7 +83,7 @@ function qa(s,c=document){//Query all
 					return fn.call(elt, evt, qs, qsa, wait, trigger, debounce).catch(e=>{if(e!=DB) throw e})
 				}
 				if (name == "init") handler()
-				else ael(target, name, handler, opts)
+				else target.ael(name, handler, opts)
 			}
 		}
 		liveRuns.forEach(r=>r())
@@ -95,21 +97,19 @@ function qa(s,c=document){//Query all
 	gt = globalThis, de = doc.documentElement
 	gt.wait = mkWait(de)
 	gt.transition = fn=>doc.startViewTransition ? doc.startViewTransition(fn) : fn()
-	ael(doc, "mx:process", evt=>process(evt.target))
-	ael(doc, "refresh", recompute)
-	ael(doc, "DOMContentLoaded", _=>{
+	doc.ael("mx:process", evt=>process(evt.target))
+	doc.ael("refresh", recompute)
+	doc.ael("DOMContentLoaded", _=>{
 		doc.__moxi_mo.observe(de, {childList:1, subtree:1, attributes:1, characterData:1})
-		ael(doc, "input", recompute, true)
-		ael(doc, "change", recompute, true)
+		doc.ael("input", recompute, true)
+		doc.ael("change", recompute, true)
 		process(doc.body)
 	})
 })();
 
 (_=>{//FIXI
-	let doc = document
 	if (doc.__fixi_mo) return
 	doc.__fixi_mo = new MutationObserver((recs) => recs.forEach((r) => r.type === "childList" && r.addedNodes.forEach((n) => process(n))))
-	let ael = (e,n,h,o)=>e.addEventListener(n,h,o)
 	let send = (elt, type, detail, bub) => elt.dispatchEvent(new CustomEvent("fx:" + type, { detail, cancelable: 1, bubbles: bub??1, composed: 1 }))
 	let attr = (elt, name, defaultVal) => elt.getAttribute(name) || defaultVal
 	let ignore = (elt) => elt.closest("[fx-ignore]") != null
@@ -188,7 +188,7 @@ function qa(s,c=document){//Query all
 			if (!doc.contains(elt)) send(doc, "swapped", {cfg})
 		}
 		elt.__fixi.evt = attr(elt, "fx-trigger", elt.matches("form") ? "submit" : elt.matches("input:not([type=button]),select,textarea") ? "change" : "click").split("|")
-		elt.__fixi.evt.forEach(a=>{ael(elt, a, elt.__fixi, options)})
+		elt.__fixi.evt.forEach(a=>{elt.ael(a,elt.__fixi, options)})
 		send(elt, "inited", {}, false)
 	}
 	let process =n=>{
@@ -198,13 +198,13 @@ function qa(s,c=document){//Query all
 		}
 		if(n.querySelectorAll) qa("[fx-method]",n).forEach(init)
 	}
-	ael(doc, "fx:process", evt=>process(evt.target))
-	ael(doc, "DOMContentLoaded", _=>{
+	doc.ael("fx:process", evt=>process(evt.target))
+	doc.ael("DOMContentLoaded", _=>{
 		doc.__fixi_mo.observe(doc.documentElement, { childList: 1, subtree: 1 })
 		process(doc.body)
 	})
 	//FIXI ADDONS
-	ael(doc,"fx:before",e=>{//Clear Toast
+	doc.ael("fx:before",e=>{//Clear Toast
 		msg.textContent = ''
 		toast.classList.remove('alert-error')
 		toast.classList.remove('alert-success')
@@ -212,10 +212,10 @@ function qa(s,c=document){//Query all
 		const eform = target.tagName == 'FORM' ? target : target.parentElement
 		qa("[aria-invalid=true]",eform).forEach(el=>{el.removeAttribute('aria-invalid');el.nextElementSibling.textContent=''})
 	})
-	ael(doc,'fx:after',e=>{//Set Error/Success & Redirect/Refresh
+	doc.ael('fx:after',e=>{//Set Error/Success & Redirect/Refresh
 		if (e.detail.cfg.response.status < 300) toast.classList.add('alert-success')
 		else if (e.detail.cfg.response.status < 400) {
-			if (e.detail.cfg.text == 'refresh') {document.location.reload();return}
+			if (e.detail.cfg.text == 'refresh') {doc.location.reload();return}
 			window.location.href = e.detail.cfg.text
 		}
 		else {
@@ -238,7 +238,7 @@ function qa(s,c=document){//Query all
 			}
 		}
 	})
-	ael(doc,'fx:swapped',_=>{lucide.createIcons()})//Create Icons
+	doc.ael('fx:swapped',_=>{lucide.createIcons()})//Create Icons
 })();
 
 (_=>{//PAXI
@@ -274,13 +274,13 @@ function qa(s,c=document){//Query all
 		while (nc){ nn = nc.nextSibling; o.appendChild(nc); nc = nn }
 	}
 	window.morph = (target, html)=>{
-		let t = document.createElement("template")
+		let t = doc.createElement("template")
 		t.innerHTML = html
 		let ids = {}
 		qa("[id]",target).forEach(e=>ids[e.id]=e)
 		mx(target, t.content.firstElementChild, ids)
 	}
-	document.addEventListener("fx:config", e=>{
+	doc.ael("fx:config", e=>{
 		if (e.detail.cfg.swap === "morph") e.detail.cfg.swap = cfg=>morph(cfg.target, cfg.text)
 	})
 })();
@@ -316,24 +316,24 @@ const OmegaTable = {//OmegaTable
 			if (ctrl.multiple) return [...ctrl.selectedOptions].map(option=>option.value.replace(/\|/g,'')).join('|')
 			return ctrl.value
 		}
-		tbody.addEventListener('input',e=>{//Input updates value on td
+		tbody.ael('input',e=>{//Input updates value on td
 			const td = e.target.closest('td[value]')
 			if (!td) return
 			const ctrl = e.target.closest('input,select,textarea') || td
 			td.setAttribute('value', ctrl === td ? td.textContent : ctrlVal(ctrl))
 		})
-		tbody.addEventListener('click',e=>{//Click Focus
+		tbody.ael('click',e=>{//Click Focus
 			const td = e.target.closest('td')
 			if (!td || !tbody.contains(td) || e.target.closest('fieldset,input,select,textarea')) return
 			td.tabIndex = -1
 			td.focus()
 			const selection = window.getSelection()
-			const range = document.createRange()
+			const range = doc.createRange()
 			range.selectNodeContents(td)
 			selection.removeAllRanges()
 			selection.addRange(range)
 		})
-		tbody.addEventListener('keydown',e=>{//Space click, CTRL + arrow Nav, CTRL + c
+		tbody.ael('keydown',e=>{//Space click, CTRL + arrow Nav, CTRL + c
 			if (e.key == ' ' && e.target.matches('td')) {
 				const button = q('button',e.target)
 				if (button) {button.click(); e.preventDefault(); return}
@@ -370,7 +370,7 @@ const OmegaTable = {//OmegaTable
 				next.tabIndex = -1
 				next.focus()
 				const selection = window.getSelection()
-				const range = document.createRange()
+				const range = doc.createRange()
 				range.selectNodeContents(next)
 				selection.removeAllRanges()
 				selection.addRange(range)
@@ -388,7 +388,7 @@ const OmegaTable = {//OmegaTable
 		qa('th',thead).forEach(th=>{
 			if (!arrows.has(th.textContent.at(-1))) return
 			th.classList.add('clickable')
-			th.addEventListener('click',_=>{
+			th.ael('click',_=>{
 				const arrow = th.textContent.substr(-1)
 				const heads = thead.rows[0].cells
 				const rows = [...tbody.rows]

@@ -4,7 +4,7 @@ My custom version of the [Fixi project](https://fixiproject.org/) and some tools
 
 ## q(selector, context = document), qa(selector, context = document)
 
-> [!IMPORTANT] Remember! `q` returns one element or null. `qa` return an array of elements or empty array.
+> [!IMPORTANT] Remember! `q` returns one element or null. `qa` returns an array of elements; an unmatched selector returns an empty array.
 
 The query helpers in `myfixi.js <first ~40 lines of code>` provide compact relative/traversal CSS-selector through `q` and `qa`.
 
@@ -16,9 +16,22 @@ q('.list -> first child -> next sibling -> next sibling')
 
 - `q('button', this)` can return a single button element or null.
 - `qa('button', this)` can return an array of button elements or empty array.
-- `q()` or `q('.item', null)` returns the current context which can be null.
-- `qa()` or `qa('.item', null)` returns `[]`.
-- LIBRARY CASE: A chain can begin with `doc` manually setting context back to `document` as an escape hatch. This is useful for when q() is used in other libraries where a local context is already set. My fixi implementation has fx-target use `q(s,this)` so `fx-target="#myid"` will only look inside the element it currently is on. To escape the current element target `fx-target="doc -> #myid"`:
+- With no explicit context, `q()` and `qa()` choose the first available context in this order: `doc.currentScript`, an element-bound `this`, `globalThis.event?.target`, then `document`.
+- `q()` with no selector returns its resolved context. `qa()` with no selector returns that context in a one-element array.
+- An explicit falsy context also falls back through the same context-resolution order.
+- `doc` is the document reference used by the implementation. document-level queries should use `q(selector, doc)` or `qa(selector, doc)` when another context would otherwise be inferred.
+
+For example, code running directly inside a `<script>` uses that script as its implicit context:
+
+```html
+<script>
+	q('.button')?.classList.add('ready')
+	q('#global-button', doc)?.classList.add('ready')
+</script>
+```
+
+- `doc` is provided as an alias for `document`.
+- `.ael` is provided as an alias for `.addEventListener`.
 
 ### Supported traversal commands
 
