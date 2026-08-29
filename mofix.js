@@ -11,8 +11,8 @@ const qops={//Query ops
 }
 
 function q(s,c) {//Query one
-	c = c || doc.currentScript || (this instanceof Element ? this : null) || globalThis.event?.target || doc
-	if (!s) return c
+	c = c || doc.currentScript || (this instanceof Element ? this : null) || globalThis.event?.target || null
+	if (!s||!c) return c
 	const cmds = s.split("->")
 	for (let i = 0; i < cmds.length; i++) {
 		const cm = cmds[i].trim()
@@ -26,8 +26,8 @@ function q(s,c) {//Query one
 }
 
 function qa(s,c) {//Query all
-	c = c || doc.currentScript || (this instanceof Element ? this : null) || globalThis.event?.target || doc
-	if (!s) return [c]
+	c = c || doc.currentScript || (this instanceof Element ? this : null) || globalThis.event?.target || null
+	if (!s||!c) return []
 	const p=s.lastIndexOf("->")
 	if (p<0) return [...c.querySelectorAll(s)]
 	const head=q(s.slice(0,p),c)

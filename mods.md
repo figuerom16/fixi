@@ -2,32 +2,33 @@
 Rolls together q(), qa(), Moxi, Fixi, Paxi, OmegaTable, and Utils.
 My custom version of the [Fixi project](https://fixiproject.org/) and some tools; made for the target audience of myself. Copy out what you like since this library gets modified constantly. The goal is to make a library that works specifically for me. Be sure to check out the original Fixi project for the original/core code.
 
-## q(selector, context = document), qa(selector, context = document)
+## q(selector, context), qa(selector, context)
 
-> [!IMPORTANT] Remember! `q` returns one element or null. `qa` returns an array of elements; an unmatched selector returns an empty array.
+> [!IMPORTANT] Remember! `q` returns one element or null. `qa` returns an array of elements or empty array.
 
 The query helpers in `myfixi.js <first ~40 lines of code>` provide compact relative/traversal CSS-selector through `q` and `qa`.
 
-q will scopes to document unless another context is supplied. Selectors can be chained with `->`. Each segment feeds the context to the next segment:
+q will scopes to current element if available. To query on the document be sure to use `doc` context. Selectors can be chained with `->`. Each segment feeds the context to the next segment:
 
 ```js
 q('.list -> first child -> next sibling -> next sibling')
 ```
 
-- `q('button', this)` can return a single button element or null.
-- `qa('button', this)` can return an array of button elements or empty array.
-- With no explicit context, `q()` and `qa()` choose the first available context in this order: `doc.currentScript`, an element-bound `this`, `globalThis.event?.target`, then `document`.
-- `q()` with no selector returns its resolved context. `qa()` with no selector returns that context in a one-element array.
-- An explicit falsy context also falls back through the same context-resolution order.
-- `doc` is the document reference used by the implementation. document-level queries should use `q(selector, doc)` or `qa(selector, doc)` when another context would otherwise be inferred.
+- With no explicit context, `q()` and `qa()` choose the first available context in this order: `doc.currentScript`, an element-bound `this`, `globalThis.event?.target`, then `null`.
+- `q()` with no selector returns its resolved context. `qa()` with no selector returns an empty array.
 
-For example, code running directly inside a `<script>` uses that script as its implicit context:
+Implicit context example:
 
 ```html
+<input oninput="inputfunc()">
+<button onclick="console.log(q().textContent) //starting context is button">mybutton</button>
+<button>otherbutton</button>
 <script>
-	q('.button')?.classList.add('ready')
-	q('#global-button', doc)?.classList.add('ready')
+	function inputfunc() {console.log(q())} //context is input
+	q('prev sib -> prev sib').classList.add('ready') //starting context is script then traverse to mybutton
+	q('prev sib').ael('click',_=>{console.log(q().textContent)}) //function context in listener is otherbutton
 </script>
+//This is why it's important to manually set context to `doc` if you want to select/traverse on the document.
 ```
 
 - `doc` is provided as an alias for `document`.
