@@ -9,11 +9,11 @@ const qops={//Query ops
 	prev:(s,c)=>s.startsWith("sib")?c.previousElementSibling:[...doc.querySelectorAll(s)].findLast(el=>c.compareDocumentPosition(el)&2),
 	re:/^(closest|first|last|next|prev)\s+(.+)$/
 }
-
 function q(s,c) {//Query one
 	c = c || doc.currentScript || (this instanceof Element && this) || globalThis.event?.target || null
 	if (!s||!c) return c
 	const cmds = s.split("->")
+	if (cmds[0].trim()=="doc") {c=doc; cmds.shift()}
 	for (let i = 0; i < cmds.length; i++) {
 		const cm = cmds[i].trim()
 		if (!cm) continue
@@ -24,7 +24,6 @@ function q(s,c) {//Query one
 	}
 	return c
 }
-
 function qa(s,c) {//Query all
 	c = c || doc.currentScript || (this instanceof Element && this) || globalThis.event?.target || null
 	if (!s||!c) return []

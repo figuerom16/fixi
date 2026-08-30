@@ -17,7 +17,7 @@ q('.list -> first child -> next sibling -> next sibling')
 - With no explicit context, `q()` and `qa()` choose the first available context in this order: `doc.currentScript`, an element-bound `this`, `globalThis.event?.target`, then `null`.
 - `q()` with no selector returns its resolved context. `qa()` with no selector returns an empty array.
 
-Implicit context example:
+Implicit context examples:
 
 ```html
 <input oninput="inputfunc()">
@@ -28,7 +28,7 @@ Implicit context example:
 	q('prev sib -> prev sib').classList.add('ready') //starting context is script then traverse to mybutton
 	q('prev sib').ael('click',_=>{console.log(q().textContent)}) //function context in listener is otherbutton
 </script>
-//This is why it's important to manually set context to `doc` if you want to select/traverse on the document.
+//This is why it's important to either start with `doc->` or set doc as the context if you want to query on document. Ex: q('doc -> .button') or q('.button', doc)
 ```
 
 - `doc` is provided as an alias for `document`.
