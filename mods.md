@@ -6,7 +6,7 @@ My custom version of the [Fixi project](https://fixiproject.org/) and some tools
 
 > [!IMPORTANT] Remember! `q` returns one element or null. `qa` returns an array of elements or empty array.
 
-The query helpers in `myfixi.js <first ~40 lines of code>` provide compact relative/traversal CSS-selector through `q` and `qa`.
+The query helpers in `mofix.js <first ~40 lines of code>` provide compact relative/traversal CSS-selector through `q` and `qa`.
 
 q will scopes to current element if available. To query on the document be sure to use `doc` context. Selectors can be chained with `->`. Each segment feeds the context to the next segment:
 
@@ -21,7 +21,7 @@ Implicit context examples:
 
 ```html
 <input oninput="inputfunc()">
-<button onclick="console.log(q().textContent) //starting context is button">mybutton</button>
+<button onclick="console.log(q().textContent) //starting context is mybutton">mybutton</button>
 <button>otherbutton</button>
 <script>
 	function inputfunc() {console.log(q())} //context is input
