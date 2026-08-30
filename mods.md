@@ -89,17 +89,18 @@ qa('.todo-list -> .checkbox').forEach(item => {
 
 ## ALL
 
+- Added in `doc` alias
+- Added in `ael` alias
 - Some minor formatting
 - replaced all QuerySelector and QuerySelectorAll with `q()` and `qa()`
 
 ## Moxi Mods
 
-- Removed `q()` and its proxy functionality. `q()` and `qa()` are now it's own standalone functions.
+- Removed `q()` and its proxy functionality. `q()` and `qa()` are now standalone functions.
 - Added in proposed Github PRs #1 and #2.
 
 ## Fixi Mods
 
-- Added in ael helper
 - Only use formData on element when element is form
 - When when element is tr collect td name and value into formData
 - When element is named and has files or values add the data to formData.
