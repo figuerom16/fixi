@@ -13,7 +13,6 @@ function q(s,c) {//Query one
 	c = c || doc.currentScript || (this instanceof Element && this) || globalThis.event?.target || null
 	if (!s||!c) return c
 	const cmds = s.split("->")
-	if (cmds[0].trim()=="doc") {c=doc; cmds.shift()}
 	for (let i = 0; i < cmds.length; i++) {
 		const cm = cmds[i].trim()
 		if (!cm) continue
@@ -41,8 +40,8 @@ function qa(s,c) {//Query all
 (_=>{//MOXI
 	if(doc.__moxi_mo) return
 	let liveFns = new Set(), pending = false,
-	recompute = evt=>{
-		if (pending || ignore(evt?.target)) return
+		recompute =_=>{
+		if (pending) return
 		pending = true
 		queueMicrotask(_=>{liveFns.forEach(f=>f()); setTimeout(_=>pending = false)})
 	}
@@ -55,7 +54,7 @@ function qa(s,c) {//Query all
 	DB = Symbol(),
 	mkDb =_=>{let last = 0, j; return ms=>new Promise((r,rj)=>{j?.(DB); j = rj; let id = ++last; setTimeout(_=>id == last && (j = null, r()), ms)})},
 	mkWait = ctx=>x=>new Promise(r=>typeof x == "number" ? setTimeout(r,x) : ctx.ael(x,r,{once:1})),
-	ignore = elt=>elt?.closest("[mx-ignore]"),
+	ignore = elt=>elt.closest("[mx-ignore]"),
 	init = elt=>{
 		if (elt.__moxi || ignore(elt)) return
 		if (!fire(elt, "mx:init", {})) return
@@ -73,12 +72,13 @@ function qa(s,c) {//Query all
 				has = m=>mods.includes(m), h = has("halt"), debounce = mkDb()
 				if (has("cc")) name = name.replace(/-([a-z])/g, (_,c)=>c.toUpperCase())
 				let target = has("outside") ? doc : elt,
-				opts = {capture: has("capture"), passive: has("passive"), once: has("once")},
+				opts = {capture: has("capture"), passive: has("passive")},
 				fn = new AF("event", ...HARGS, `with(event?.detail||{}){${a.value}}`),
 				handler = elt.__moxi[name] = evt=>{
 					if (evt && (has("self") && evt.target != elt || has("outside") && elt.contains(evt.target))) return
 					if (h || has("prevent")) evt?.preventDefault()
 					if (h || has("stop")) evt?.stopPropagation()
+					if (has("once")) target.removeEventListener(name, handler, opts)
 					return fn.call(elt, evt, qs, qsa, wait, trigger, debounce).catch(e=>{if(e!=DB) throw e})
 				}
 				if (name == "init") handler()
