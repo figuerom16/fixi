@@ -74,10 +74,10 @@ function qa(s,c) {//Query all
 				if (has("cc")) name = name.replace(/-([a-z])/g, (_,c)=>c.toUpperCase())
 				let target = has("outside") ? doc : elt,
 				opts = {capture: has("capture"), passive: has("passive")},
-				source = `with(event?.detail||{}){${a.value}}`,
-				fn = Util.isValidJS(source) ? new AF("event", ...HARGS, source) : (_=>{throw new SyntaxError(`Invalid JavaScript in ${a.name}`)})(),
+				src = `with(event?.detail||{}){${a.value}}`,
+				fn = Util.isValidJS(src) ? new AF("event", ...HARGS, src) : (_=>{throw new SyntaxError(`Invalid JavaScript in ${a.name}=${src}`)})(),
 				handler = elt.__moxi[name] = evt=>{
-					if (evt && (has("self") && evt.target != elt || has("outside") && elt.contains(evt.target))) return
+					if (evt && (has("self") && evt.tsrcarget != elt || has("outside") && elt.contains(evt.target))) return
 					if (h || has("prevent")) evt?.preventDefault()
 					if (h || has("stop")) evt?.stopPropagation()
 					if (has("once")) target.removeEventListener(name, handler, opts)
@@ -438,12 +438,8 @@ const OmegaTable = {//OmegaTable
 const Util = {//Utility functions
 	isValidJS(src){
 		if (typeof src != "string") return false
-		try {
-			Function(src)
-			return true
-		} catch (_) {
-			return false
-		}
+		try { Function(src); return true }
+		catch (_) { return false }
 	},
 	generateKey(){ // Create 32 character ID.
 		const bytes = crypto.getRandomValues(new Uint8Array(24))
