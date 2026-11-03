@@ -97,6 +97,7 @@ qa('.todo-list -> .checkbox').forEach(item => {
 ## Moxi Mods
 
 - Removed `q()` and its proxy functionality. `q()` and `qa()` are now standalone functions.
+- Validate `on-*` JS to present an error.
 
 ## Fixi Mods
 
