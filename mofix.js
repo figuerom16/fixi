@@ -74,7 +74,8 @@ function qa(s,c) {//Query all
 				if (has("cc")) name = name.replace(/-([a-z])/g, (_,c)=>c.toUpperCase())
 				let target = has("outside") ? doc : elt,
 				opts = {capture: has("capture"), passive: has("passive")},
-				fn = new AF("event", ...HARGS, `with(event?.detail||{}){${a.value}}`),
+				source = `with(event?.detail||{}){${a.value}}`,
+				fn = Util.isValidJS(source) ? new AF("event", ...HARGS, source) : (_=>{throw new SyntaxError(`Invalid JavaScript in ${a.name}`)})(),
 				handler = elt.__moxi[name] = evt=>{
 					if (evt && (has("self") && evt.target != elt || has("outside") && elt.contains(evt.target))) return
 					if (h || has("prevent")) evt?.preventDefault()
@@ -435,6 +436,15 @@ const OmegaTable = {//OmegaTable
 }
 
 const Util = {//Utility functions
+	isValidJS(src){
+		if (typeof src != "string") return false
+		try {
+			Function(src)
+			return true
+		} catch (_) {
+			return false
+		}
+	},
 	generateKey(){ // Create 32 character ID.
 		const bytes = crypto.getRandomValues(new Uint8Array(24))
 		const binary = String.fromCharCode(...bytes)
