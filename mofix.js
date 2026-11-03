@@ -75,7 +75,7 @@ function qa(s,c) {//Query all
 				let target = has("outside") ? doc : elt,
 				opts = {capture: has("capture"), passive: has("passive")},
 				src = `with(event?.detail||{}){${a.value}}`,
-				fn = Util.isValidJS(src) ? new AF("event", ...HARGS, src) : (_=>{throw new SyntaxError(`Invalid JavaScript in ${a.name}=${src}`)})(),
+				fn = Util.isValidJS(src) ? new AF("event", ...HARGS, src) : (_=>{throw new SyntaxError(`Invalid JavaScript in ${a.name}="${src}"`)})(),
 				handler = elt.__moxi[name] = evt=>{
 					if (evt && (has("self") && evt.tsrcarget != elt || has("outside") && elt.contains(evt.target))) return
 					if (h || has("prevent")) evt?.preventDefault()
