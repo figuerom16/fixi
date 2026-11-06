@@ -438,7 +438,7 @@ const OmegaTable = {//OmegaTable
 const Util = {//Utility functions
 	isValidJS(src){
 		if (typeof src != "string") return false
-		try { Function(src); return true }
+		try { (async function(){}).constructor(src); return true }
 		catch (_) { return false }
 	},
 	generateKey(){ // Create 32 character ID.
